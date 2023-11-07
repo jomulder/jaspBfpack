@@ -1,0 +1,589 @@
+msgid ""
+msgstr ""
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"X-Language: tr\n"
+"X-Qt-Contexts: true\n"
+
+msgctxt "Description|"
+msgid "Bfpack"
+msgstr "Bfpack"
+
+msgctxt "Description|"
+msgid ""
+"A module for computing approximated adjusted fractional Bayes factors for "
+"equality, inequality, and about equality constrained hypotheses."
+msgstr ""
+"Eşitlik, eşitsizlik ve eşitlik kısıtlamalı hipotezler için yaklaşık ayarlı "
+"kesirli Bayes faktörlerini hesaplamak için bir modül."
+
+msgctxt "BfpackAncovaBayesian|"
+msgid "Dependent Variable"
+msgstr "Bağımlı değişken"
+
+msgctxt "BfpackAncovaBayesian|"
+msgid "Fixed Factors"
+msgstr "Sabit Faktörler"
+
+#, fuzzy
+msgctxt "BfpackAncovaBayesian|"
+msgid "Covariates"
+msgstr "Kovaryanslar"
+
+msgctxt "BfpackAncovaBayesian|"
+msgid "Tables"
+msgstr "Tablolar"
+
+msgctxt "BfpackAncovaBayesian|"
+msgid "Bayes factor matrix"
+msgstr ""
+
+msgctxt "BfpackAncovaBayesian|"
+msgid "Coefficients"
+msgstr "katsayılar"
+
+msgctxt "BfpackAncovaBayesian|"
+msgid "Credible interval"
+msgstr ""
+
+msgctxt "BfpackAncovaBayesian|"
+msgid "Plots"
+msgstr "Grafikler"
+
+msgctxt "BfpackAncovaBayesian|"
+msgid "Posterior probabilities"
+msgstr "Sonraki olasılıklar"
+
+msgctxt "BfpackAncovaBayesian|"
+msgid "Adjusted means"
+msgstr ""
+
+msgctxt "BfpackAncovaBayesian|"
+msgid "Additional Options"
+msgstr "Ek seçenekler"
+
+msgctxt "BfpackAncovaBayesian|"
+msgid "Seed"
+msgstr "Başlangıç sayısı"
+
+msgctxt "BfpackAncovaBayesian|"
+msgid "Fraction"
+msgstr "Kesir"
+
+msgctxt "BfpackAncovaBayesian|"
+msgid "Model Constraints"
+msgstr "Model Kısıtlamaları"
+
+#, fuzzy
+msgctxt "BfpackAncovaBayesian|"
+msgid ""
+"Place each hypothesis on a new line. For example:\n"
+"\n"
+"factorLow = factorMed = factorHigh\n"
+"factorLow < factorMed < factorHigh\n"
+"\n"
+"where factor is the factor name and Low/Med/High are the factor level "
+"names.\n"
+"Read the help file for further instructions."
+msgstr ""
+"Her hipotezi yeni bir satıra yerleştirin. Örneğin:\n"
+"\n"
+"faktörDüşük = faktörOrta = faktörYüksek\n"
+"faktörDüşük < faktörOrta < faktörYüksek\n"
+"\n"
+"faktör, faktör adıdır ve Düşük/Orta/Yüksek, faktör düzeyi adlarıdır.\n"
+"Daha fazla talimat için yardım dosyasını okuyun."
+
+msgctxt "BfpackAnovaBayesian|"
+msgid "Dependent Variable"
+msgstr "Bağımlı değişken"
+
+msgctxt "BfpackAnovaBayesian|"
+msgid "Fixed Factors"
+msgstr "Sabit Faktörler"
+
+msgctxt "BfpackAnovaBayesian|"
+msgid "Tables"
+msgstr "Tablolar"
+
+msgctxt "BfpackAnovaBayesian|"
+msgid "Bayes factor matrix"
+msgstr ""
+
+msgctxt "BfpackAnovaBayesian|"
+msgid "Descriptives"
+msgstr "Tanımsal"
+
+msgctxt "BfpackAnovaBayesian|"
+msgid "Credible interval"
+msgstr ""
+
+msgctxt "BfpackAnovaBayesian|"
+msgid "Plots"
+msgstr "Grafikler"
+
+msgctxt "BfpackAnovaBayesian|"
+msgid "Posterior probabilities"
+msgstr "Sonraki olasılıklar"
+
+msgctxt "BfpackAnovaBayesian|"
+msgid "Descriptives plot"
+msgstr "Tanımlayıcı grafik"
+
+msgctxt "BfpackAnovaBayesian|"
+msgid "Additional Options"
+msgstr "Ek seçenekler"
+
+msgctxt "BfpackAnovaBayesian|"
+msgid "Seed"
+msgstr "Başlangıç sayısı"
+
+msgctxt "BfpackAnovaBayesian|"
+msgid "Fraction"
+msgstr "kesir"
+
+msgctxt "BfpackAnovaBayesian|"
+msgid "Model Constraints"
+msgstr "Model Kısıtlamaları"
+
+msgctxt "BfpackAnovaBayesian|"
+msgid ""
+"Place each hypothesis on a new line. For example:\n"
+"\n"
+"factorLow = factorMed = factorHigh\n"
+"factorLow < factorMed < factorHigh\n"
+"\n"
+"where factor is the factor name and Low/Med/High are the factor level "
+"names.\n"
+"Read the help file for further instructions."
+msgstr ""
+"Her hipotezi yeni bir satıra yerleştirin. Örneğin:\n"
+"\n"
+"faktörDüşük = faktörOrta = faktörYüksek\n"
+"faktörDüşük < faktörOrta < faktörYüksek\n"
+"\n"
+"faktör, faktör adıdır ve Düşük/Orta/Yüksek, faktör düzeyi adlarıdır.\n"
+"Daha fazla talimat için yardım dosyasını okuyun."
+
+msgctxt "BfpackRegressionLinearBayesian|"
+msgid "Dependent Variable"
+msgstr "Bağımlı değişken"
+
+msgctxt "BfpackRegressionLinearBayesian|"
+msgid "Covariates"
+msgstr "Kovaryanslar"
+
+msgctxt "BfpackRegressionLinearBayesian|"
+msgid "Tables"
+msgstr "Tablolar"
+
+msgctxt "BfpackRegressionLinearBayesian|"
+msgid "Bayes factor matrix"
+msgstr ""
+
+msgctxt "BfpackRegressionLinearBayesian|"
+msgid "Coefficients"
+msgstr "katsayılar"
+
+msgctxt "BfpackRegressionLinearBayesian|"
+msgid "Credible interval"
+msgstr ""
+
+#, fuzzy
+msgctxt "BfpackRegressionLinearBayesian|"
+msgid "Plots"
+msgstr "Grafikler"
+
+#, fuzzy
+msgctxt "BfpackRegressionLinearBayesian|"
+msgid "Posterior probabilities"
+msgstr "Sonraki olasılıklar"
+
+#, fuzzy
+msgctxt "BfpackRegressionLinearBayesian|"
+msgid "Additional Options"
+msgstr "Ek seçenekler"
+
+#, fuzzy
+msgctxt "BfpackRegressionLinearBayesian|"
+msgid "Seed"
+msgstr "Başlangıç sayısı"
+
+msgctxt "BfpackRegressionLinearBayesian|"
+msgid "Fraction"
+msgstr ""
+
+msgctxt "BfpackRegressionLinearBayesian|"
+msgid "Standardize coefficients"
+msgstr ""
+
+#, fuzzy
+msgctxt "BfpackRegressionLinearBayesian|"
+msgid "Model Constraints"
+msgstr "Model Kısıtlamaları"
+
+msgctxt "BfpackRegressionLinearBayesian|"
+msgid ""
+"Place each hypothesis on a new line. For example:\n"
+"\n"
+"age = length = weight\n"
+"age < length < weight,\n"
+"\n"
+"where age, length and weight are the names of the predictors.\n"
+"Read the help file for further instructions."
+msgstr ""
+
+msgctxt "BfpackSemBayesian|"
+msgid "Model Options"
+msgstr ""
+
+msgctxt "BfpackSemBayesian|"
+msgid "Factor scaling"
+msgstr ""
+
+msgctxt "BfpackSemBayesian|"
+msgid "Factor variance"
+msgstr ""
+
+msgctxt "BfpackSemBayesian|"
+msgid "Factor loading"
+msgstr ""
+
+msgctxt "BfpackSemBayesian|"
+msgid "Grouping variable"
+msgstr ""
+
+#, fuzzy
+msgctxt "BfpackSemBayesian|"
+msgid "Tables"
+msgstr "Tablolar"
+
+#, fuzzy
+msgctxt "BfpackSemBayesian|"
+msgid "Coefficients"
+msgstr "katsayılar"
+
+msgctxt "BfpackSemBayesian|"
+msgid "Credible interval"
+msgstr ""
+
+#, fuzzy
+msgctxt "BfpackSemBayesian|"
+msgid "Plots"
+msgstr "Grafikler"
+
+msgctxt "BfpackSemBayesian|"
+msgid "Path diagram"
+msgstr ""
+
+msgctxt "BfpackSemBayesian|"
+msgid "Show parameter estimates"
+msgstr ""
+
+msgctxt "BfpackSemBayesian|"
+msgid "Show legend"
+msgstr ""
+
+#, fuzzy
+msgctxt "BfpackSemBayesian|"
+msgid "Additional Options"
+msgstr "Ek seçenekler"
+
+#, fuzzy
+msgctxt "BfpackSemBayesian|"
+msgid "Seed"
+msgstr "Başlangıç sayısı"
+
+msgctxt "BfpackSemBayesian|"
+msgid "Fraction"
+msgstr ""
+
+msgctxt "BfpackSemBayesian|"
+msgid "Standardize coefficients"
+msgstr ""
+
+msgctxt "BfpackSemBayesian|"
+msgid "Bayes factor matrix"
+msgstr ""
+
+#, fuzzy
+msgctxt "BfpackSemBayesian|"
+msgid "Posterior probabilities"
+msgstr "Sonraki olasılıklar"
+
+#, fuzzy
+msgctxt "BfpackSemBayesian|"
+msgid "Model Constraints"
+msgstr "Model Kısıtlamaları"
+
+msgctxt "BfpackSemBayesian|"
+msgid ""
+"Hypotheses can be formulated using the parameter names that appear if the "
+"'Coefficients' box is ticked.\n"
+"Do NOT use spaces in the parameter names. Place each hypothesis on a new "
+"line. For example:\n"
+"\n"
+"A=~x1 = A=~x2 = A=~x3 = A=~x4\n"
+"A=~x1 > A=~x2 > A=~x3 = A=~x4\n"
+"A=~x1 > 0 & A=~x2 > 0 & A=~x3 > 0 & A=~x4 > 0\n"
+"\n"
+"Read the help file for further instructions about formulating hypotheses and "
+"what can and cannot be done\n"
+"with Bfpack Structural Equation Modeling."
+msgstr ""
+
+msgctxt "BfpackTTestBayesianIndependentSamples|"
+msgid "Dependent Variables"
+msgstr ""
+
+msgctxt "BfpackTTestBayesianIndependentSamples|"
+msgid "Grouping Variable"
+msgstr ""
+
+msgctxt "BfpackTTestBayesianIndependentSamples|"
+msgid "Hypothesis Test"
+msgstr ""
+
+msgctxt "BfpackTTestBayesianIndependentSamples|"
+msgid "Equal vs. not equal"
+msgstr ""
+
+msgctxt "BfpackTTestBayesianIndependentSamples|"
+msgid "Equal vs. bigger"
+msgstr ""
+
+msgctxt "BfpackTTestBayesianIndependentSamples|"
+msgid "Equal vs. smaller"
+msgstr ""
+
+msgctxt "BfpackTTestBayesianIndependentSamples|"
+msgid "Bigger vs. smaller"
+msgstr ""
+
+msgctxt "BfpackTTestBayesianIndependentSamples|"
+msgid "Equal vs. bigger vs. smaller"
+msgstr ""
+
+msgctxt "BfpackTTestBayesianIndependentSamples|"
+msgid "Bayes Factor"
+msgstr ""
+
+msgctxt "BfpackTTestBayesianIndependentSamples|"
+msgid "BF₀₁: Equal vs. other"
+msgstr ""
+
+msgctxt "BfpackTTestBayesianIndependentSamples|"
+msgid "BF₁₀: Other vs. equal"
+msgstr ""
+
+#, fuzzy
+msgctxt "BfpackTTestBayesianIndependentSamples|"
+msgid "Additional Options"
+msgstr "Ek seçenekler"
+
+#, fuzzy
+msgctxt "BfpackTTestBayesianIndependentSamples|"
+msgid "Seed"
+msgstr "Başlangıç sayısı"
+
+msgctxt "BfpackTTestBayesianIndependentSamples|"
+msgid "Fraction"
+msgstr ""
+
+#, fuzzy
+msgctxt "BfpackTTestBayesianIndependentSamples|"
+msgid "Tables"
+msgstr "Tablolar"
+
+#, fuzzy
+msgctxt "BfpackTTestBayesianIndependentSamples|"
+msgid "Descriptives"
+msgstr "Tanımsal"
+
+msgctxt "BfpackTTestBayesianIndependentSamples|"
+msgid "Credible interval"
+msgstr ""
+
+#, fuzzy
+msgctxt "BfpackTTestBayesianIndependentSamples|"
+msgid "Plots"
+msgstr "Grafikler"
+
+#, fuzzy
+msgctxt "BfpackTTestBayesianIndependentSamples|"
+msgid "Posterior probabilities"
+msgstr "Sonraki olasılıklar"
+
+msgctxt "BfpackTTestBayesianIndependentSamples|"
+msgid "Descriptives plots"
+msgstr ""
+
+msgctxt "BfpackTTestBayesianOneSample|"
+msgid "Variables"
+msgstr ""
+
+msgctxt "BfpackTTestBayesianOneSample|"
+msgid "Test value"
+msgstr ""
+
+msgctxt "BfpackTTestBayesianOneSample|"
+msgid "Hypothesis Test"
+msgstr ""
+
+msgctxt "BfpackTTestBayesianOneSample|"
+msgid "Equal vs. not equal"
+msgstr ""
+
+msgctxt "BfpackTTestBayesianOneSample|"
+msgid "Equal vs. bigger"
+msgstr ""
+
+msgctxt "BfpackTTestBayesianOneSample|"
+msgid "Equal vs. smaller"
+msgstr ""
+
+msgctxt "BfpackTTestBayesianOneSample|"
+msgid "Bigger vs. smaller"
+msgstr ""
+
+msgctxt "BfpackTTestBayesianOneSample|"
+msgid "Equal vs. bigger vs. smaller"
+msgstr ""
+
+msgctxt "BfpackTTestBayesianOneSample|"
+msgid "Bayes Factor"
+msgstr ""
+
+msgctxt "BfpackTTestBayesianOneSample|"
+msgid "BF₀₁: Equal vs. other"
+msgstr ""
+
+msgctxt "BfpackTTestBayesianOneSample|"
+msgid "BF₁₀: Other vs. equal"
+msgstr ""
+
+#, fuzzy
+msgctxt "BfpackTTestBayesianOneSample|"
+msgid "Additional Options"
+msgstr "Ek seçenekler"
+
+#, fuzzy
+msgctxt "BfpackTTestBayesianOneSample|"
+msgid "Seed"
+msgstr "Başlangıç sayısı"
+
+msgctxt "BfpackTTestBayesianOneSample|"
+msgid "Fraction"
+msgstr ""
+
+#, fuzzy
+msgctxt "BfpackTTestBayesianOneSample|"
+msgid "Tables"
+msgstr "Tablolar"
+
+#, fuzzy
+msgctxt "BfpackTTestBayesianOneSample|"
+msgid "Descriptives"
+msgstr "Tanımsal"
+
+msgctxt "BfpackTTestBayesianOneSample|"
+msgid "Credible interval"
+msgstr ""
+
+#, fuzzy
+msgctxt "BfpackTTestBayesianOneSample|"
+msgid "Plots"
+msgstr "Grafikler"
+
+#, fuzzy
+msgctxt "BfpackTTestBayesianOneSample|"
+msgid "Posterior probabilities"
+msgstr "Sonraki olasılıklar"
+
+msgctxt "BfpackTTestBayesianOneSample|"
+msgid "Descriptives plots"
+msgstr ""
+
+msgctxt "BfpackTTestBayesianPairedSamples|"
+msgid "Pairs"
+msgstr ""
+
+msgctxt "BfpackTTestBayesianPairedSamples|"
+msgid "Hypothesis Test"
+msgstr ""
+
+msgctxt "BfpackTTestBayesianPairedSamples|"
+msgid "Equal vs. not equal"
+msgstr ""
+
+msgctxt "BfpackTTestBayesianPairedSamples|"
+msgid "Equal vs. bigger"
+msgstr ""
+
+msgctxt "BfpackTTestBayesianPairedSamples|"
+msgid "Equal vs. smaller"
+msgstr ""
+
+msgctxt "BfpackTTestBayesianPairedSamples|"
+msgid "Bigger vs. smaller"
+msgstr ""
+
+msgctxt "BfpackTTestBayesianPairedSamples|"
+msgid "Equal vs. bigger vs. smaller"
+msgstr ""
+
+msgctxt "BfpackTTestBayesianPairedSamples|"
+msgid "Bayes Factor"
+msgstr ""
+
+msgctxt "BfpackTTestBayesianPairedSamples|"
+msgid "BF₀₁: Equal vs. other"
+msgstr ""
+
+msgctxt "BfpackTTestBayesianPairedSamples|"
+msgid "BF₁₀: Other vs. equal"
+msgstr ""
+
+#, fuzzy
+msgctxt "BfpackTTestBayesianPairedSamples|"
+msgid "Additional Options"
+msgstr "Ek seçenekler"
+
+#, fuzzy
+msgctxt "BfpackTTestBayesianPairedSamples|"
+msgid "Seed"
+msgstr "Başlangıç sayısı"
+
+msgctxt "BfpackTTestBayesianPairedSamples|"
+msgid "Fraction"
+msgstr ""
+
+#, fuzzy
+msgctxt "BfpackTTestBayesianPairedSamples|"
+msgid "Tables"
+msgstr "Tablolar"
+
+#, fuzzy
+msgctxt "BfpackTTestBayesianPairedSamples|"
+msgid "Descriptives"
+msgstr "Tanımsal"
+
+msgctxt "BfpackTTestBayesianPairedSamples|"
+msgid "Credible interval"
+msgstr ""
+
+#, fuzzy
+msgctxt "BfpackTTestBayesianPairedSamples|"
+msgid "Plots"
+msgstr "Grafikler"
+
+#, fuzzy
+msgctxt "BfpackTTestBayesianPairedSamples|"
+msgid "Posterior probabilities"
+msgstr "Sonraki olasılıklar"
+
+msgctxt "BfpackTTestBayesianPairedSamples|"
+msgid "Descriptives plots"
+msgstr ""

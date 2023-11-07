@@ -1,0 +1,576 @@
+msgid ""
+msgstr ""
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"X-Language: ja\n"
+"X-Qt-Contexts: true\n"
+
+msgctxt "Description|"
+msgid "Bfpack"
+msgstr "Bfpack(ベイズ情報仮説評価)"
+
+msgctxt "Description|"
+msgid ""
+"A module for computing approximated adjusted fractional Bayes factors for "
+"equality, inequality, and about equality constrained hypotheses."
+msgstr ""
+"等式、不等式、および等値制約のある仮説について、近似的に調整されたフラクショ"
+"ナル・ベイズファクターを計算するモジュール."
+
+msgctxt "BfpackAncovaBayesian|"
+msgid "Dependent Variable"
+msgstr "従属変数"
+
+msgctxt "BfpackAncovaBayesian|"
+msgid "Fixed Factors"
+msgstr "固定要因"
+
+msgctxt "BfpackAncovaBayesian|"
+msgid "Covariates"
+msgstr "共変量"
+
+msgctxt "BfpackAncovaBayesian|"
+msgid "Tables"
+msgstr "表"
+
+msgctxt "BfpackAncovaBayesian|"
+msgid "Bayes factor matrix"
+msgstr "ベイズファクター行列"
+
+msgctxt "BfpackAncovaBayesian|"
+msgid "Coefficients"
+msgstr "係数"
+
+msgctxt "BfpackAncovaBayesian|"
+msgid "Credible interval"
+msgstr "信用区間"
+
+msgctxt "BfpackAncovaBayesian|"
+msgid "Plots"
+msgstr "プロット"
+
+msgctxt "BfpackAncovaBayesian|"
+msgid "Posterior probabilities"
+msgstr "事後確率"
+
+msgctxt "BfpackAncovaBayesian|"
+msgid "Adjusted means"
+msgstr "調整済み平均値"
+
+msgctxt "BfpackAncovaBayesian|"
+msgid "Additional Options"
+msgstr "追加オプション"
+
+msgctxt "BfpackAncovaBayesian|"
+msgid "Seed"
+msgstr "シード"
+
+msgctxt "BfpackAncovaBayesian|"
+msgid "Model Constraints"
+msgstr "モデルの制約"
+
+msgctxt "BfpackAncovaBayesian|"
+msgid ""
+"Place each hypothesis on a new line. For example:\n"
+"\n"
+"factorLow = factorMed = factorHigh\n"
+"factorLow < factorMed < factorHigh\n"
+"\n"
+"where factor is the factor name and Low/Med/High are the factor level "
+"names.\n"
+"Read the help file for further instructions."
+msgstr ""
+"各仮説を新しい行に配置します。例えば、以下のように。\n"
+"\n"
+"factorLow = factorMed = factorHigh\n"
+"factorLow < factorMed < factorHigh\n"
+"\n"
+"ここで、factorは因子名、Low/Med/Highは因子水準名です。\n"
+"詳しい説明は、ヘルプファイルをお読みください."
+
+msgctxt "BfpackAnovaBayesian|"
+msgid "Dependent Variable"
+msgstr "従属変数"
+
+msgctxt "BfpackAnovaBayesian|"
+msgid "Fixed Factors"
+msgstr "固定要因"
+
+msgctxt "BfpackAnovaBayesian|"
+msgid "Tables"
+msgstr "表"
+
+msgctxt "BfpackAnovaBayesian|"
+msgid "Bayes factor matrix"
+msgstr "ベイズファクター行列"
+
+msgctxt "BfpackAnovaBayesian|"
+msgid "Descriptives"
+msgstr "記述統計量"
+
+msgctxt "BfpackAnovaBayesian|"
+msgid "Credible interval"
+msgstr "信用区間"
+
+msgctxt "BfpackAnovaBayesian|"
+msgid "Plots"
+msgstr "プロット"
+
+msgctxt "BfpackAnovaBayesian|"
+msgid "Posterior probabilities"
+msgstr "事後確率"
+
+msgctxt "BfpackAnovaBayesian|"
+msgid "Descriptives plot"
+msgstr "記述統計量プロット"
+
+msgctxt "BfpackAnovaBayesian|"
+msgid "Additional Options"
+msgstr "追加オプション"
+
+msgctxt "BfpackAnovaBayesian|"
+msgid "Seed"
+msgstr "シード"
+
+msgctxt "BfpackAnovaBayesian|"
+msgid "Model Constraints"
+msgstr "モデルの制約"
+
+msgctxt "BfpackAnovaBayesian|"
+msgid ""
+"Place each hypothesis on a new line. For example:\n"
+"\n"
+"factorLow = factorMed = factorHigh\n"
+"factorLow < factorMed < factorHigh\n"
+"\n"
+"where factor is the factor name and Low/Med/High are the factor level "
+"names.\n"
+"Read the help file for further instructions."
+msgstr ""
+"各仮説を新しい行に配置します。例えば、以下のように。\n"
+"\n"
+"factorLow = factorMed = factorHigh\n"
+"factorLow < factorMed < factorHigh\n"
+"\n"
+"ここで、factorは因子名、Low/Med/Highは因子水準名です。\n"
+"詳しい説明は、ヘルプファイルをお読みください."
+
+msgctxt "BfpackRegressionLinearBayesian|"
+msgid "Dependent Variable"
+msgstr "従属変数"
+
+msgctxt "BfpackRegressionLinearBayesian|"
+msgid "Covariates"
+msgstr "共変量"
+
+msgctxt "BfpackRegressionLinearBayesian|"
+msgid "Tables"
+msgstr "表"
+
+msgctxt "BfpackRegressionLinearBayesian|"
+msgid "Bayes factor matrix"
+msgstr "ベイズファクター行列"
+
+msgctxt "BfpackRegressionLinearBayesian|"
+msgid "Coefficients"
+msgstr "係数"
+
+msgctxt "BfpackRegressionLinearBayesian|"
+msgid "Credible interval"
+msgstr "信用区間"
+
+msgctxt "BfpackRegressionLinearBayesian|"
+msgid "Plots"
+msgstr "プロット"
+
+msgctxt "BfpackRegressionLinearBayesian|"
+msgid "Posterior probabilities"
+msgstr "事後確率"
+
+msgctxt "BfpackRegressionLinearBayesian|"
+msgid "Additional Options"
+msgstr "追加オプション"
+
+msgctxt "BfpackRegressionLinearBayesian|"
+msgid "Seed"
+msgstr "シード"
+
+msgctxt "BfpackRegressionLinearBayesian|"
+msgid "Model Constraints"
+msgstr "モデルの制約"
+
+msgctxt "BfpackRegressionLinearBayesian|"
+msgid ""
+"Place each hypothesis on a new line. For example:\n"
+"\n"
+"age = length = weight\n"
+"age < length < weight,\n"
+"\n"
+"where age, length and weight are the names of the predictors.\n"
+"Read the help file for further instructions."
+msgstr ""
+"各仮説を新しい行に配置します。例えば、以下のように。\n"
+"\n"
+"age = length = weight\n"
+"age < length < weight,\n"
+"\n"
+"ここで，age，length，weightは予測変数の名前です。\n"
+"詳しい説明はヘルプファイルをお読みください。"
+
+msgctxt "BfpackTTestBayesianIndependentSamples|"
+msgid "Dependent Variables"
+msgstr "従属変数"
+
+msgctxt "BfpackTTestBayesianIndependentSamples|"
+msgid "Grouping Variable"
+msgstr "グループ化変数"
+
+msgctxt "BfpackTTestBayesianIndependentSamples|"
+msgid "Hypothesis Test"
+msgstr "仮説検定"
+
+msgctxt "BfpackTTestBayesianIndependentSamples|"
+msgid "Equal vs. not equal"
+msgstr "等値 vs. 非等値"
+
+msgctxt "BfpackTTestBayesianIndependentSamples|"
+msgid "Equal vs. bigger"
+msgstr "等値 vs. より大きい"
+
+msgctxt "BfpackTTestBayesianIndependentSamples|"
+msgid "Equal vs. smaller"
+msgstr "等値 vs. より小さい"
+
+msgctxt "BfpackTTestBayesianIndependentSamples|"
+msgid "Bigger vs. smaller"
+msgstr "より大きい vs. より小さい"
+
+msgctxt "BfpackTTestBayesianIndependentSamples|"
+msgid "Equal vs. bigger vs. smaller"
+msgstr "等値 vs. より大きい vs. より小さい"
+
+msgctxt "BfpackTTestBayesianIndependentSamples|"
+msgid "Bayes Factor"
+msgstr "ベイズファクター"
+
+msgctxt "BfpackTTestBayesianIndependentSamples|"
+msgid "BF₀₁: Equal vs. other"
+msgstr "BF₀₁: 等値 vs. 他"
+
+msgctxt "BfpackTTestBayesianIndependentSamples|"
+msgid "BF₁₀: Other vs. equal"
+msgstr "BF₁₀: 他 vs. 等値"
+
+msgctxt "BfpackTTestBayesianIndependentSamples|"
+msgid "Additional Options"
+msgstr "追加オプション"
+
+msgctxt "BfpackTTestBayesianIndependentSamples|"
+msgid "Seed"
+msgstr "シード"
+
+msgctxt "BfpackTTestBayesianIndependentSamples|"
+msgid "Tables"
+msgstr "表"
+
+msgctxt "BfpackTTestBayesianIndependentSamples|"
+msgid "Descriptives"
+msgstr "記述統計量"
+
+msgctxt "BfpackTTestBayesianIndependentSamples|"
+msgid "Credible interval"
+msgstr "信用区間"
+
+msgctxt "BfpackTTestBayesianIndependentSamples|"
+msgid "Plots"
+msgstr "プロット"
+
+msgctxt "BfpackTTestBayesianIndependentSamples|"
+msgid "Posterior probabilities"
+msgstr "事後確率"
+
+msgctxt "BfpackTTestBayesianIndependentSamples|"
+msgid "Descriptives plots"
+msgstr "記述統計量プロット"
+
+msgctxt "BfpackTTestBayesianOneSample|"
+msgid "Variables"
+msgstr "変数"
+
+msgctxt "BfpackTTestBayesianOneSample|"
+msgid "Test value"
+msgstr "検定統計量"
+
+msgctxt "BfpackTTestBayesianOneSample|"
+msgid "Hypothesis Test"
+msgstr "仮説検定"
+
+msgctxt "BfpackTTestBayesianOneSample|"
+msgid "Equal vs. not equal"
+msgstr "等値 vs. 非等値"
+
+msgctxt "BfpackTTestBayesianOneSample|"
+msgid "Equal vs. bigger"
+msgstr "等値 vs. より大きい"
+
+msgctxt "BfpackTTestBayesianOneSample|"
+msgid "Equal vs. smaller"
+msgstr "等値 vs. より小さい"
+
+msgctxt "BfpackTTestBayesianOneSample|"
+msgid "Bigger vs. smaller"
+msgstr "より大きい vs. より小さい"
+
+msgctxt "BfpackTTestBayesianOneSample|"
+msgid "Equal vs. bigger vs. smaller"
+msgstr "等値 vs. より大きい vs. より小さい"
+
+msgctxt "BfpackTTestBayesianOneSample|"
+msgid "Bayes Factor"
+msgstr "ベイズファクター"
+
+msgctxt "BfpackTTestBayesianOneSample|"
+msgid "BF₀₁: Equal vs. other"
+msgstr "BF₀₁: 等値 vs. 他"
+
+msgctxt "BfpackTTestBayesianOneSample|"
+msgid "BF₁₀: Other vs. equal"
+msgstr "BF₁₀: 他 vs. 等値"
+
+msgctxt "BfpackTTestBayesianOneSample|"
+msgid "Additional Options"
+msgstr "追加オプション"
+
+msgctxt "BfpackTTestBayesianOneSample|"
+msgid "Seed"
+msgstr "シード"
+
+msgctxt "BfpackTTestBayesianOneSample|"
+msgid "Tables"
+msgstr "表"
+
+msgctxt "BfpackTTestBayesianOneSample|"
+msgid "Descriptives"
+msgstr "記述統計量"
+
+msgctxt "BfpackTTestBayesianOneSample|"
+msgid "Credible interval"
+msgstr "信用区間"
+
+msgctxt "BfpackTTestBayesianOneSample|"
+msgid "Plots"
+msgstr "プロット"
+
+msgctxt "BfpackTTestBayesianOneSample|"
+msgid "Posterior probabilities"
+msgstr "事後確率"
+
+msgctxt "BfpackTTestBayesianOneSample|"
+msgid "Descriptives plots"
+msgstr "記述統計量プロット"
+
+msgctxt "BfpackTTestBayesianPairedSamples|"
+msgid "Pairs"
+msgstr "対(Pairs)"
+
+msgctxt "BfpackTTestBayesianPairedSamples|"
+msgid "Hypothesis Test"
+msgstr "仮説検定"
+
+msgctxt "BfpackTTestBayesianPairedSamples|"
+msgid "Equal vs. not equal"
+msgstr "等値 vs. 非等値"
+
+msgctxt "BfpackTTestBayesianPairedSamples|"
+msgid "Equal vs. bigger"
+msgstr "等値 vs. より大きい"
+
+msgctxt "BfpackTTestBayesianPairedSamples|"
+msgid "Equal vs. smaller"
+msgstr "等値 vs. より小さい"
+
+msgctxt "BfpackTTestBayesianPairedSamples|"
+msgid "Bigger vs. smaller"
+msgstr "より大きい vs. より小さい"
+
+msgctxt "BfpackTTestBayesianPairedSamples|"
+msgid "Equal vs. bigger vs. smaller"
+msgstr "等値 vs. より大きい vs. より小さい"
+
+msgctxt "BfpackTTestBayesianPairedSamples|"
+msgid "Bayes Factor"
+msgstr "ベイズファクター"
+
+msgctxt "BfpackTTestBayesianPairedSamples|"
+msgid "BF₀₁: Equal vs. other"
+msgstr "BF₀₁: 等値 vs. 他"
+
+msgctxt "BfpackTTestBayesianPairedSamples|"
+msgid "BF₁₀: Other vs. equal"
+msgstr "BF₁₀: 他 vs. 等値"
+
+msgctxt "BfpackTTestBayesianPairedSamples|"
+msgid "Additional Options"
+msgstr "追加オプション"
+
+msgctxt "BfpackTTestBayesianPairedSamples|"
+msgid "Seed"
+msgstr "シード"
+
+msgctxt "BfpackTTestBayesianPairedSamples|"
+msgid "Tables"
+msgstr "表"
+
+msgctxt "BfpackTTestBayesianPairedSamples|"
+msgid "Descriptives"
+msgstr "記述統計量"
+
+msgctxt "BfpackTTestBayesianPairedSamples|"
+msgid "Credible interval"
+msgstr "信用区間"
+
+msgctxt "BfpackTTestBayesianPairedSamples|"
+msgid "Plots"
+msgstr "プロット"
+
+msgctxt "BfpackTTestBayesianPairedSamples|"
+msgid "Posterior probabilities"
+msgstr "事後確率"
+
+msgctxt "BfpackTTestBayesianPairedSamples|"
+msgid "Descriptives plots"
+msgstr "記述統計量プロット"
+
+msgctxt "BfpackAncovaBayesian|"
+msgid "Fraction"
+msgstr "Fraction(比)"
+
+msgctxt "BfpackAnovaBayesian|"
+msgid "Fraction"
+msgstr "Fraction(比)"
+
+msgctxt "BfpackRegressionLinearBayesian|"
+msgid "Fraction"
+msgstr "Fraction(比)"
+
+msgctxt "BfpackRegressionLinearBayesian|"
+msgid "Standardize coefficients"
+msgstr "標準化係数"
+
+msgctxt "BfpackSemBayesian|"
+msgid "Model Options"
+msgstr "モデルオプション"
+
+msgctxt "BfpackSemBayesian|"
+msgid "Factor scaling"
+msgstr "因子のスケーリング"
+
+msgctxt "BfpackSemBayesian|"
+msgid "Factor variance"
+msgstr "因子の分散"
+
+msgctxt "BfpackSemBayesian|"
+msgid "Factor loading"
+msgstr "因子負荷量"
+
+msgctxt "BfpackSemBayesian|"
+msgid "Grouping variable"
+msgstr "グループ化変数"
+
+msgctxt "BfpackSemBayesian|"
+msgid "Tables"
+msgstr "表"
+
+msgctxt "BfpackSemBayesian|"
+msgid "Coefficients"
+msgstr "係数"
+
+msgctxt "BfpackSemBayesian|"
+msgid "Credible interval"
+msgstr "信用区間"
+
+msgctxt "BfpackSemBayesian|"
+msgid "Plots"
+msgstr "プロット"
+
+msgctxt "BfpackSemBayesian|"
+msgid "Path diagram"
+msgstr "パス図"
+
+msgctxt "BfpackSemBayesian|"
+msgid "Show parameter estimates"
+msgstr "パラメータ推定値を表示する"
+
+msgctxt "BfpackSemBayesian|"
+msgid "Show legend"
+msgstr "凡例を表示する"
+
+msgctxt "BfpackSemBayesian|"
+msgid "Additional Options"
+msgstr "追加オプション"
+
+msgctxt "BfpackSemBayesian|"
+msgid "Seed"
+msgstr "シード"
+
+msgctxt "BfpackSemBayesian|"
+msgid "Fraction"
+msgstr "Fraction(比)"
+
+msgctxt "BfpackSemBayesian|"
+msgid "Standardize coefficients"
+msgstr "標準化係数"
+
+msgctxt "BfpackSemBayesian|"
+msgid "Bayes factor matrix"
+msgstr "ベイズファクター行列"
+
+msgctxt "BfpackSemBayesian|"
+msgid "Posterior probabilities"
+msgstr "事後確率"
+
+msgctxt "BfpackSemBayesian|"
+msgid "Model Constraints"
+msgstr "モデルの制約"
+
+msgctxt "BfpackSemBayesian|"
+msgid ""
+"Hypotheses can be formulated using the parameter names that appear if the "
+"'Coefficients' box is ticked.\n"
+"Do NOT use spaces in the parameter names. Place each hypothesis on a new "
+"line. For example:\n"
+"\n"
+"A=~x1 = A=~x2 = A=~x3 = A=~x4\n"
+"A=~x1 > A=~x2 > A=~x3 = A=~x4\n"
+"A=~x1 > 0 & A=~x2 > 0 & A=~x3 > 0 & A=~x4 > 0\n"
+"\n"
+"Read the help file for further instructions about formulating hypotheses and "
+"what can and cannot be done\n"
+"with Bfpack Structural Equation Modeling."
+msgstr ""
+"'Coefficients'ボックスにチェックを入れると表示されるパラメータ名を使って仮説"
+"を立てることができます。\n"
+"パラメータ名にはスペースを入れないでください。各仮説を改行してください。例え"
+"ば、以下のようになります。\n"
+"\n"
+"A=~x1 = A=~x2 = A=~x3 = A=~x4\n"
+"A=~x1 > A=~x2 > A=~x3 = A=~x4\n"
+"A=~x1 > 0 & A=~x2 > 0 & A=~x3 > 0 & A=~x4 > 0\n"
+"\n"
+"仮説の立て方、Bfpack Structural Equation Modelingでできること、できないことにつ"
+"いての詳しい説明は、\n"
+"ヘルプファイルをお読みください."
+
+msgctxt "BfpackTTestBayesianIndependentSamples|"
+msgid "Fraction"
+msgstr "Fraction(比)"
+
+msgctxt "BfpackTTestBayesianOneSample|"
+msgid "Fraction"
+msgstr "Fraction(比)"
+
+msgctxt "BfpackTTestBayesianPairedSamples|"
+msgid "Fraction"
+msgstr "Fraction(比)"

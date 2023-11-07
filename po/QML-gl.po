@@ -1,0 +1,580 @@
+msgid ""
+msgstr ""
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Language: gl_ES\n"
+"X-Source-Language: C\n"
+"X-Qt-Contexts: true\n"
+
+msgctxt "BfpackAnovaBayesian|"
+msgid "Fixed Factors"
+msgstr "Factores Fixos"
+
+msgctxt "BfpackTTestBayesianPairedSamples|"
+msgid "Seed"
+msgstr "Semente"
+
+msgctxt "Description|"
+msgid "Bfpack"
+msgstr "BAIN"
+
+msgctxt "Description|"
+msgid ""
+"A module for computing approximated adjusted fractional Bayes factors for "
+"equality, inequality, and about equality constrained hypotheses."
+msgstr ""
+"Un módulo para calcular factores de Bayes fraccionais axustados "
+"aproximadamente para a igualdade, a desigualdade e sobre hipóteses con "
+"restricións de igualdade."
+
+msgctxt "BfpackAnovaBayesian|"
+msgid ""
+"Place each hypothesis on a new line. For example:\n"
+"\n"
+"factorLow = factorMed = factorHigh\n"
+"factorLow < factorMed < factorHigh\n"
+"\n"
+"where factor is the factor name and Low/Med/High are the factor level "
+"names.\n"
+"Read the help file for further instructions."
+msgstr ""
+"Coloca cada hipótese nunha nova liña. Por exemplo:\n"
+"\n"
+"FactorBaixo = FactorMedio = FactorAlto\n"
+"FactorBaixo < FactorMedio < FactorAlto\n"
+"\n"
+"onde Factor é o nome do factor e Baixo/Medio/Alto son os nomes dos niveis "
+"dos factores.\n"
+"Consulta o ficheiro de axuda para ver outras instrucións."
+
+msgctxt "BfpackRegressionLinearBayesian|"
+msgid "Bayes factor matrix"
+msgstr "Matriz de factores de Bayes"
+
+msgctxt "BfpackTTestBayesianPairedSamples|"
+msgid "Posterior probabilities"
+msgstr "Probabilidades posteriores"
+
+msgctxt "BfpackRegressionLinearBayesian|"
+msgid "Model Constraints"
+msgstr "Restricións do modelo"
+
+msgctxt "BfpackAncovaBayesian|"
+msgid "Adjusted means"
+msgstr "Medias axustadas"
+
+msgctxt "BfpackRegressionLinearBayesian|"
+msgid ""
+"Place each hypothesis on a new line. For example:\n"
+"\n"
+"age = length = weight\n"
+"age < length < weight,\n"
+"\n"
+"where age, length and weight are the names of the predictors.\n"
+"Read the help file for further instructions."
+msgstr ""
+"Coloca cada hipótese nunha nova liña. Por exemplo:\n"
+"\n"
+"Idade = Longura = Peso\n"
+"Idade < Longura < Peso\n"
+"\n"
+"onde Idade , Longura e Peso son os nomes dos preditores.\n"
+"Consulta o ficheiro de axuda para ver outras instrucións."
+
+msgctxt "BfpackTTestBayesianPairedSamples|"
+msgid "Equal vs. bigger"
+msgstr "Igual vs. Maior"
+
+msgctxt "BfpackTTestBayesianPairedSamples|"
+msgid "BF₁₀: Other vs. equal"
+msgstr "FB₁₀: Outro vs. Igual"
+
+msgctxt "BfpackTTestBayesianPairedSamples|"
+msgid "BF₀₁: Equal vs. other"
+msgstr "FB₀₁: Igual vs. Outro"
+
+msgctxt "BfpackTTestBayesianPairedSamples|"
+msgid "Hypothesis Test"
+msgstr "Proba de Hipóteses"
+
+msgctxt "BfpackTTestBayesianPairedSamples|"
+msgid "Equal vs. not equal"
+msgstr "Igual vs. Non igual"
+
+msgctxt "BfpackTTestBayesianPairedSamples|"
+msgid "Equal vs. smaller"
+msgstr "Igual vs. Menor"
+
+msgctxt "BfpackTTestBayesianPairedSamples|"
+msgid "Bigger vs. smaller"
+msgstr "Maior vs. Menor"
+
+msgctxt "BfpackTTestBayesianPairedSamples|"
+msgid "Equal vs. bigger vs. smaller"
+msgstr "Igual vs. Maior vs. Menor"
+
+msgctxt "BfpackTTestBayesianPairedSamples|"
+msgid "Pairs"
+msgstr "Pares"
+
+msgctxt "BfpackAncovaBayesian|"
+msgid "Dependent Variable"
+msgstr "Variable Dependente"
+
+msgctxt "BfpackAncovaBayesian|"
+msgid "Fixed Factors"
+msgstr "Factores Fixos"
+
+msgctxt "BfpackAncovaBayesian|"
+msgid "Covariates"
+msgstr "Covariantes"
+
+msgctxt "BfpackAncovaBayesian|"
+msgid "Tables"
+msgstr "Táboas"
+
+msgctxt "BfpackAncovaBayesian|"
+msgid "Bayes factor matrix"
+msgstr "Matriz de factores de Bayes"
+
+msgctxt "BfpackAncovaBayesian|"
+msgid "Coefficients"
+msgstr "Coeficientes"
+
+msgctxt "BfpackAncovaBayesian|"
+msgid "Credible interval"
+msgstr "Intervalo de credibilidade"
+
+msgctxt "BfpackAncovaBayesian|"
+msgid "Plots"
+msgstr "Gráficas"
+
+msgctxt "BfpackAncovaBayesian|"
+msgid "Posterior probabilities"
+msgstr "Probabilidades posteriores"
+
+msgctxt "BfpackAncovaBayesian|"
+msgid "Additional Options"
+msgstr "Opcións Adicionais"
+
+msgctxt "BfpackAncovaBayesian|"
+msgid "Seed"
+msgstr "Semente"
+
+msgctxt "BfpackAncovaBayesian|"
+msgid "Fraction"
+msgstr "Fracción"
+
+msgctxt "BfpackAncovaBayesian|"
+msgid "Model Constraints"
+msgstr "Restricións do Modelo"
+
+msgctxt "BfpackAncovaBayesian|"
+msgid ""
+"Place each hypothesis on a new line. For example:\n"
+"\n"
+"factorLow = factorMed = factorHigh\n"
+"factorLow < factorMed < factorHigh\n"
+"\n"
+"where factor is the factor name and Low/Med/High are the factor level "
+"names.\n"
+"Read the help file for further instructions."
+msgstr ""
+"Coloca cada hipótese nunha nova liña. Por exemplo:\n"
+"\n"
+"FactorBaixo = FactorMedio = FactorAlto\n"
+"FactorBaixo < FactorMedio < FactorAlto\n"
+"\n"
+"onde Factor é o nome do factor e Baixo/Medio/Alto son os nomes dos niveis "
+"dos factores.\n"
+"Consulta o ficheiro de axuda para ver outras instrucións."
+
+msgctxt "BfpackAnovaBayesian|"
+msgid "Dependent Variable"
+msgstr "Variable Dependente"
+
+msgctxt "BfpackAnovaBayesian|"
+msgid "Tables"
+msgstr "Táboas"
+
+msgctxt "BfpackAnovaBayesian|"
+msgid "Bayes factor matrix"
+msgstr "Matriz de factores de Bayes"
+
+msgctxt "BfpackAnovaBayesian|"
+msgid "Descriptives"
+msgstr "Descritivos"
+
+msgctxt "BfpackAnovaBayesian|"
+msgid "Credible interval"
+msgstr "Intervalo de credibilidade"
+
+msgctxt "BfpackAnovaBayesian|"
+msgid "Plots"
+msgstr "Gráficas"
+
+msgctxt "BfpackAnovaBayesian|"
+msgid "Posterior probabilities"
+msgstr "Probabilidades posteriores"
+
+msgctxt "BfpackAnovaBayesian|"
+msgid "Descriptives plot"
+msgstr "Gráfica dos descritivos"
+
+msgctxt "BfpackAnovaBayesian|"
+msgid "Additional Options"
+msgstr "Opcións Adicionais"
+
+msgctxt "BfpackAnovaBayesian|"
+msgid "Seed"
+msgstr "Semente"
+
+msgctxt "BfpackAnovaBayesian|"
+msgid "Fraction"
+msgstr "Fracción"
+
+msgctxt "BfpackAnovaBayesian|"
+msgid "Model Constraints"
+msgstr "Restricións do Modelo"
+
+msgctxt "BfpackRegressionLinearBayesian|"
+msgid "Dependent Variable"
+msgstr "Variable Dependente"
+
+msgctxt "BfpackRegressionLinearBayesian|"
+msgid "Covariates"
+msgstr "Covariantes"
+
+msgctxt "BfpackRegressionLinearBayesian|"
+msgid "Tables"
+msgstr "Táboas"
+
+msgctxt "BfpackRegressionLinearBayesian|"
+msgid "Coefficients"
+msgstr "Coeficientes"
+
+msgctxt "BfpackRegressionLinearBayesian|"
+msgid "Credible interval"
+msgstr "Intervalo de credibilidade"
+
+msgctxt "BfpackRegressionLinearBayesian|"
+msgid "Plots"
+msgstr "Gráficas"
+
+msgctxt "BfpackRegressionLinearBayesian|"
+msgid "Posterior probabilities"
+msgstr "Probabilidades posteriores"
+
+msgctxt "BfpackRegressionLinearBayesian|"
+msgid "Additional Options"
+msgstr "Opcións Adicionais"
+
+msgctxt "BfpackRegressionLinearBayesian|"
+msgid "Seed"
+msgstr "Semente"
+
+msgctxt "BfpackRegressionLinearBayesian|"
+msgid "Fraction"
+msgstr "Fracción"
+
+msgctxt "BfpackRegressionLinearBayesian|"
+msgid "Standardize coefficients"
+msgstr "Tipificar os coeficientes"
+
+msgctxt "BfpackSemBayesian|"
+msgid "Model Options"
+msgstr "Opcións do Modelo"
+
+msgctxt "BfpackSemBayesian|"
+msgid "Factor scaling"
+msgstr "Escalado de factores"
+
+msgctxt "BfpackSemBayesian|"
+msgid "Factor variance"
+msgstr "Varianza do factor"
+
+msgctxt "BfpackSemBayesian|"
+msgid "Factor loading"
+msgstr "Carga do factor"
+
+msgctxt "BfpackSemBayesian|"
+msgid "Grouping variable"
+msgstr "Variable de agrupamento"
+
+msgctxt "BfpackSemBayesian|"
+msgid "Tables"
+msgstr "Táboas"
+
+msgctxt "BfpackSemBayesian|"
+msgid "Coefficients"
+msgstr "Coeficientes"
+
+msgctxt "BfpackSemBayesian|"
+msgid "Credible interval"
+msgstr "Intervalo de credibilidade"
+
+msgctxt "BfpackSemBayesian|"
+msgid "Plots"
+msgstr "Gráficas"
+
+msgctxt "BfpackSemBayesian|"
+msgid "Path diagram"
+msgstr "Diagrama de ruta"
+
+msgctxt "BfpackSemBayesian|"
+msgid "Show parameter estimates"
+msgstr "Amosar as estimacións dos parámetros"
+
+msgctxt "BfpackSemBayesian|"
+msgid "Show legend"
+msgstr "Amosar a lenda"
+
+msgctxt "BfpackSemBayesian|"
+msgid "Additional Options"
+msgstr "Opcións Adicionais"
+
+msgctxt "BfpackSemBayesian|"
+msgid "Seed"
+msgstr "Semente"
+
+msgctxt "BfpackSemBayesian|"
+msgid "Fraction"
+msgstr "Fracción"
+
+msgctxt "BfpackSemBayesian|"
+msgid "Standardize coefficients"
+msgstr "Tipificar os coeficientes"
+
+msgctxt "BfpackSemBayesian|"
+msgid "Bayes factor matrix"
+msgstr "Matriz de factores de Bayes"
+
+msgctxt "BfpackSemBayesian|"
+msgid "Posterior probabilities"
+msgstr "Probabilidades posteriores"
+
+msgctxt "BfpackSemBayesian|"
+msgid "Model Constraints"
+msgstr "Restricións do Modelo"
+
+msgctxt "BfpackSemBayesian|"
+msgid ""
+"Hypotheses can be formulated using the parameter names that appear if the "
+"'Coefficients' box is ticked.\n"
+"Do NOT use spaces in the parameter names. Place each hypothesis on a new "
+"line. For example:\n"
+"\n"
+"A=~x1 = A=~x2 = A=~x3 = A=~x4\n"
+"A=~x1 > A=~x2 > A=~x3 = A=~x4\n"
+"A=~x1 > 0 & A=~x2 > 0 & A=~x3 > 0 & A=~x4 > 0\n"
+"\n"
+"Read the help file for further instructions about formulating hypotheses and "
+"what can and cannot be done\n"
+"with Bfpack Structural Equation Modeling."
+msgstr ""
+"As hipóteses poden enunciarse utilizando os nomes dos parámetros que "
+"aparecen cando se marca o cadriño 'Coeficientes'.\n"
+"NON utilices espazos nos nomes dos parámetros e coloca cada hipótese nunha "
+"liña nova. Por exemplo:\n"
+"\n"
+"A=~x1 = A=~x2 = A=~x3 = A=~x4\n"
+"A=~x1 > A=~x2 > A=~x3 = A=~x4\n"
+"A=~x1 > 0 & A=~x2 > 0 & A=~x3 > 0 & A=~x4 > 0\n"
+"\n"
+"Le o ficheiro de axuda para obter instrucións adicionais sobre o enunciado "
+"de hipóteses, e sobre o que se pode e non se pode facer\n"
+"cos Modelos de Ecuacións Estruturais de BAIN."
+
+msgctxt "BfpackTTestBayesianIndependentSamples|"
+msgid "Dependent Variables"
+msgstr "Variables Dependentes"
+
+msgctxt "BfpackTTestBayesianIndependentSamples|"
+msgid "Grouping Variable"
+msgstr "Variable de Agrupamento"
+
+msgctxt "BfpackTTestBayesianIndependentSamples|"
+msgid "Hypothesis Test"
+msgstr "Proba de Hipóteses"
+
+msgctxt "BfpackTTestBayesianIndependentSamples|"
+msgid "Equal vs. not equal"
+msgstr "Igual vs. Non igual"
+
+msgctxt "BfpackTTestBayesianIndependentSamples|"
+msgid "Equal vs. bigger"
+msgstr "Igual vs. Maior"
+
+msgctxt "BfpackTTestBayesianIndependentSamples|"
+msgid "Equal vs. smaller"
+msgstr "Igual vs. Menor"
+
+msgctxt "BfpackTTestBayesianIndependentSamples|"
+msgid "Bigger vs. smaller"
+msgstr "Maior vs. Menor"
+
+msgctxt "BfpackTTestBayesianIndependentSamples|"
+msgid "Equal vs. bigger vs. smaller"
+msgstr "Igual vs. Maior vs. Menor"
+
+msgctxt "BfpackTTestBayesianIndependentSamples|"
+msgid "Bayes Factor"
+msgstr "Factor de Bayes"
+
+msgctxt "BfpackTTestBayesianIndependentSamples|"
+msgid "BF₀₁: Equal vs. other"
+msgstr "FB₀₁: Igual vs. Outro"
+
+msgctxt "BfpackTTestBayesianIndependentSamples|"
+msgid "BF₁₀: Other vs. equal"
+msgstr "FB₁₀: Outro vs. Igual"
+
+msgctxt "BfpackTTestBayesianIndependentSamples|"
+msgid "Additional Options"
+msgstr "Opcións Adicionais"
+
+msgctxt "BfpackTTestBayesianIndependentSamples|"
+msgid "Seed"
+msgstr "Semente"
+
+msgctxt "BfpackTTestBayesianIndependentSamples|"
+msgid "Fraction"
+msgstr "Fracción"
+
+msgctxt "BfpackTTestBayesianIndependentSamples|"
+msgid "Tables"
+msgstr "Táboas"
+
+msgctxt "BfpackTTestBayesianIndependentSamples|"
+msgid "Descriptives"
+msgstr "Descritivos"
+
+msgctxt "BfpackTTestBayesianIndependentSamples|"
+msgid "Credible interval"
+msgstr "Intervalo de credibilidade"
+
+msgctxt "BfpackTTestBayesianIndependentSamples|"
+msgid "Plots"
+msgstr "Gráficas"
+
+msgctxt "BfpackTTestBayesianIndependentSamples|"
+msgid "Posterior probabilities"
+msgstr "Probabilidades posteriores"
+
+msgctxt "BfpackTTestBayesianIndependentSamples|"
+msgid "Descriptives plots"
+msgstr "Gráficas descritivas"
+
+msgctxt "BfpackTTestBayesianOneSample|"
+msgid "Variables"
+msgstr "Variables"
+
+msgctxt "BfpackTTestBayesianOneSample|"
+msgid "Test value"
+msgstr "Probar valor"
+
+msgctxt "BfpackTTestBayesianOneSample|"
+msgid "Hypothesis Test"
+msgstr "Proba de Hipóteses"
+
+msgctxt "BfpackTTestBayesianOneSample|"
+msgid "Equal vs. not equal"
+msgstr "Igual vs. Non igual"
+
+msgctxt "BfpackTTestBayesianOneSample|"
+msgid "Equal vs. bigger"
+msgstr "Igual vs. Maior"
+
+msgctxt "BfpackTTestBayesianOneSample|"
+msgid "Equal vs. smaller"
+msgstr "Igual vs. Menor"
+
+msgctxt "BfpackTTestBayesianOneSample|"
+msgid "Bigger vs. smaller"
+msgstr "Maior vs. Menor"
+
+msgctxt "BfpackTTestBayesianOneSample|"
+msgid "Equal vs. bigger vs. smaller"
+msgstr "Igual vs. Maior vs. Menor"
+
+msgctxt "BfpackTTestBayesianOneSample|"
+msgid "Bayes Factor"
+msgstr "Factor de Bayes"
+
+msgctxt "BfpackTTestBayesianOneSample|"
+msgid "BF₀₁: Equal vs. other"
+msgstr "FB₀₁: Igual vs. Outro"
+
+msgctxt "BfpackTTestBayesianOneSample|"
+msgid "BF₁₀: Other vs. equal"
+msgstr "FB₁₀: Outro vs. Igual"
+
+msgctxt "BfpackTTestBayesianOneSample|"
+msgid "Additional Options"
+msgstr "Opcións Adicionais"
+
+msgctxt "BfpackTTestBayesianOneSample|"
+msgid "Seed"
+msgstr "Semente"
+
+msgctxt "BfpackTTestBayesianOneSample|"
+msgid "Fraction"
+msgstr "Fracción"
+
+msgctxt "BfpackTTestBayesianOneSample|"
+msgid "Tables"
+msgstr "Táboas"
+
+msgctxt "BfpackTTestBayesianOneSample|"
+msgid "Descriptives"
+msgstr "Descritivos"
+
+msgctxt "BfpackTTestBayesianOneSample|"
+msgid "Credible interval"
+msgstr "Intervalo de credibilidade"
+
+msgctxt "BfpackTTestBayesianOneSample|"
+msgid "Plots"
+msgstr "Gráficas"
+
+msgctxt "BfpackTTestBayesianOneSample|"
+msgid "Posterior probabilities"
+msgstr "Probabilidades posteriores"
+
+msgctxt "BfpackTTestBayesianOneSample|"
+msgid "Descriptives plots"
+msgstr "Gráficas descritivas"
+
+msgctxt "BfpackTTestBayesianPairedSamples|"
+msgid "Bayes Factor"
+msgstr "Factor de Bayes"
+
+msgctxt "BfpackTTestBayesianPairedSamples|"
+msgid "Additional Options"
+msgstr "Opcións Adicionais"
+
+msgctxt "BfpackTTestBayesianPairedSamples|"
+msgid "Fraction"
+msgstr "Fracción"
+
+msgctxt "BfpackTTestBayesianPairedSamples|"
+msgid "Tables"
+msgstr "Táboas"
+
+msgctxt "BfpackTTestBayesianPairedSamples|"
+msgid "Descriptives"
+msgstr "Descritivos"
+
+msgctxt "BfpackTTestBayesianPairedSamples|"
+msgid "Credible interval"
+msgstr "Intervalo de credibilidade"
+
+msgctxt "BfpackTTestBayesianPairedSamples|"
+msgid "Plots"
+msgstr "Gráficas"
+
+msgctxt "BfpackTTestBayesianPairedSamples|"
+msgid "Descriptives plots"
+msgstr "Gráficas descritivas"
