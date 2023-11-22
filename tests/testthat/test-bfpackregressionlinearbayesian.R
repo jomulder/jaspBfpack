@@ -79,7 +79,6 @@ options$covariates <- list("prenumb", "funumb", "peabody")
 options$bayesFactorMatrix <- TRUE
 options$descriptives <- TRUE
 options$seed <- 900
-options$fraction <- 2
 options$model <- "prenumb = funumb = peabody = 0;prenumb > 0 & funumb > 0 & peabody > 0"
 set.seed(1)
 results <- jaspTools::runAnalysis("BfpackRegressionLinearBayesian", "sesame.csv", options)
@@ -134,7 +133,6 @@ options$covariates <- list("prenumb", "funumb", "peabody")
 options$bayesFactorMatrix <- TRUE
 options$descriptives <- TRUE
 options$seed <- 900
-options$fraction <- 3
 options$standardized <- TRUE
 options$model <- "prenumb = funumb = peabody = 0;prenumb > 0 & funumb > 0 & peabody > 0"
 set.seed(1)

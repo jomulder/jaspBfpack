@@ -15,7 +15,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-BfpackAnovaBayesianInternal <- function(jaspResults, dataset, options, ...) {
+BfpackAnovaBayesian <- function(jaspResults, dataset, options, ...) {
 
   # What type of Bfpack analysis is being conducted?
   type <- "anova"
@@ -30,7 +30,7 @@ BfpackAnovaBayesianInternal <- function(jaspResults, dataset, options, ...) {
   .bfpackDataReady(dataList[["dataset"]], options, type)
 
   # Create a container for the results
-  bfpackContainer <- .bfpackGetContainer(jaspResults, deps = c("dependent", "fixedFactors", "model", "seed", "fraction"))
+  bfpackContainer <- .bfpackGetContainer(jaspResults, deps = c("dependent", "fixedFactors", "model", "seed"))
 
   # Create a legend containing the order constrained hypotheses
   .bfpackLegend(dataList[["dataset"]], options, type, jaspResults, position = 0)

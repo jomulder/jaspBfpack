@@ -15,7 +15,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-BfpackTTestBayesianOneSampleInternal <- function(jaspResults, dataset, options, ...) {
+BfpackTTestBayesianOneSample <- function(jaspResults, dataset, options, ...) {
 
   # What type of Bfpack analysis is being conducted?
   type <- "onesampleTTest"
@@ -30,7 +30,7 @@ BfpackTTestBayesianOneSampleInternal <- function(jaspResults, dataset, options, 
   .bfpackDataReady(dataset, options, type)
 
   # Create a container for the results
-  bfpackContainer <- .bfpackGetContainer(jaspResults, deps = c("testValue", "seed", "fraction"))
+  bfpackContainer <- .bfpackGetContainer(jaspResults, deps = c("testValue", "seed"))
 
   # Create a table containing the main analysis results
   .bfpackTestResultsTable(dataList[["dataset"]], options, bfpackContainer, dataList[["missing"]], ready, type, position = 1)

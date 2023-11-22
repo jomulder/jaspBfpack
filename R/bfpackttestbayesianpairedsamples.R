@@ -15,7 +15,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-BfpackTTestBayesianPairedSamplesInternal <- function(jaspResults, dataset, options, ...) {
+BfpackTTestBayesianPairedSamples <- function(jaspResults, dataset, options, ...) {
 
   # What type of Bfpack analysis is being conducted?
   type <- "pairedTTest"
@@ -30,7 +30,7 @@ BfpackTTestBayesianPairedSamplesInternal <- function(jaspResults, dataset, optio
   .bfpackDataReady(dataset, options, type)
 
   # Create a container for the results
-  bfpackContainer <- .bfpackGetContainer(jaspResults, deps = c("seed", "fraction"))
+  bfpackContainer <- .bfpackGetContainer(jaspResults, deps = c("seed"))
 
   # Create a table containing the main analysis results
   .bfpackTestResultsTable(dataList[["dataset"]], options, bfpackContainer, dataList[["missing"]], ready, type, position = 1)

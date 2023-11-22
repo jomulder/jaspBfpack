@@ -1,6 +1,4 @@
-##################
-### HELPERS ######
-##################
+############ HELPERS ##########
 
 # This is a temporary fix
 # TODO: remove it when R will solve this problem!
@@ -90,9 +88,9 @@ gettextf <- function(fmt, ..., domain = NULL)  {
   return(readList)
 }
 
-##################
-### Checks #######
-##################
+
+####### Checks #######
+
 
 # Check if current options allow for analysis
 .bfpackOptionsReady <- function(options, type, dataset = NULL) {
@@ -142,17 +140,14 @@ gettextf <- function(fmt, ..., domain = NULL)  {
   }
 }
 
-############################
-### CALLS TO BAIN PACKAGE ##
-############################
+###### CALLS TO BAIN PACKAGE ######
 
-# Call to bfpack for 't.test' objects (Welch t-test, Paired t-test, One sample t-test)
+# Call to bain for 't_test' objects (Welch t-test, Paired t-test, One sample t-test)
 .bfpackTTestRaw <- function(options, x, y = NULL, nu = 0, type = 1, paired = FALSE) {
-  fraction <- options[["fraction"]]
 
   if (is.null(y) && !paired) {
     x <- x[!is.na(x)] # Here we remove the missing values per dependent variable
-    test <- BFpack::t_test(x = x)
+    test <- bain::t_test(x = x)
     hypothesis <- switch(type,
       "1" = paste0("x=", nu),
       "2" = paste0("x=", nu, "; x>", nu),
@@ -163,18 +158,18 @@ gettextf <- function(fmt, ..., domain = NULL)  {
   }
 
   if (!is.null(y) && !paired) {
-    test <- BFpack::t_test(x = x, y = y, paired = FALSE, var.equal = FALSE)
+    test <- bain::t_test(x = x, y = y, paired = FALSE, var.equal = FALSE)
     hypothesis <- switch(type,
-      "1" = "x=y",
-      "2" = "x=y; x>y",
-      "3" = "x=y; x<y",
-      "4" = "x>y; x<y",
-      "5" = "x=y; x>y; x<y"
+      "1" = "difference=0",
+      "2" = "difference=0; difference>0",
+      "3" = "difference=0; difference<0",
+      "4" = "difference>0; difference<0",
+      "5" = "difference=0; difference>0; difference<0"
     )
   }
 
   if (!is.null(y) && paired) {
-    test <- BFpack::t_test(x = x, y = y, paired = TRUE)
+    test <- bain::t_test(x = x, y = y, paired = TRUE)
     hypothesis <- switch(type,
       "1" = "difference=0",
       "2" = "difference=0;difference>0",
@@ -184,14 +179,14 @@ gettextf <- function(fmt, ..., domain = NULL)  {
     )
   }
 
-  bfpackResult <- BFpack::BF(x = test, hypothesis = hypothesis, fraction = fraction)
+  bfpackResult <- BFpack::BF(x = test, hypothesis = hypothesis)
+  print(bfpackResult)
   return(bfpackResult)
 }
 
 # Call to bfpack for 'lm' objects (ANOVA, ANCOVA, Regression)
 .bfpackRegressionRaw <- function(dataset, options, type) {
   dependent <- options[["dependent"]]
-  fraction <- options[["fraction"]] # This has to be an object otherwise bfpack does not like it
   standardized <- options[["standardized"]]
   hypothesis <- NULL
   if (options[["model"]] != "") {
@@ -236,13 +231,12 @@ gettextf <- function(fmt, ..., domain = NULL)  {
     }
   }
 
-  bfpackResult <- BFpack::BF(x = fit, hypothesis = hypothesis, fraction = fraction, standardize = standardized)
+  bfpackResult <- BFpack::BF(x = fit, hypothesis = hypothesis, standardize = standardized)
   return(bfpackResult)
 }
 
 # Call to bfpack for 'lavaan' objects (SEM)
 .bfpackSemRaw <- function(dataset, options, bfpackContainer, ready) {
-  fraction <- options[["fraction"]] # This has to be an object otherwise bfpack does not like it
   standardized <- options[["standardized"]]
   grouping <- NULL
   if (options[["fixedFactors"]] != "") {
@@ -282,13 +276,11 @@ gettextf <- function(fmt, ..., domain = NULL)  {
     hypothesis <- encodeColNames(.bfpackCleanModelInput(options[["model"]]))
   }
 
-  bfpackResult <- BFpack::BF(x = fit, hypothesis = hypothesis, fraction = fraction, standardize = standardized)
+  bfpackResult <- BFpack::BF(x = fit, hypothesis = hypothesis, standardize = standardized)
   return(bfpackResult)
 }
 
-############################################
-### EXTRACTING AND STORING RESULTS ########
-############################################
+####### EXTRACTING AND STORING RESULTS ########
 
 .bfpackGetGeneralTestResults <- function(dataset, options, bfpackContainer, ready, type, variable = NULL, pair = NULL, testType = NULL) {
   set.seed(options[["seed"]])
@@ -438,9 +430,8 @@ gettextf <- function(fmt, ..., domain = NULL)  {
   }
 }
 
-##################
-### TABLES #######
-##################
+####### TABLES #######
+
 
 # Create a legend containing the order constrained hypotheses
 .bfpackLegend <- function(dataset, options, type, jaspResults, position) {
@@ -573,7 +564,7 @@ gettextf <- function(fmt, ..., domain = NULL)  {
     table$addColumnInfo(name = "BF", type = "number", title = gettext("BF.c"))
     table$addColumnInfo(name = "PMP1", type = "number", title = gettext("PMP a"))
     table$addColumnInfo(name = "PMP2", type = "number", title = gettext("PMP b"))
-	table$addColumnInfo(name = "PMP3", type = "number", title = gettext("PMP c"))
+	  table$addColumnInfo(name = "PMP3", type = "number", title = gettext("PMP c"))
     message <- gettext("BF.u denotes the Bayes factor of the hypothesis at hand versus the unconstrained hypothesis Hu. \
                         BF.c denotes the Bayes factor of the hypothesis at hand versus its complement. \
                         PMPa contains the posterior model probabilities of the hypotheses specified. \
@@ -949,6 +940,7 @@ gettextf <- function(fmt, ..., domain = NULL)  {
         table$addFootnote(message = gettext("The results for this variable were not computed."), colNames = "v", rowNames = variable)
       } else {
         bfpackSummary <- summary(bfpackResult, ci = options[["credibleInterval"]])
+
         N <- bfpackSummary[["n"]]
         mu <- bfpackSummary[["Estimate"]]
         CiLower <- bfpackSummary[["lb"]]
@@ -1047,9 +1039,8 @@ gettextf <- function(fmt, ..., domain = NULL)  {
   }
 }
 
-##################
-### PLOTS ########
-##################
+
+####### PLOTS ########
 
 # Create the posterior probability plots
 .bfpackPosteriorProbabilityPlot <- function(dataset, options, bfpackContainer, ready, type, position) {

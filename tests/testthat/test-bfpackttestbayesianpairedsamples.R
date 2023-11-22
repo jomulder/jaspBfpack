@@ -57,7 +57,7 @@ test_that("prenumb - postnumb plot matches", {
 test_that("Bfpack Paired Samples T-Test table results match", {
 	options <- jaspTools::analysisOptions("BfpackTTestBayesianPairedSamples")
 	options$seed <- 900
-	options$fraction <- 4
+
 	options$hypothesis <- "equalNotEqual"
 	options$bayesFactorType <- "BF01"
 	options$pairs <- list(list("postnumb", "prenumb"))
@@ -80,7 +80,7 @@ test_that("Bfpack Paired Samples T-Test table results match", {
 test_that("Bfpack Paired Samples T-Test table results match", {
 	options <- jaspTools::analysisOptions("BfpackTTestBayesianPairedSamples")
 	options$seed <- 900
-	options$fraction <- 4
+
 	options$hypothesis <- "equalBigger"
 	options$bayesFactorType <- "BF01"
 	options$pairs <- list(list("postnumb", "prenumb"))
@@ -103,7 +103,7 @@ test_that("Bfpack Paired Samples T-Test table results match", {
 test_that("Bfpack Paired Samples T-Test table results match", {
 	options <- jaspTools::analysisOptions("BfpackTTestBayesianPairedSamples")
 	options$seed <- 900
-	options$fraction <- 4
+
 	options$hypothesis <- "equalSmaller"
 	options$bayesFactorType <- "BF01"
 	options$pairs <- list(list("postnumb", "prenumb"))
@@ -126,7 +126,7 @@ test_that("Bfpack Paired Samples T-Test table results match", {
 test_that("Bfpack Paired Samples T-Test table results match", {
 	options <- jaspTools::analysisOptions("BfpackTTestBayesianPairedSamples")
 	options$seed <- 900
-	options$fraction <- 4
+
 	options$hypothesis <- "biggerSmaller"
 	options$bayesFactorType <- "BF01"
 	options$pairs <- list(list("postnumb", "prenumb"))
@@ -149,7 +149,7 @@ test_that("Bfpack Paired Samples T-Test table results match", {
 test_that("Bfpack Paired Samples T-Test table results match", {
 	options <- jaspTools::analysisOptions("BfpackTTestBayesianPairedSamples")
 	options$seed <- 900
-	options$fraction <- 4
+
 	options$hypothesis <- "equalBiggerSmaller"
 	options$bayesFactorType <- "BF01"
 	options$pairs <- list(list("postnumb", "prenumb"))

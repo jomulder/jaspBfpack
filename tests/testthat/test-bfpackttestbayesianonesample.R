@@ -59,7 +59,6 @@ test_that("Bfpack One Sample T-test table results match", {
 	options <- jaspTools::analysisOptions("BfpackTTestBayesianOneSample")
 	options$variables <- list("postnumb")
 	options$testValue <- 30
-	options$fraction <- 4
 	options$hypothesis <- "equalNotEqual"
 	options$bayesFactorType <- "BF01"
 	set.seed(1)
@@ -82,7 +81,6 @@ test_that("Bfpack One Sample T-test table results match", {
 	options <- jaspTools::analysisOptions("BfpackTTestBayesianOneSample")
 	options$variables <- list("postnumb")
 	options$testValue <- 30
-	options$fraction <- 4
 	options$hypothesis <- "equalBigger"
 	options$bayesFactorType <- "BF01"
 	set.seed(1)
@@ -105,7 +103,6 @@ test_that("Bfpack One Sample T-test table results match", {
 	options <- jaspTools::analysisOptions("BfpackTTestBayesianOneSample")
 	options$variables <- list("postnumb")
 	options$testValue <- 30
-	options$fraction <- 4
 	options$hypothesis <- "equalSmaller"
 	options$bayesFactorType <- "BF01"
 	set.seed(1)
@@ -128,7 +125,7 @@ test_that("Bfpack One Sample T-test table results match", {
 	options <- jaspTools::analysisOptions("BfpackTTestBayesianOneSample")
 	options$variables <- list("postnumb")
 	options$testValue <- 30
-	options$fraction <- 4
+
 	options$hypothesis <- "biggerSmaller"
 	options$bayesFactorType <- "BF01"
 	set.seed(1)
@@ -151,7 +148,7 @@ test_that("Bfpack One Sample T-test table results match", {
 	options <- jaspTools::analysisOptions("BfpackTTestBayesianOneSample")
 	options$variables <- list("postnumb")
 	options$testValue <- 30
-	options$fraction <- 4
+
 	options$hypothesis <- "equalBiggerSmaller"
 	options$bayesFactorType <- "BF01"
 	set.seed(1)

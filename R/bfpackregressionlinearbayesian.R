@@ -15,7 +15,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-BfpackRegressionLinearBayesianInternal <- function(jaspResults, dataset, options, ...) {
+BfpackRegressionLinearBayesian <- function(jaspResults, dataset, options, ...) {
 
   # What type of Bfpack analysis is being conducted?
   type <- "regression"
@@ -30,7 +30,7 @@ BfpackRegressionLinearBayesianInternal <- function(jaspResults, dataset, options
   .bfpackDataReady(dataList[["dataset"]], options, type)
 
   # Create a container for the results
-  bfpackContainer <- .bfpackGetContainer(jaspResults, deps = c("dependent", "covariates", "model", "seed", "fraction", "standardized"))
+  bfpackContainer <- .bfpackGetContainer(jaspResults, deps = c("dependent", "covariates", "model", "seed", "standardized"))
 
   # Create a legend containing the order constrained hypotheses
   .bfpackLegend(dataList[["dataset"]], options, type, jaspResults, position = 0)

@@ -64,7 +64,6 @@ options <- jaspTools::analysisOptions("BfpackTTestBayesianIndependentSamples")
 options$variables <- list("postnumb")
 options$groupingVariable <- "sex"
 options$seed <- 900
-options$fraction <- 4
 options$descriptives <- TRUE
 options$hypothesis <- "equalNotEqual"
 options$bayesFactorType <- "BF01"
@@ -102,7 +101,6 @@ test_that("Bfpack Independent Samples Welch's T-Test table results match", {
 	options$variables <- list("postnumb")
 	options$groupingVariable <- "sex"
 	options$seed <- 900
-	options$fraction <- 4
 	options$hypothesis <- "equalBigger"
 	options$bayesFactorType <- "BF01"
 	set.seed(1)
@@ -128,7 +126,6 @@ test_that("Bfpack Independent Samples Welch's T-Test table results match", {
 	options$variables <- list("postnumb")
 	options$groupingVariable <- "sex"
 	options$seed <- 900
-	options$fraction <- 4
 	options$hypothesis <- "equalSmaller"
 	options$bayesFactorType <- "BF01"
 	set.seed(1)
@@ -154,7 +151,6 @@ test_that("Bfpack Independent Samples Welch's T-Test table results match", {
 	options$variables <- list("postnumb")
 	options$groupingVariable <- "sex"
 	options$seed <- 900
-	options$fraction <- 4
 	options$hypothesis <- "biggerSmaller"
 	options$bayesFactorType <- "BF01"
 	set.seed(1)
@@ -180,7 +176,6 @@ test_that("Bfpack Independent Samples Welch's T-Test table results match", {
 	options$variables <- list("postnumb")
 	options$groupingVariable <- "sex"
 	options$seed <- 900
-	options$fraction <- 4
 	options$hypothesis <- "equalBiggerSmaller"
 	options$bayesFactorType <- "BF01"
 	set.seed(1)

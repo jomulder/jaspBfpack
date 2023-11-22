@@ -43,7 +43,7 @@ Description
 	{
 		title: 		"ANOVA"
 		icon: 		"analysis-bain-anova.svg"
-	}	
+	}
 	Analysis
 	{
 		menu:   	"ANOVA"
@@ -61,17 +61,11 @@ Description
 	{
 		title: 		"Regression"
 		icon: 		"analysis-bain-regression.svg"
-	}	
+	}
 	Analysis
 	{
 		menu:   	"Linear Regression"
 		title:		"Regression"
 		func:			"BfpackRegressionLinearBayesian"
-	}
-	Analysis
-	{
-		menu:   	"Structural Equation Modeling"
-		title:		"BFpack Structural Equation Modeling"
-		func:			"BfpackSemBayesian"
 	}
 }
