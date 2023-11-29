@@ -22,13 +22,13 @@ gettextf <- function(fmt, ..., domain = NULL)  {
 }
 
 # Create a container for the results
-.bfpackGetContainer <- function(jaspResults, deps) {
+.bfpackCreateContainer <- function(jaspResults, deps) {
   if (is.null(jaspResults[["bfpackContainer"]])) {
     jaspResults[["bfpackContainer"]] <- createJaspContainer()
     jaspResults[["bfpackContainer"]]$dependOn(options = deps)
     jaspResults[["bfpackContainer"]]$position <- 1
   }
-  invisible(jaspResults[["bfpackContainer"]])
+  return(jaspResults[["bfpackContainer"]])
 }
 
 # Read the data set
@@ -40,8 +40,8 @@ gettextf <- function(fmt, ..., domain = NULL)  {
     "anova" = options[["dependent"]],
     "ancova" = c(options[["dependent"]], unlist(options[["covariates"]])),
     "regression" = c(options[["dependent"]], unlist(options[["covariates"]])),
-    "sem" = NULL
-  )
+    "correlation" = options[["variables"]]
+    )
   numerics <- numerics[numerics != ""]
   factors <- switch(type,
     "onesampleTTest" = NULL,
@@ -49,38 +49,30 @@ gettextf <- function(fmt, ..., domain = NULL)  {
     "independentTTest" = options[["groupingVariable"]],
     "anova" = options[["fixedFactors"]],
     "ancova" = options[["fixedFactors"]],
-    "regression" = NULL,
-    "sem" = NULL
-  )
+    "regression" = NULL
+    )
   factors <- factors[factors != ""]
   vars <- c(numerics, factors)
 
-  if (type != "sem") {
-    if (is.null(dataset)) {
-      trydata <- .readDataSetToEnd(columns.as.numeric = numerics, columns.as.factor = factors)
-      missing <- names(which(apply(trydata, 2, function(x) {
-        any(is.na(x))
-      })))
-      if (type == "onesampleTTest") { # For the one sample t test we do not remove the NA's listwise
-        dataset <- .readDataSetToEnd(columns.as.numeric = numerics, columns.as.factor = factors)
-      } else {
-        dataset <- .readDataSetToEnd(columns.as.numeric = numerics, columns.as.factor = factors, exclude.na.listwise = vars)
-      }
-      if ((type == "anova" || type == "ancova") && options[["fixedFactors"]] != "") {
-        if (any(grepl(pattern = " ", x = levels(dataset[, options[["fixedFactors"]]])))) {
-          jaspBase:::.quitAnalysis(gettext("Bfpack does not accept factor levels that contain spaces. Please remove the spaces from your factor levels to continue."))
-        }
-      }
-    } else {
-      dataset <- .vdf(dataset, columns.as.numeric = numerics, columns.as.factor = factors)
-    }
-  } else {
-    trydata <- .readDataSetToEnd(all.columns = TRUE)
+  if (is.null(dataset)) {
+    trydata <- .readDataSetToEnd(columns.as.numeric = numerics, columns.as.factor = factors)
     missing <- names(which(apply(trydata, 2, function(x) {
       any(is.na(x))
     })))
-    dataset <- .readDataSetToEnd(all.columns = TRUE, exclude.na.listwise = .bfpackSemGetUsedVars(options[["syntax"]]$model, colnames(trydata)))
+    if (type == "onesampleTTest") { # For the one sample t test we do not remove the NA's listwise
+      dataset <- .readDataSetToEnd(columns.as.numeric = numerics, columns.as.factor = factors)
+    } else {
+      dataset <- .readDataSetToEnd(columns.as.numeric = numerics, columns.as.factor = factors, exclude.na.listwise = vars)
+    }
+    if ((type == "anova" || type == "ancova") && options[["fixedFactors"]] != "") {
+      if (any(grepl(pattern = " ", x = levels(dataset[, options[["fixedFactors"]]])))) {
+        jaspBase:::.quitAnalysis(gettext("Bfpack does not accept factor levels that contain spaces. Please remove the spaces from your factor levels to continue."))
+      }
+    }
+  } else {
+    dataset <- .vdf(dataset, columns.as.numeric = numerics, columns.as.factor = factors)
   }
+
 
   readList <- list()
   readList[["dataset"]] <- dataset
@@ -89,7 +81,7 @@ gettextf <- function(fmt, ..., domain = NULL)  {
 }
 
 
-####### Checks #######
+####### CHECKS #######
 
 
 # Check if current options allow for analysis
@@ -101,8 +93,7 @@ gettextf <- function(fmt, ..., domain = NULL)  {
     "anova" = options[["fixedFactors"]] != "" && options[["dependent"]] != "",
     "ancova" = options[["dependent"]] != "" && options[["fixedFactors"]] != "" && !is.null(unlist(options[["covariates"]])),
     "regression" = (options[["dependent"]] != "" && all(unlist(options[["covariates"]]) != "") && !is.null(unlist(options[["covariates"]]))),
-    "sem" = length(.bfpackSemGetUsedVars(options[["syntax"]]$model, colnames(dataset))) > 1
-  )
+    "correlation" = length(options[["variables"]]) > 1)
   return(ready)
 }
 
@@ -127,8 +118,8 @@ gettextf <- function(fmt, ..., domain = NULL)  {
     "anova" = options[["dependent"]],
     "ancova" = c(options[["dependent"]], unlist(options[["covariates"]])),
     "regression" = c(options[["dependent"]], unlist(options[["covariates"]])),
-    "sem" = NULL
-  )
+    "correlation" = options[["variables"]])
+
   numerics <- numerics[numerics != ""]
 
   if (length(numerics) > 0) {
@@ -140,7 +131,74 @@ gettextf <- function(fmt, ..., domain = NULL)  {
   }
 }
 
-###### CALLS TO BAIN PACKAGE ######
+###### COMPUTE RESULTS ######
+# perform the parameter estimation and also return the estimates to the JASP GUI
+.bfpackGetParameterEstimates <- function(dataList, options, bfpackContainer, ready, type, position, jaspResults) {
+
+  if (!is.null(bfpackContainer[["estimatesState"]])) {
+    return()
+  }
+
+  if (!ready) return()
+
+  dataset <- dataList[["dataset"]]
+  missing <- dataList[["missing"]]
+
+  if (bfpackContainer$getError()) {
+    return()
+  }
+
+  callString <- switch(type,
+                       "independentTTest" = "BFpack:::get_estimates.t_test",
+                       "pairedTTest" = "BFpack:::get_estimates.t_test",
+                       "onesampleTTest" = "BFpack:::get_estimates.t_test",
+                       "anova" = "bain::get_estimates",
+                       "ancova" = "bain::get_estimates",
+                       "regression" = "BFpack:::get_estimates.lm",
+                       "correlation" = "BFpack:::get_estimates.cor_test")
+
+  # estimate the correlation
+  if (type == "correlation") {
+    result <- try(BFpack::cor_test(dataList[["dataset"]]))
+  }
+
+  if (isTryError(result)) {
+    .quitAnalysis(gettext("The parameter estimation failed. Error message: %1$s", jaspBase::.extractErrorMessage(result)))
+  }
+
+  # save in jaspResults, which is where bfpackContainer is stored.
+  # this way we do not have to estimate the parameters twice
+  estimatesState <- createJaspState(result)
+  # estimatesState$dependOn() # are there any new dependencies not already covered in the container?
+  bfpackContainer[["estimatesState"]] <- estimatesState
+
+  # the estimate names for the JASP GUI
+  estimateNames <- eval(parse(text = callString))(result)
+  estimateNames <- as.list(names(estimateNames$estimate))
+  namesForQml <- createJaspQmlSource("estimateNamesForQml", estimateNames)
+  # apparently the source only works directly with jaspResults
+  jaspResults[["estimateNamesForQml"]] <- namesForQml
+
+}
+
+# compute the posteriors and BFs
+.bfpackComputeResults <- function(dataList, options, bfpackContainer, ready, type) {
+
+  if (!is.null(bfpackContainer[["resultsState"]])) return()
+  if (!ready) return()
+
+  if (!is.null(bfpackContainer[["estimatesState"]])) {
+    estimates <- bfpackContainer[["estimatesState"]]$object
+
+    # check if there are manual hypotheses
+
+    result <- BFpack::BF(estimates)
+
+
+  }
+
+}
+
 
 # Call to bain for 't_test' objects (Welch t-test, Paired t-test, One sample t-test)
 .bfpackTTestRaw <- function(options, x, y = NULL, nu = 0, type = 1, paired = FALSE) {
@@ -180,7 +238,7 @@ gettextf <- function(fmt, ..., domain = NULL)  {
   }
 
   bfpackResult <- BFpack::BF(x = test, hypothesis = hypothesis)
-  print(bfpackResult)
+
   return(bfpackResult)
 }
 
@@ -235,52 +293,10 @@ gettextf <- function(fmt, ..., domain = NULL)  {
   return(bfpackResult)
 }
 
-# Call to bfpack for 'lavaan' objects (SEM)
-.bfpackSemRaw <- function(dataset, options, bfpackContainer, ready) {
-  standardized <- options[["standardized"]]
-  grouping <- NULL
-  if (options[["fixedFactors"]] != "") {
-    grouping <- encodeColNames(options[["fixedFactors"]])
-    dataset[, grouping] <- as.factor(dataset[, grouping])
-  }
-
-  if (!is.null(bfpackContainer[["lavaanResult"]])) {
-    fit <- bfpackContainer[["lavaanResult"]]$object
-  } else if (ready) {
-    syntax <- .bfpackSemTranslateModel(options[["syntax"]]$model, dataset)
-
-    error <- try({
-      fit <- lavaan::sem(model = syntax, data = dataset, group = grouping, std.lv = (options[["factorStandardisation"]] == "std.lv"))
-    })
-
-    if (isTryError(error)) {
-      bfpackContainer$setError(gettextf("An error occurred in the call to lavaan: %1$s. Please double check if the variables in lavaan syntax match the variables in your data set.", jaspBase::.extractErrorMessage(error)))
-      return()
-    }
-
-    bfpackContainer[["lavaanResult"]] <- createJaspState(fit)
-    bfpackContainer[["lavaanResult"]]$dependOn(options = "syntax")
-  }
-
-  if (options[["model"]] == "") {
-    # We need to construct a 'default' hypothesis (the results of which will not be shown to the user)
-    rhs <- switch(options[["factorStandardisation"]], # If the first loading is standardized the second is taken
-      "std.lv" = fit@ParTable$rhs[1],
-      "auto.fix.first" = fit@ParTable$rhs[2]
-    )
-    if (options[["fixedFactors"]] != "") {
-      rhs <- paste0(rhs, ".", levels(dataset[, encodeColNames(options[["fixedFactors"]])])[1])
-    }
-    hypothesis <- paste0(fit@ParTable$lhs[1], fit@ParTable$op[1], rhs, "= 0")
-  } else {
-    hypothesis <- encodeColNames(.bfpackCleanModelInput(options[["model"]]))
-  }
-
-  bfpackResult <- BFpack::BF(x = fit, hypothesis = hypothesis, standardize = standardized)
-  return(bfpackResult)
-}
 
 ####### EXTRACTING AND STORING RESULTS ########
+
+
 
 .bfpackGetGeneralTestResults <- function(dataset, options, bfpackContainer, ready, type, variable = NULL, pair = NULL, testType = NULL) {
   set.seed(options[["seed"]])
@@ -359,6 +375,7 @@ gettextf <- function(fmt, ..., domain = NULL)  {
 }
 
 .bfpackGetRegressionResults <- function(dataset, options, bfpackContainer, ready, type) {
+
   if (!is.null(bfpackContainer[["bfpackResult"]])) {
     return(bfpackContainer[["bfpackResult"]]$object)
   } else if (ready) {
@@ -483,11 +500,16 @@ gettextf <- function(fmt, ..., domain = NULL)  {
   }
 }
 
+
 # Create a table containing the main analysis results
-.bfpackTestResultsTable <- function(dataset, options, bfpackContainer, missing, ready, type, position) {
+.bfpackTestResultsTable <- function(dataList, options, bfpackContainer, ready, type, position) {
+
   if (!is.null(bfpackContainer[["mainResultsTable"]])) {
     return()
   }
+
+  dataset <- dataList[["dataset"]]
+  missing <- dataList[["missing"]]
 
   title <- switch(type,
     "independentTTest" = gettext("Bfpack Independent Samples Welch's T-Test"),
@@ -496,7 +518,7 @@ gettextf <- function(fmt, ..., domain = NULL)  {
     "anova" = gettext("Bfpack ANOVA"),
     "ancova" = gettext("Bfpack ANCOVA"),
     "regression" = gettext("Bfpack Linear Regression"),
-    "sem" = gettext("Bfpack Structural Equation Model")
+    "correlation" = gettext("Bfpack Correlation")
   )
   deps <- switch(type,
     "independentTTest" = c("variables", "bayesFactorType", "hypothesis"),
@@ -505,7 +527,7 @@ gettextf <- function(fmt, ..., domain = NULL)  {
     "anova" = NULL,
     "ancova" = NULL,
     "regression" = "standardized",
-    "sem" = NULL
+    "correlation" = NULL
   )
   table <- createJaspTable(title)
   table$dependOn(options = deps)
@@ -558,7 +580,7 @@ gettextf <- function(fmt, ..., domain = NULL)  {
         "equalBiggerSmaller"  = gettext("The null hypothesis H0 with equal means is tested against the other hypotheses. The alternative hypothesis H1 states that the mean of variable 1 is bigger than the mean of variable 2. The alternative hypothesis H2 states that the mean of variable 1 is smaller than the mean of variable 2. The posterior probabilities are based on equal prior probabilities.")
       )
     }
-  } else if (type %in% c("anova", "ancova", "regression", "sem")) {
+  } else if (type %in% c("anova", "ancova", "regression", "correlation")) {
     table$addColumnInfo(name = "hypotheses", type = "string", title = "")
     table$addColumnInfo(name = "BFu", type = "number", title = gettext("BF.u"))
     table$addColumnInfo(name = "BF", type = "number", title = gettext("BF.c"))
@@ -577,6 +599,14 @@ gettextf <- function(fmt, ..., domain = NULL)  {
   bfpackContainer[["mainResultsTable"]] <- table
 
   if (!ready || (type == "sem" && options[["model"]] == "")) {
+    return()
+  }
+
+  if (!options[["runAnalysisBox"]]) {
+    syncText <- createJaspHtml(text = gettext("<b>Check the 'Run Analysis' box to run the analysis</b>"))
+    bfpackContainer[["syncText"]] <- syncText
+    syncText$dependOn("runAnalysisBox")
+    syncText$position <- 0.01
     return()
   }
 

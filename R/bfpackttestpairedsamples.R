@@ -15,10 +15,10 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-BfpackAnovaBayesian <- function(jaspResults, dataset, options, ...) {
+BfpackTTestPairedSamples <- function(jaspResults, dataset, options, ...) {
 
   # What type of Bfpack analysis is being conducted?
-  type <- "anova"
+  type <- "pairedTTest"
 
   # Check if current options allow for analysis
   ready <- .bfpackOptionsReady(options, type)
@@ -27,26 +27,20 @@ BfpackAnovaBayesian <- function(jaspResults, dataset, options, ...) {
   dataList <- .bfpackReadDataset(options, type, dataset)
 
   # Check if current data allow for analysis
-  .bfpackDataReady(dataList[["dataset"]], options, type)
+  .bfpackDataReady(dataset, options, type)
 
   # Create a container for the results
-  bfpackContainer <- .bfpackGetContainer(jaspResults, deps = c("dependent", "fixedFactors", "model", "seed"))
-
-  # Create a legend containing the order constrained hypotheses
-  .bfpackLegend(dataList[["dataset"]], options, type, jaspResults, position = 0)
+  bfpackContainer <- .bfpackCreateContainer(jaspResults, deps = c("seed"))
 
   # Create a table containing the main analysis results
   .bfpackTestResultsTable(dataList[["dataset"]], options, bfpackContainer, dataList[["missing"]], ready, type, position = 1)
 
-  # Create the Bayes factor matrix
-  .bfpackBfMatrix(dataList[["dataset"]], options, bfpackContainer, ready, type, position = 2)
-
   # Create the descriptive statistics table
-  .bfpackDescriptivesTable(dataList[["dataset"]], options, bfpackContainer, ready, type, position = 3)
+  .bfpackDescriptivesTable(dataList[["dataset"]], options, bfpackContainer, ready, type, position = 2)
 
   # Create the posterior probability plots
-  .bfpackPosteriorProbabilityPlot(dataList[["dataset"]], options, bfpackContainer, ready, type, position = 4)
+  .bfpackPosteriorProbabilityPlot(dataList[["dataset"]], options, bfpackContainer, ready, type, position = 3)
 
   # Create the descriptive plot(s)
-  .bfpackDescriptivePlots(dataList[["dataset"]], options, bfpackContainer, ready, type, position = 5)
+  .bfpackDescriptivePlots(dataList[["dataset"]], options, bfpackContainer, ready, type, position = 4)
 }

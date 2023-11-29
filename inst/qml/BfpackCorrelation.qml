@@ -1,0 +1,220 @@
+//
+// Copyright (C) 2013-2018 University of Amsterdam
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with this program.  If not, see
+// <http://www.gnu.org/licenses/>.
+//
+
+import QtQuick
+import QtQuick.Layouts
+import JASP
+import JASP.Controls
+
+Form
+{
+	VariablesForm
+	{
+		implicitHeight: 200 * preferencesModel.uiScale
+
+		AvailableVariablesList
+		{
+			name: 						"variablesList"
+		}
+		
+		AssignedVariablesList
+		{
+			name: 								"variables"
+			singleVariable: 			false
+			allowedColumns: 			["scale", "ordinal"]
+		}
+	}
+
+	CheckBox
+	{
+		Layout.columnSpan: 2
+		id: 						runAnalysisBox
+		name: 					"runAnalysisBox"
+		label: 					qsTr("<b>Run Analysis</b>")
+		checked: 				false
+		Component.onCompleted:
+		{
+			background.color = "#ff8600"
+		}
+	}
+	Group
+	{
+
+
+		implicitHeight: 140 * preferencesModel.uiScale
+		title: qsTr("Standard hypothesis test")
+
+		ComponentsList 
+		{
+			implicitHeight: 90 * preferencesModel.uiScale
+			implicitWidth: 300 * preferencesModel.uiScale
+			source: [{
+				values: [qsTr("H0: rho = 0 "), qsTr("H1: rho < 0 "), qsTr("H2: rho > 0 ")]
+			}]
+			name: "standardHypotheses"
+			titles: [qsTr("Hypotheses"), qsTr("Prior probabilities")]
+			rowComponent: RowLayout {
+				Text { text: rowValue }
+				FormulaField {
+					implicitWidth: 100 * preferencesModel.uiScale
+					name: "priorProb"
+					fieldWidth: 50
+					defaultValue: "1/3"
+					parseDefaultValue: true
+					}
+			}
+		}
+	}
+
+	Group
+	{
+		Layout.columnSpan: 2
+		implicitHeight: 200 * preferencesModel.uiScale
+		title: qsTr("Manual hypothesis test")
+
+		ComponentsList {
+			name: "hiddenEstimateNames"
+			id: hiddenNames
+			// source: [{values: ["est1", "est2", "est3"]}]
+			rSource: "estimateNamesForQml"
+			visible: false
+		}
+		Text { text: qsTr("Once you drag variables to the analysis window the following will \ndisplay the names of the estimates that you may use to specify \nmanual hypotheses replacing the square brackets [ ]:") }
+		Flow
+		{
+			anchors.fill: parent
+			// anchors.margins: 1
+			spacing: 5
+			Repeater
+				{
+						model: hiddenNames.model // estimates must be the id of the hidden ComponentList
+						Text { text: model.name }
+			}
+		}
+
+		InputListView
+		{
+			name				: "manualHypotheses"
+			title				: qsTr("Hypotheses")
+			optionKey			: "name"
+			defaultValues		: [qsTr("[ ] > [ ] > [ ]"), qsTr("[ ] = [ ] = [ ]")]
+			placeHolder			: qsTr("New hypothesis")
+			minRows				: 2
+			preferredWidth		: (2*form.width)/3
+			preferredHeight: 100 * preferencesModel.uiScale
+			rowComponentTitle	: qsTr("Prior probabilities")
+			rowComponent: FormulaField
+			{
+				fieldWidth: 60
+				name: "priorProbManual"
+				defaultValue: "1/3"
+			}
+		}
+
+		CheckBox {
+			name: "complement"
+			label: qsTr("Complement:")
+			checked: true
+			childrenOnSameRow: true
+			FormulaField {
+				fieldWidth: 60
+				name: "priorProbComplement"
+				label: qsTr("Prior Probability")
+				defaultValue: "1/3"
+			}
+		}
+	}
+	
+
+
+	Section
+	{
+		title: 	qsTr("Options")
+		Group
+		{
+			title: qsTr("Bayes Factor")
+			Layout.rowSpan: 2
+
+			RadioButtonGroup
+			{
+				name: "logScale"
+				title: qsTr("On log scale")
+				radioButtonsOnSameRow: false
+				RadioButton { value: "no"; label: qsTr("No"); checked: true}
+				RadioButton { value: "yes"; label: qsTr("Yes")}
+			}
+
+			RadioButtonGroup
+			{
+				name: "bfType"
+				title: qsTr("Type")
+				radioButtonsOnSameRow: false
+				RadioButton { value: "fractional"; label: qsTr("Fractional"); checked: true}
+				RadioButton { value: "adjusted"; label: qsTr("Adjusted fractional")}
+			}
+		}
+		Group
+		{
+			title: 							qsTr("Tables")
+
+			CheckBox
+			{
+				name: 						"bayesFactorMatrix"
+				text:					 	qsTr("Bayes factor matrix")
+			}
+
+			CheckBox
+			{
+				name: 						"coefficients"
+				text: 						qsTr("Coefficients")
+
+				CIField
+				{
+					name: 					"credibleInterval"
+					text: 					qsTr("Credible interval")
+				}
+			}
+		}
+
+		Group
+		{
+			title: 							qsTr("Plots")
+
+			CheckBox
+			{
+				name: 						"probabilitiesPlot"
+				text: 						qsTr("Probabilities")
+			}
+		}
+
+		Group
+		{
+			title: 							qsTr("Additional Options")
+
+			DoubleField
+			{
+				name: 						"seed"
+				text: 						qsTr("Seed")
+				defaultValue: 				100
+				min: 						-999999
+				max: 						999999
+				fieldWidth: 				60 * preferencesModel.uiScale
+			}
+		}
+	}
+}

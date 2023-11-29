@@ -15,10 +15,15 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-BfpackRegressionLinearBayesian <- function(jaspResults, dataset, options, ...) {
+BfpackCorrelation <- function(jaspResults, dataset, options, ...) {
+
+  sink(file = "~/Downloads/logBf.txt")
+  on.exit(sink(NULL))
+
+  # print(str(options))
 
   # What type of Bfpack analysis is being conducted?
-  type <- "regression"
+  type <- "correlation"
 
   # Check if current options allow for analysis
   ready <- .bfpackOptionsReady(options, type)
@@ -30,20 +35,23 @@ BfpackRegressionLinearBayesian <- function(jaspResults, dataset, options, ...) {
   .bfpackDataReady(dataList[["dataset"]], options, type)
 
   # Create a container for the results
-  bfpackContainer <- .bfpackGetContainer(jaspResults, deps = c("dependent", "covariates", "model", "seed", "standardized"))
+  bfpackContainer <- .bfpackCreateContainer(jaspResults, deps = c("variables", "seed"))
 
   # Create a legend containing the order constrained hypotheses
-  .bfpackLegend(dataList[["dataset"]], options, type, jaspResults, position = 0)
+  # lets see about that
+  # .bfpackLegend(dataList[["dataset"]], options, type, jaspResults, position = 0)
 
-  # Create a table containing the main analysis results
-  .bfpackTestResultsTable(dataList[["dataset"]], options, bfpackContainer, dataList[["missing"]], ready, type, position = 1)
+  .bfpackGetParameterEstimates(dataList, options, bfpackContainer, ready, type, position = .5, jaspResults)
 
-  # Create the Bayes factor matrix
-  .bfpackBfMatrix(dataList[["dataset"]], options, bfpackContainer, ready, type, position = 2)
+  # # Create a table containing the main analysis results
+  .bfpackTestResultsTable(dataList, options, bfpackContainer,  ready, type, position = 1)
 
-  # Create the descriptive statistics (coefficients) table
-  .bfpackDescriptivesTable(dataList[["dataset"]], options, bfpackContainer, ready, type, position = 3)
-
-  # Create the posterior probability plots
-  .bfpackPosteriorProbabilityPlot(dataList[["dataset"]], options, bfpackContainer, ready, type, position = 4)
+  # # Create the Bayes factor matrix
+  # .bfpackBfMatrix(dataList[["dataset"]], options, bfpackContainer, ready, type, position = 2)
+  #
+  # # Create the descriptive statistics (coefficients) table
+  # .bfpackDescriptivesTable(dataList[["dataset"]], options, bfpackContainer, ready, type, position = 3)
+  #
+  # # Create the posterior probability plots
+  # .bfpackPosteriorProbabilityPlot(dataList[["dataset"]], options, bfpackContainer, ready, type, position = 4)
 }
