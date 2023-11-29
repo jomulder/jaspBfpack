@@ -133,7 +133,7 @@ gettextf <- function(fmt, ..., domain = NULL)  {
 
 ###### COMPUTE RESULTS ######
 # perform the parameter estimation and also return the estimates to the JASP GUI
-.bfpackGetParameterEstimates <- function(dataList, options, bfpackContainer, ready, type, position, jaspResults) {
+.bfpackGetParameterEstimates <- function(dataList, options, bfpackContainer, ready, type, jaspResults) {
 
   if (!is.null(bfpackContainer[["estimatesState"]])) {
     return()
@@ -159,11 +159,14 @@ gettextf <- function(fmt, ..., domain = NULL)  {
 
   # estimate the correlation
   if (type == "correlation") {
-    result <- try(BFpack::cor_test(dataList[["dataset"]]))
+    dataset <- dataList[["dataset"]]
+    # decode the colnames otherwise bfpack fails when trying to match hypotheses and estimate names
+    colnames(dataset) <- decodeColNames(colnames(dataset))
+    result <- try(BFpack::cor_test(dataset))
   }
 
   if (isTryError(result)) {
-    .quitAnalysis(gettext("The parameter estimation failed. Error message: %1$s", jaspBase::.extractErrorMessage(result)))
+    bfpackContainer$setError(gettext("The parameter estimation failed. Error message: %1$s", jaspBase::.extractErrorMessage(result)))
   }
 
   # save in jaspResults, which is where bfpackContainer is stored.
@@ -176,6 +179,7 @@ gettextf <- function(fmt, ..., domain = NULL)  {
   estimateNames <- eval(parse(text = callString))(result)
   estimateNames <- as.list(names(estimateNames$estimate))
   namesForQml <- createJaspQmlSource("estimateNamesForQml", estimateNames)
+  namesForQml$dependOn("variables")
   # apparently the source only works directly with jaspResults
   jaspResults[["estimateNamesForQml"]] <- namesForQml
 
@@ -184,19 +188,90 @@ gettextf <- function(fmt, ..., domain = NULL)  {
 # compute the posteriors and BFs
 .bfpackComputeResults <- function(dataList, options, bfpackContainer, ready, type) {
 
-  if (!is.null(bfpackContainer[["resultsState"]])) return()
+  if (!is.null(bfpackContainer[["resultsContainer"]][["resultsState"]])) return()
   if (!ready) return()
+
+  # create a container because both the results and the tables depending on them have the same dependencies
+  # start with common deps, and then do the switch
+  deps <- c("complement", "logScale", "manualHypotheses", "priorProbManual", "priorProb", "priorProbComplement")
+  depsAddOn <- switch(type,
+                      "independentTTest" = c("variables", "bayesFactorType", "hypothesis"),
+                      "pairedTTest" = c("pairs", "hypothesis", "bayesFactorType"),
+                      "onesampleTTest" = c("variables", "hypothesis", "bayesFactorType"),
+                      "anova" = "",
+                      "ancova" = "",
+                      "regression" = "standardized",
+                      "correlation" = "")
+
+  resultsContainer <- createJaspContainer()
+  resultsContainer$dependOn(c(deps, depsAddOn))
+
+  if (!options[["runAnalysisBox"]]) {
+    syncText <- createJaspHtml(text = gettext("<b>Check the 'Run Analysis' box to run the analysis</b>"))
+    bfpackContainer[["syncText"]] <- syncText
+    syncText$dependOn("runAnalysisBox")
+    syncText$position <- 0.01
+    return()
+  }
 
   if (!is.null(bfpackContainer[["estimatesState"]])) {
     estimates <- bfpackContainer[["estimatesState"]]$object
 
     # check if there are manual hypotheses
+    manualHyp <- sapply(options[["manualHypotheses"]], function(x) x[["name"]])
+    manualPrior <- sapply(options[["manualHypotheses"]], function(x) x[["priorProbManual"]])
 
-    result <- BFpack::BF(estimates)
+    # strip down the hypos
+    # replace with numbers because that is also what qml does if a hypothesis string is deleted...
+    # might be the following is analysis-specific
+    manualHyp <- gsub("[ ] > [ ] > [ ]", "1", manualHyp, fixed = TRUE)
+    manualHyp <- gsub("[ ] = [ ] = [ ]", "2", manualHyp, fixed = TRUE)
 
+    # keep the hypotheses that are specified
+    strs <- which(is.na(as.numeric(manualHyp)))
+    manualHyp <- manualHyp[strs]
+    manualPrior <- manualPrior[strs]
+    # at least one manual hypo specified?
+    if (length(manualHyp) > 0) {
+      manualHyp <- paste(manualHyp, collapse = ";")
+      if (options[["complement"]]) manualPrior <- c(manualPrior, options[["priorProbComplement"]])
+      # convert the prior character values to numeric:
+      manualPrior <- sapply(manualPrior, function(x) eval(parse(text=x)))
+    } else {
+      manualHyp <- NULL
+      manualPrior <- NULL
+    }
 
+    # BF.type depends in the analysis as well
+    # seems that except for the correlation and variance, all other models have the adjusted bftype option
+    if (!is.null(options[["bfType"]])) {
+      if (options[["bfType"]] == "adjusted") {
+        bftype <- 2
+      } else {
+        bftype <- 1
+      }
+    }
+
+    results <- try(BFpack::BF(estimates, hypothesis = manualHyp,
+                             complement = options[["complement"]],
+                             prior.hyp = manualPrior,
+                             log = options[["logScale"]],
+                             BF.type = bftype,
+                             Fcor = BFpack::Fcor))
+
+    if (isTryError(results)) {
+      bfpackContainer$setError(gettext("Bfpack failed with the following error message: %1$s", jaspBase::.extractErrorMessage(results)))
+    }
+
+    # now saving the results
+
+    resultsState <- createJaspState(results)
+    resultsContainer[["resultsState"]] <- resultsState
   }
 
+  bfpackContainer[["resultsContainer"]] <- resultsContainer
+
+  return()
 }
 
 
@@ -448,6 +523,32 @@ gettextf <- function(fmt, ..., domain = NULL)  {
 }
 
 ####### TABLES #######
+# table for the posterior probabilities of the parameter estimates
+.bfpackParameterTable <- function(options, bfpackContainer, ready, type, position) {
+
+  if (!is.null(bfpackContainer[["resultsContainer"]][["parameterTable"]])) return()
+  if (!ready) return()
+
+  parameterTable <- createJaspTable(gettext("Parameter posterior probabilities"))
+  parameterTable$position <- position
+
+  parameterTable$addColumnInfo(name = "coefficient", type = "string", title = "")
+  parameterTable$addColumnInfo(name = "equal", type = "number", title = gettext("Pr(=0)"))
+  parameterTable$addColumnInfo(name = "smaller", type = "number", title = gettext("Pr(<0)"))
+  parameterTable$addColumnInfo(name = "larger", type = "number", title = gettext("Pr(>0)"))
+
+  bfpackContainer[["resultsContainer"]][["parameterTable"]] <- parameterTable
+
+  results <- bfpackContainer[["resultsContainer"]][["resultsState"]]$object
+  if (!is.null(results)) {
+    dtFill <- data.frame(coefficient = rownames(results$PHP_exploratory))
+    dtFill[, c("equal", "smaller", "larger")] <- results$PHP_exploratory
+    parameterTable$setData(dtFill)
+  }
+
+
+}
+
 
 
 # Create a legend containing the order constrained hypotheses
@@ -599,14 +700,6 @@ gettextf <- function(fmt, ..., domain = NULL)  {
   bfpackContainer[["mainResultsTable"]] <- table
 
   if (!ready || (type == "sem" && options[["model"]] == "")) {
-    return()
-  }
-
-  if (!options[["runAnalysisBox"]]) {
-    syncText <- createJaspHtml(text = gettext("<b>Check the 'Run Analysis' box to run the analysis</b>"))
-    bfpackContainer[["syncText"]] <- syncText
-    syncText$dependOn("runAnalysisBox")
-    syncText$position <- 0.01
     return()
   }
 

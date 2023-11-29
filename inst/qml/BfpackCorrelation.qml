@@ -54,15 +54,14 @@ Form
 	}
 	Group
 	{
-
-
-		implicitHeight: 140 * preferencesModel.uiScale
+		columns: 1
+		// implicitHeight: 140 * preferencesModel.uiScale
 		title: qsTr("Standard hypothesis test")
 
 		ComponentsList 
 		{
 			implicitHeight: 90 * preferencesModel.uiScale
-			implicitWidth: 300 * preferencesModel.uiScale
+			implicitWidth: 200 * preferencesModel.uiScale
 			source: [{
 				values: [qsTr("H0: rho = 0 "), qsTr("H1: rho < 0 "), qsTr("H2: rho > 0 ")]
 			}]
@@ -75,7 +74,6 @@ Form
 					name: "priorProb"
 					fieldWidth: 50
 					defaultValue: "1/3"
-					parseDefaultValue: true
 					}
 			}
 		}
@@ -83,8 +81,7 @@ Form
 
 	Group
 	{
-		Layout.columnSpan: 2
-		implicitHeight: 200 * preferencesModel.uiScale
+		columns: 1
 		title: qsTr("Manual hypothesis test")
 
 		ComponentsList {
@@ -97,13 +94,18 @@ Form
 		Text { text: qsTr("Once you drag variables to the analysis window the following will \ndisplay the names of the estimates that you may use to specify \nmanual hypotheses replacing the square brackets [ ]:") }
 		Flow
 		{
-			anchors.fill: parent
+			width: parent.width
 			// anchors.margins: 1
 			spacing: 5
 			Repeater
 				{
 						model: hiddenNames.model // estimates must be the id of the hidden ComponentList
-						Text { text: model.name }
+						TextEdit {
+							text: model.name
+							readOnly: true
+							wrapMode: Text.WordWrap
+							selectByMouse: true
+            }
 			}
 		}
 
@@ -115,7 +117,8 @@ Form
 			defaultValues		: [qsTr("[ ] > [ ] > [ ]"), qsTr("[ ] = [ ] = [ ]")]
 			placeHolder			: qsTr("New hypothesis")
 			minRows				: 2
-			preferredWidth		: (2*form.width)/3
+
+			// preferredWidth		: (2*form.width)/3
 			preferredHeight: 100 * preferencesModel.uiScale
 			rowComponentTitle	: qsTr("Prior probabilities")
 			rowComponent: FormulaField
@@ -150,13 +153,10 @@ Form
 			title: qsTr("Bayes Factor")
 			Layout.rowSpan: 2
 
-			RadioButtonGroup
+			CheckBox
 			{
 				name: "logScale"
-				title: qsTr("On log scale")
-				radioButtonsOnSameRow: false
-				RadioButton { value: "no"; label: qsTr("No"); checked: true}
-				RadioButton { value: "yes"; label: qsTr("Yes")}
+				label: qsTr("On log scale")
 			}
 
 			RadioButtonGroup

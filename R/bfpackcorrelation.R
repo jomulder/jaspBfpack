@@ -20,10 +20,11 @@ BfpackCorrelation <- function(jaspResults, dataset, options, ...) {
   sink(file = "~/Downloads/logBf.txt")
   on.exit(sink(NULL))
 
-  # print(str(options))
-
   # What type of Bfpack analysis is being conducted?
   type <- "correlation"
+
+  # apparently JASP can otherwise not find Fcor:
+  data("Fcor", package = "BFpack")
 
   # Check if current options allow for analysis
   ready <- .bfpackOptionsReady(options, type)
@@ -41,10 +42,17 @@ BfpackCorrelation <- function(jaspResults, dataset, options, ...) {
   # lets see about that
   # .bfpackLegend(dataList[["dataset"]], options, type, jaspResults, position = 0)
 
-  .bfpackGetParameterEstimates(dataList, options, bfpackContainer, ready, type, position = .5, jaspResults)
+  .bfpackGetParameterEstimates(dataList, options, bfpackContainer, ready, type, jaspResults)
+
+  # compute the results, aka BFs
+  .bfpackComputeResults(dataList, options, bfpackContainer, ready, type)
+
+  print(bfpackContainer[["resultsContainer"]][["resultsState"]]$object)
+
+  .bfpackParameterTable(options, bfpackContainer, ready, type, position = 1)
 
   # # Create a table containing the main analysis results
-  .bfpackTestResultsTable(dataList, options, bfpackContainer,  ready, type, position = 1)
+  # .bfpackTestResultsTable(dataList, options, bfpackContainer,  ready, type, position = 1)
 
   # # Create the Bayes factor matrix
   # .bfpackBfMatrix(dataList[["dataset"]], options, bfpackContainer, ready, type, position = 2)
