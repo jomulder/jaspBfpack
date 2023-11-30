@@ -85,36 +85,47 @@ Form
 		title: qsTr("Manual hypothesis test")
 
 		ComponentsList {
-			name: "hiddenEstimateNames"
+			name: "hiddenNames"
 			id: hiddenNames
 			// source: [{values: ["est1", "est2", "est3"]}]
 			rSource: "estimateNamesForQml"
 			visible: false
 		}
-		Text { text: qsTr("Once you drag variables to the analysis window the following will \ndisplay the names of the estimates that you may use to specify \nmanual hypotheses replacing the square brackets [ ]:") }
+		Text { text: qsTr("Once you drag variables to the analysis window the following will \ndisplay the names of the estimates that you may use to specify \nmanual hypotheses:") }
 		Flow
 		{
 			width: parent.width
 			// anchors.margins: 1
 			spacing: 5
 			Repeater
-				{
+			{
 						model: hiddenNames.model // estimates must be the id of the hidden ComponentList
 						TextEdit {
 							text: model.name
 							readOnly: true
 							wrapMode: Text.WordWrap
 							selectByMouse: true
-            }
+						}
+						// onCountChanged: 
+            //         {
+            //             for (var i = 0; i < count; i++)
+            //             {
+            //                 itemAt(i).visible = (i < 3)
+            //                 if (i >= 3)
+            //                     itemAt(i).width = 0
+            //             }
+            //         }
 			}
 		}
+
+		Text { text: qsTr("<b>An example may be</b>: ")}
 
 		InputListView
 		{
 			name				: "manualHypotheses"
 			title				: qsTr("Hypotheses")
 			optionKey			: "name"
-			defaultValues		: [qsTr("[ ] > [ ] > [ ]"), qsTr("[ ] = [ ] = [ ]")]
+			defaultValues		: ["...", "..."]
 			placeHolder			: qsTr("New hypothesis")
 			minRows				: 2
 
@@ -125,7 +136,7 @@ Form
 			{
 				fieldWidth: 60
 				name: "priorProbManual"
-				defaultValue: "1/3"
+				defaultValue: "1/2"
 			}
 		}
 
@@ -138,7 +149,7 @@ Form
 				fieldWidth: 60
 				name: "priorProbComplement"
 				label: qsTr("Prior Probability")
-				defaultValue: "1/3"
+				defaultValue: "1/2"
 			}
 		}
 	}
@@ -171,12 +182,6 @@ Form
 		Group
 		{
 			title: 							qsTr("Tables")
-
-			CheckBox
-			{
-				name: 						"bayesFactorMatrix"
-				text:					 	qsTr("Bayes factor matrix")
-			}
 
 			CheckBox
 			{

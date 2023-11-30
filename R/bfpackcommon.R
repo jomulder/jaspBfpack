@@ -172,7 +172,7 @@ gettextf <- function(fmt, ..., domain = NULL)  {
   # save in jaspResults, which is where bfpackContainer is stored.
   # this way we do not have to estimate the parameters twice
   estimatesState <- createJaspState(result)
-  # estimatesState$dependOn() # are there any new dependencies not already covered in the container?
+  estimatesState$dependOn("seed") # are there any new dependencies not already covered in the container?
   bfpackContainer[["estimatesState"]] <- estimatesState
 
   # the estimate names for the JASP GUI
@@ -186,6 +186,7 @@ gettextf <- function(fmt, ..., domain = NULL)  {
 }
 
 # compute the posteriors and BFs
+# TODO: manual and standard prior
 .bfpackComputeResults <- function(dataList, options, bfpackContainer, ready, type) {
 
   if (!is.null(bfpackContainer[["resultsContainer"]][["resultsState"]])) return()
@@ -193,7 +194,7 @@ gettextf <- function(fmt, ..., domain = NULL)  {
 
   # create a container because both the results and the tables depending on them have the same dependencies
   # start with common deps, and then do the switch
-  deps <- c("complement", "logScale", "manualHypotheses", "priorProbManual", "priorProb", "priorProbComplement")
+  deps <- c("complement", "logScale", "manualHypotheses", "priorProbManual", "priorProb", "priorProbComplement", "seed")
   depsAddOn <- switch(type,
                       "independentTTest" = c("variables", "bayesFactorType", "hypothesis"),
                       "pairedTTest" = c("pairs", "hypothesis", "bayesFactorType"),
@@ -224,8 +225,7 @@ gettextf <- function(fmt, ..., domain = NULL)  {
     # strip down the hypos
     # replace with numbers because that is also what qml does if a hypothesis string is deleted...
     # might be the following is analysis-specific
-    manualHyp <- gsub("[ ] > [ ] > [ ]", "1", manualHyp, fixed = TRUE)
-    manualHyp <- gsub("[ ] = [ ] = [ ]", "2", manualHyp, fixed = TRUE)
+    manualHyp <- gsub("...", "1", manualHyp, fixed = TRUE)
 
     # keep the hypotheses that are specified
     strs <- which(is.na(as.numeric(manualHyp)))
@@ -256,11 +256,10 @@ gettextf <- function(fmt, ..., domain = NULL)  {
                              complement = options[["complement"]],
                              prior.hyp = manualPrior,
                              log = options[["logScale"]],
-                             BF.type = bftype,
-                             Fcor = BFpack::Fcor))
+                             BF.type = bftype))
 
     if (isTryError(results)) {
-      bfpackContainer$setError(gettext("Bfpack failed with the following error message: %1$s", jaspBase::.extractErrorMessage(results)))
+      bfpackContainer$setError(gettextf("Bfpack failed with the following error message: %1$s", jaspBase::.extractErrorMessage(results)))
     }
 
     # now saving the results
@@ -524,12 +523,14 @@ gettextf <- function(fmt, ..., domain = NULL)  {
 
 ####### TABLES #######
 # table for the posterior probabilities of the parameter estimates
-.bfpackParameterTable <- function(options, bfpackContainer, ready, type, position) {
+.bfpackParameterTable <- function(options, bfpackContainer, type, position) {
 
-  if (!is.null(bfpackContainer[["resultsContainer"]][["parameterTable"]])) return()
-  if (!ready) return()
+  # the parameterTable does go into the outer container given it does not depend on the options for the
+  # inner container
+  if (!is.null(bfpackContainer[["parameterTable"]])) return()
 
   parameterTable <- createJaspTable(gettext("Parameter posterior probabilities"))
+  parameterTable$dependOn("priorProb")
   parameterTable$position <- position
 
   parameterTable$addColumnInfo(name = "coefficient", type = "string", title = "")
@@ -537,7 +538,7 @@ gettextf <- function(fmt, ..., domain = NULL)  {
   parameterTable$addColumnInfo(name = "smaller", type = "number", title = gettext("Pr(<0)"))
   parameterTable$addColumnInfo(name = "larger", type = "number", title = gettext("Pr(>0)"))
 
-  bfpackContainer[["resultsContainer"]][["parameterTable"]] <- parameterTable
+  bfpackContainer[["parameterTable"]] <- parameterTable
 
   results <- bfpackContainer[["resultsContainer"]][["resultsState"]]$object
   if (!is.null(results)) {
@@ -546,59 +547,93 @@ gettextf <- function(fmt, ..., domain = NULL)  {
     parameterTable$setData(dtFill)
   }
 
-
 }
 
 
-
 # Create a legend containing the order constrained hypotheses
-.bfpackLegend <- function(dataset, options, type, jaspResults, position) {
-  if (!is.null(jaspResults[["legendTable"]])) {
-    return()
-  }
+.bfpackLegendTable <- function(options, type, bfpackContainer, position, ready) {
 
-  legendTable <- createJaspTable("Hypothesis Legend")
-  deps <- switch(type,
-    "regression" = c("model", "covariates"),
-    "anova" = c("model", "fixedFactors"),
-    "ancova" = c("model", "fixedFactors"),
-    "sem" = c("model", "syntax")
-  )
-  legendTable$dependOn(options = deps)
+  if (!is.null(bfpackContainer[["legendTable"]])) return()
+
+  legendTable <- createJaspTable(gettext("Manual hypotheses legend"))
+
+  legendTable$dependOn("manualHypotheses")
   legendTable$position <- position
   legendTable$addColumnInfo(name = "number", type = "string", title = "")
   legendTable$addColumnInfo(name = "hypothesis", type = "string", title = gettext("Hypothesis"))
-  jaspResults[["legendTable"]] <- legendTable
 
-  if (options[["model"]] != "") {
-    rest.string <- .bfpackCleanModelInput(options[["model"]])
-    hyp.vector <- unlist(strsplit(rest.string, "[;]"))
-    for (i in seq_along(hyp.vector)) {
-      row <- list(number = gettextf("H%i", i), hypothesis = hyp.vector[i])
+  bfpackContainer[["legendTable"]] <- legendTable
+
+  hypos <- bfpackContainer[["resultsContainer"]][["resultsState"]]$object$hypotheses
+
+  if (!is.null(hypos)) {
+    for (i in seq_len(length(hypos))) {
+      row <- list(number = gettextf("H%i", i), hypothesis = hypos[i])
       legendTable$addRows(row)
     }
-  } else {
-    if (type == "regression") {
-      variables <- options[["covariates"]]
-      if (length(variables) == 0) {
-        row <- list(number = gettext("H1"), hypothesis = "")
-      } else if (length(variables) == 1) {
-        row <- list(number = gettext("H1"), hypothesis = paste(variables, "= 0"))
-      } else {
-        row <- list(number = gettext("H1"), hypothesis = paste0(paste0(variables, " = 0"), collapse = " & "))
-      }
-    } else if (type == "anova" || type == "ancova") {
-      if (options[["fixedFactors"]] != "") {
-        string <- paste(paste(options[["fixedFactors"]], levels(dataset[, options[["fixedFactors"]]]), sep = ""), collapse = " = ")
-        row <- list(number = gettext("H1"), hypothesis = string)
-      } else {
-        row <- list(number = gettext("H1"), hypothesis = "")
-      }
-    } else if (type == "sem") {
-      row <- list(number = gettext("H1"), hypothesis = "")
-    }
-    legendTable$addRows(row)
   }
+
+  return()
+}
+
+
+# table for the posterior probabilities of the parameter estimates
+.bfpackMatrixTable <- function(options, bfpackContainer, type, position, ready) {
+
+  if (!is.null(bfpackContainer[["resultsContainer"]][["matrixTable"]])) return()
+
+  matrixTable <- createJaspTable(gettext("Evidence matrix (BFs)"))
+  matrixTable$position <- position
+
+  matrixTable$addColumnInfo(name = "hypothesis", title = "", type = "string")
+  matrixTable$addColumnInfo(name = "H1", title = gettext("H1"), type = "number")
+
+  bfpackContainer[["resultsContainer"]][["matrixTable"]] <- matrixTable
+
+  bfMatrix <- bfpackContainer[["resultsContainer"]][["resultsState"]]$object$BFmatrix_confirmatory
+  if (!is.null(bfMatrix)) {
+    if (nrow(bfMatrix) > 1) {
+      for (i in 2:nrow(bfMatrix)) {
+        matrixTable$addColumnInfo(name = paste0("H", i), title = gettextf("H%i", i), type = "number")
+      }
+    }
+    for (i in seq_len(nrow(bfMatrix))) {
+      tmp <- list(hypothesis = gettextf("H%i", i))
+      for (j in seq_len(ncol(bfMatrix))) {
+        tmp[[paste0("H", j)]] <- bfMatrix[i, j]
+      }
+      row <- tmp
+      matrixTable$addRows(row)
+    }
+  }
+
+  return()
+}
+
+
+# create the tbale containing the posterior probabilities for the manual hypotheses
+.bfpackPosteriorHypothesesTable <- function(options, bfpackContainer, type, position) {
+
+  if (!is.null(bfpackContainer[["resultsContainer"]][["postTable"]])) return()
+
+  postTable <- createJaspTable(gettext("Posterior model probability"))
+  postTable$position <- position
+
+  postTable$addColumnInfo(name = "hypothesis", title = "", type = "string")
+  postTable$addColumnInfo(name = "prob", title = gettext("P(H|D)"), type = "number")
+
+  bfpackContainer[["resultsContainer"]][["postTable"]] <- postTable
+
+  php <- bfpackContainer[["resultsContainer"]][["resultsState"]]$object$PHP_confirmatory
+  if (!is.null(php)) {
+    for (i in seq_len(length(php))) {
+      row <- list(hypothesis = gettextf("H%i", i), prob = php[i])
+      postTable$addRows(row)
+    }
+  }
+
+  return()
+
 }
 
 

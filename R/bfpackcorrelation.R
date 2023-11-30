@@ -17,8 +17,8 @@
 
 BfpackCorrelation <- function(jaspResults, dataset, options, ...) {
 
-  sink(file = "~/Downloads/logBf.txt")
-  on.exit(sink(NULL))
+  # sink(file = "~/Downloads/logBf.txt")
+  # on.exit(sink(NULL))
 
   # What type of Bfpack analysis is being conducted?
   type <- "correlation"
@@ -36,20 +36,21 @@ BfpackCorrelation <- function(jaspResults, dataset, options, ...) {
   .bfpackDataReady(dataList[["dataset"]], options, type)
 
   # Create a container for the results
-  bfpackContainer <- .bfpackCreateContainer(jaspResults, deps = c("variables", "seed"))
-
-  # Create a legend containing the order constrained hypotheses
-  # lets see about that
-  # .bfpackLegend(dataList[["dataset"]], options, type, jaspResults, position = 0)
+  bfpackContainer <- .bfpackCreateContainer(jaspResults, deps = c("variables"))
 
   .bfpackGetParameterEstimates(dataList, options, bfpackContainer, ready, type, jaspResults)
 
   # compute the results, aka BFs
   .bfpackComputeResults(dataList, options, bfpackContainer, ready, type)
 
-  print(bfpackContainer[["resultsContainer"]][["resultsState"]]$object)
+  .bfpackParameterTable(options, bfpackContainer, type, position = 1)
 
-  .bfpackParameterTable(options, bfpackContainer, ready, type, position = 1)
+  # Create a legend containing the order constrained hypotheses
+  .bfpackLegendTable(options, type, bfpackContainer, position = 2)
+
+  .bfpackMatrixTable(options, bfpackContainer, type, position = 3)
+
+  .bfpackPosteriorHypothesesTable(options, bfpackContainer, type, position = 4)
 
   # # Create a table containing the main analysis results
   # .bfpackTestResultsTable(dataList, options, bfpackContainer,  ready, type, position = 1)
