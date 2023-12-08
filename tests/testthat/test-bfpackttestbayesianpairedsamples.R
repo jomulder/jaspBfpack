@@ -8,7 +8,7 @@ context("Bfpack Paired Samples T-Test")
 # tt <- t_test(sesamesim$prenumb,sesamesim$postnumb,paired = TRUE)
 # bfpackAnalysis <- bfpack(tt,"difference=0;difference>0;difference<0", fraction = 1)
 
-options <- jaspTools::analysisOptions("BfpackTTestBayesianPairedSamples")
+options <- jaspTools::analysisOptions("bfpackTTestBayesianPairedSamples")
 options$descriptives <- TRUE
 options$bayesFactorPlot <- TRUE
 options$descriptivesPlot <- TRUE
@@ -16,7 +16,7 @@ options$hypothesis <- "equalBiggerSmaller"
 options$bayesFactorType <- "BF01"
 options$pairs <- list(list("prenumb", "postnumb"))
 set.seed(1)
-results <- jaspTools::runAnalysis("BfpackTTestBayesianPairedSamples", "sesame.csv", options)
+results <- jaspTools::runAnalysis("bfpackTTestBayesianPairedSamples", "sesame.csv", options)
 
 
 test_that("prenumb - postnumb plot matches", {
@@ -55,14 +55,14 @@ test_that("prenumb - postnumb plot matches", {
 # bfpackAnalysis <- bfpack(tt,"difference=0", fraction = 4)
 
 test_that("Bfpack Paired Samples T-Test table results match", {
-	options <- jaspTools::analysisOptions("BfpackTTestBayesianPairedSamples")
+	options <- jaspTools::analysisOptions("bfpackTTestBayesianPairedSamples")
 	options$seed <- 900
 
 	options$hypothesis <- "equalNotEqual"
 	options$bayesFactorType <- "BF01"
 	options$pairs <- list(list("postnumb", "prenumb"))
 	set.seed(1)
-	results <- jaspTools::runAnalysis("BfpackTTestBayesianPairedSamples", "sesame.csv", options)
+	results <- jaspTools::runAnalysis("bfpackTTestBayesianPairedSamples", "sesame.csv", options)
 	table <- results[["results"]][["bfpackContainer"]][["collection"]][["bfpackContainer_mainResultsTable"]][["data"]]
 	jaspTools::expect_equal_tables(table,
 		list(2.76244529575384e-43, "", "postnumb - prenumb", "H0: Equal", "H1: Not equal",
@@ -78,14 +78,14 @@ test_that("Bfpack Paired Samples T-Test table results match", {
 # bfpackAnalysis <- bfpack(tt,"difference=0;difference>0", fraction = 4)
 
 test_that("Bfpack Paired Samples T-Test table results match", {
-	options <- jaspTools::analysisOptions("BfpackTTestBayesianPairedSamples")
+	options <- jaspTools::analysisOptions("bfpackTTestBayesianPairedSamples")
 	options$seed <- 900
 
 	options$hypothesis <- "equalBigger"
 	options$bayesFactorType <- "BF01"
 	options$pairs <- list(list("postnumb", "prenumb"))
 	set.seed(1)
-	results <- jaspTools::runAnalysis("BfpackTTestBayesianPairedSamples", "sesame.csv", options)
+	results <- jaspTools::runAnalysis("bfpackTTestBayesianPairedSamples", "sesame.csv", options)
 	table <- results[["results"]][["bfpackContainer"]][["collection"]][["bfpackContainer_mainResultsTable"]][["data"]]
 	jaspTools::expect_equal_tables(table,
 		list(1.38122264787692e-43, "", "postnumb - prenumb", "H0: Equal", "H1: Bigger",
@@ -101,14 +101,14 @@ test_that("Bfpack Paired Samples T-Test table results match", {
 # bfpackAnalysis <- bfpack(tt,"difference=0;difference<0", fraction = 4)
 
 test_that("Bfpack Paired Samples T-Test table results match", {
-	options <- jaspTools::analysisOptions("BfpackTTestBayesianPairedSamples")
+	options <- jaspTools::analysisOptions("bfpackTTestBayesianPairedSamples")
 	options$seed <- 900
 
 	options$hypothesis <- "equalSmaller"
 	options$bayesFactorType <- "BF01"
 	options$pairs <- list(list("postnumb", "prenumb"))
 	set.seed(1)
-	results <- jaspTools::runAnalysis("BfpackTTestBayesianPairedSamples", "sesame.csv", options)
+	results <- jaspTools::runAnalysis("bfpackTTestBayesianPairedSamples", "sesame.csv", options)
 	table <- results[["results"]][["bfpackContainer"]][["collection"]][["bfpackContainer_mainResultsTable"]][["data"]]
 	jaspTools::expect_equal_tables(table,
 		list(138.002289763008, "", "postnumb - prenumb", "H0: Equal", "H1: Smaller",
@@ -124,14 +124,14 @@ test_that("Bfpack Paired Samples T-Test table results match", {
 # bfpackAnalysis <- bfpack(tt,"difference>0;difference<0", fraction = 4)
 
 test_that("Bfpack Paired Samples T-Test table results match", {
-	options <- jaspTools::analysisOptions("BfpackTTestBayesianPairedSamples")
+	options <- jaspTools::analysisOptions("bfpackTTestBayesianPairedSamples")
 	options$seed <- 900
 
 	options$hypothesis <- "biggerSmaller"
 	options$bayesFactorType <- "BF01"
 	options$pairs <- list(list("postnumb", "prenumb"))
 	set.seed(1)
-	results <- jaspTools::runAnalysis("BfpackTTestBayesianPairedSamples", "sesame.csv", options)
+	results <- jaspTools::runAnalysis("bfpackTTestBayesianPairedSamples", "sesame.csv", options)
 	table <- results[["results"]][["bfpackContainer"]][["collection"]][["bfpackContainer_mainResultsTable"]][["data"]]
 	jaspTools::expect_equal_tables(table,
 		list(9.99131385335528e+44, "", "postnumb - prenumb", "H1: Bigger",
@@ -147,14 +147,14 @@ test_that("Bfpack Paired Samples T-Test table results match", {
 # bfpackAnalysis <- bfpack(tt,"difference=0;difference>0;difference<0", fraction = 4)
 
 test_that("Bfpack Paired Samples T-Test table results match", {
-	options <- jaspTools::analysisOptions("BfpackTTestBayesianPairedSamples")
+	options <- jaspTools::analysisOptions("bfpackTTestBayesianPairedSamples")
 	options$seed <- 900
 
 	options$hypothesis <- "equalBiggerSmaller"
 	options$bayesFactorType <- "BF01"
 	options$pairs <- list(list("postnumb", "prenumb"))
 	set.seed(1)
-	results <- jaspTools::runAnalysis("BfpackTTestBayesianPairedSamples", "sesame.csv", options)
+	results <- jaspTools::runAnalysis("bfpackTTestBayesianPairedSamples", "sesame.csv", options)
 	table <- results[["results"]][["bfpackContainer"]][["collection"]][["bfpackContainer_mainResultsTable"]][["data"]]
 	jaspTools::expect_equal_tables(table,
 		list("", 1.38122264787692e-43, 138.002289763008, "postnumb - prenumb",

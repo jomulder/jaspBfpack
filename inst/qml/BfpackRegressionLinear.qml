@@ -27,8 +27,6 @@ Form
 
 	VariablesForm
 	{
-		implicitHeight: 200 * preferencesModel.uiScale
-
 		AvailableVariablesList
 		{
 			name: 						"variablesList"
@@ -36,9 +34,17 @@ Form
 		
 		AssignedVariablesList
 		{
-			name: 								"variables"
-			singleVariable: 			false
-			allowedColumns: 			["scale", "ordinal"]
+			name: 						"dependent"
+			title: 						qsTr("Dependent Variable")
+			singleVariable: 			true
+			allowedColumns: 			["scale"]
+		}
+
+		AssignedVariablesList
+		{
+			name: 						"covariates"
+			title: 						qsTr("Covariates")
+			suggestedColumns: 			["scale"]
 		}
 	}
 
@@ -55,7 +61,6 @@ Form
 		}
 	}
 
-	// Common.HypothesesWindowStandard{}
 	Group
 	{
 		columns: 1
@@ -68,7 +73,7 @@ Form
 			implicitHeight: 90 * preferencesModel.uiScale
 			implicitWidth: 200 * preferencesModel.uiScale
 			source: [{
-				values: [qsTr("H0: rho = 0 "), qsTr("H1: rho < 0 "), qsTr("H2: rho > 0 ")]
+				values: [qsTr("H0: beta = 0 "), qsTr("H1: beta < 0 "), qsTr("H2: beta > 0 ")]
 			}]
 			name: "standardHypotheses"
 			// titles: [qsTr("Hypotheses"), qsTr("Prior probabilities")]
@@ -79,7 +84,7 @@ Form
 					name: "priorProb"
 					fieldWidth: 50
 					defaultValue: "1/3"
-					}
+				}
 			}
 		}
 	}
@@ -191,7 +196,7 @@ Form
 				CIField
 				{
 					name: 					"ciLevel"
-					text: 					qsTr("Credible interval")
+					text: 					qsTr("Uncertainty interval")
 				}
 			}
 		}
@@ -203,7 +208,7 @@ Form
 			CheckBox
 			{
 				name: 						"plots"
-				text: 						qsTr("Plots")
+				text: 						qsTr("Manual hypotheses plots")
 			}
 		}
 

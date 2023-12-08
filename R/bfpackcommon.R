@@ -143,6 +143,8 @@ gettextf <- function(fmt, ..., domain = NULL)  {
 
   dataset <- dataList[["dataset"]]
   missing <- dataList[["missing"]]
+  # decode the colnames otherwise bfpack fails when trying to match hypotheses and estimate names
+  colnames(dataset) <- decodeColNames(colnames(dataset))
 
   if (bfpackContainer$getError()) {
     return()
@@ -159,30 +161,42 @@ gettextf <- function(fmt, ..., domain = NULL)  {
 
   # estimate the correlation
   if (type == "correlation") {
-    dataset <- dataList[["dataset"]]
-    # decode the colnames otherwise bfpack fails when trying to match hypotheses and estimate names
-    colnames(dataset) <- decodeColNames(colnames(dataset))
     result <- try(BFpack::cor_test(dataset))
+
+  # regression
+  } else if (type == "regression") {
+    dependent <- decodeColNames(options[["dependent"]])
+    covariates <- decodeColNames(options[["covariates"]])
+    ncov <- length(covariates)
+    covariateString <- paste0(covariates, collapse = "+")
+    formula <- as.formula(paste0(dependent, "~", covariateString))
+    result <- try(lm(formula, data = dataset))
   }
 
   if (isTryError(result)) {
     bfpackContainer$setError(gettext("The parameter estimation failed. Error message: %1$s", jaspBase::.extractErrorMessage(result)))
+    return()
   }
 
   # save in jaspResults, which is where bfpackContainer is stored.
   # this way we do not have to estimate the parameters twice
   estimatesState <- createJaspState(result)
-  estimatesState$dependOn("seed") # are there any new dependencies not already covered in the container?
+  estimatesState$dependOn(c("seed", "ciLevel")) # are there any new dependencies not already covered in the container?
   bfpackContainer[["estimatesState"]] <- estimatesState
 
   # the estimate names for the JASP GUI
   estimateNames <- eval(parse(text = callString))(result)
+
   estimateNames <- as.list(names(estimateNames$estimate))
+  # remove intercept name for regression
+  if (type == "regression") estimateNames[[1]] <- NULL
+
   namesForQml <- createJaspQmlSource("estimateNamesForQml", estimateNames)
   namesForQml$dependOn("variables")
   # apparently the source only works directly with jaspResults
   jaspResults[["estimateNamesForQml"]] <- namesForQml
 
+  return()
 }
 
 # compute the posteriors and BFs
@@ -200,9 +214,9 @@ gettextf <- function(fmt, ..., domain = NULL)  {
                       "independentTTest" = c("variables", "bayesFactorType", "hypothesis"),
                       "pairedTTest" = c("pairs", "hypothesis", "bayesFactorType"),
                       "onesampleTTest" = c("variables", "hypothesis", "bayesFactorType"),
-                      "anova" = "",
-                      "ancova" = "",
-                      "regression" = "standardized",
+                      "anova" = "bfType",
+                      "ancova" = "bfType",
+                      "regression" = "bfType",
                       "correlation" = "")
 
   resultsContainer <- createJaspContainer()
@@ -289,7 +303,7 @@ gettextf <- function(fmt, ..., domain = NULL)  {
   # inner container
   if (!is.null(bfpackContainer[["parameterTable"]])) return()
 
-  parameterTable <- createJaspTable(gettext("Parameter posterior probabilities"))
+  parameterTable <- createJaspTable(gettext("Posterior probabilities when testing individual parameters"))
   parameterTable$dependOn("priorProb")
   parameterTable$position <- position
 
@@ -301,7 +315,7 @@ gettextf <- function(fmt, ..., domain = NULL)  {
   bfpackContainer[["parameterTable"]] <- parameterTable
 
   parPhp <- bfpackContainer[["resultsContainer"]][["resultsState"]]$object$PHP_exploratory
-  if (!is.null(parPhp)) {
+  if (!is.null(parPhp) && !bfpackContainer$getError()) {
     dtFill <- data.frame(coefficient = rownames(parPhp))
     dtFill[, c("equal", "smaller", "larger")] <- parPhp
     parameterTable$setData(dtFill)
@@ -326,7 +340,7 @@ gettextf <- function(fmt, ..., domain = NULL)  {
 
   hypos <- bfpackContainer[["resultsContainer"]][["resultsState"]]$object$hypotheses
 
-  if (!is.null(hypos)) {
+  if (!is.null(hypos) && !bfpackContainer$getError()) {
     for (i in seq_len(length(hypos))) {
       row <- list(number = gettextf("H%i", i), hypothesis = hypos[i])
       legendTable$addRows(row)
@@ -351,7 +365,7 @@ gettextf <- function(fmt, ..., domain = NULL)  {
   bfpackContainer[["resultsContainer"]][["matrixTable"]] <- matrixTable
 
   bfMatrix <- bfpackContainer[["resultsContainer"]][["resultsState"]]$object$BFmatrix_confirmatory
-  if (!is.null(bfMatrix)) {
+  if (!is.null(bfMatrix) && !bfpackContainer$getError()) {
     if (nrow(bfMatrix) > 1) {
       for (i in 2:nrow(bfMatrix)) {
         matrixTable$addColumnInfo(name = paste0("H", i), title = gettextf("H%i", i), type = "number")
@@ -386,7 +400,7 @@ gettextf <- function(fmt, ..., domain = NULL)  {
   bfpackContainer[["resultsContainer"]][["postTable"]] <- postTable
 
   php <- bfpackContainer[["resultsContainer"]][["resultsState"]]$object$PHP_confirmatory
-  if (!is.null(php)) {
+  if (!is.null(php) && !bfpackContainer$getError()) {
     for (i in seq_len(length(php))) {
       row <- list(hypothesis = gettextf("H%i", i), prob = php[i])
       postTable$addRows(row)
@@ -420,8 +434,8 @@ gettextf <- function(fmt, ..., domain = NULL)  {
   bfpackContainer[["resultsContainer"]][["specTable"]] <- specTable
 
   spec <- bfpackContainer[["resultsContainer"]][["resultsState"]]$object$BFtable_confirmatory
-  if (!is.null(spec)) {
-    dtFill <- data.frame(hypothesis = rownames(spec))
+  if (!is.null(spec) && !bfpackContainer$getError()) {
+    dtFill <- data.frame(hypothesis = paste0(gettext("H"), seq(1:nrow(spec))))
     dtFill[, c("complex=", "complex>", "fit=", "fit>", "BF=", "BF>", "BF")] <- spec[, 1:7]
     specTable$setData(dtFill)
 
@@ -432,49 +446,67 @@ gettextf <- function(fmt, ..., domain = NULL)  {
 }
 
 
-.bfpackDescriptivesTable <- function(options, bfpackContainer, type, position) {
-  if (!is.null(bfpackContainer[["resultsContainer"]][["descriptivesTable"]]) ||
+.bfpackCoefficientsTable <- function(options, bfpackContainer, type, position = 1) {
+  if (!is.null(bfpackContainer[["coefContainer"]][["coefficientsTable"]]) ||
       !options[["coefficientsTable"]]) return()
 
-  descriptivesTable <- createJaspTable(gettext("Descriptives table"))
-  descriptivesTable$dependOn(c("coefficientsTable", "ciLevel"))
-  descriptivesTable$position <- position
+  # create a container so the coefficientsTable is added at the end of the output
+  coefContainer <- createJaspContainer()
+  coefContainer$dependOn(c("coefficientsTable", "ciLevel"))
+  bfpackContainer[["coefContainer"]] <- coefContainer
+
+  coefficientsTable <- createJaspTable(gettext("Coefficients table"))
+  coefficientsTable$position <- position
 
   interval <- gettextf("%s%% CI", format(100 * options[["ciLevel"]], digits = 3, drop0trailing = TRUE))
   intervalLow <- gettextf("%s lower bound", interval)
   intervalUp <- gettextf("%s upper bound", interval)
 
-  descriptivesTable$addColumnInfo(name = "coefficient", title = "", type = "string")
-  descriptivesTable$addColumnInfo(name = "mean", title = gettext("Mean"), type = "number")
-  descriptivesTable$addColumnInfo(name = "median", title = gettext("Median"), type = "number")
-  descriptivesTable$addColumnInfo(name = "lower", title = intervalLow, type = "number")
-  descriptivesTable$addColumnInfo(name = "upper", title = intervalUp, type = "number")
+  coefficientsTable$addColumnInfo(name = "coefficient", title = "", type = "string")
+  coefficientsTable$addColumnInfo(name = "mean", title = gettext("Mean"), type = "number")
+  coefficientsTable$addColumnInfo(name = "median", title = gettext("Median"), type = "number")
+  coefficientsTable$addColumnInfo(name = "lower", title = intervalLow, type = "number")
+  coefficientsTable$addColumnInfo(name = "upper", title = intervalUp, type = "number")
 
-  bfpackContainer[["resultsContainer"]][["descriptivesTable"]] <- descriptivesTable
 
-  outmodel <- bfpackContainer[["resultsContainer"]][["resultsState"]]$object$model
-  if (!is.null(outmodel)) {
+  bfpackContainer[["coefContainer"]][["coefficientsTable"]] <- coefficientsTable
 
-    dtFill <- data.frame(coefficient = rownames(outmodel$correstimates))
+  estimates <- bfpackContainer[["resultsContainer"]][["resultsState"]]$object$estimates
+  if (!is.null(estimates) && !bfpackContainer$getError()) {
+
+    dtFill <- data.frame(coefficient = rownames(estimates))
     # the regular bfpack output has the 95% interval bounds
-    dtFill[, c("mean", "median", "lower", "upper")] <- outmodel$correstimates
+    dtFill[, c("mean", "median", "lower", "upper")] <- estimates
 
     # we also let users choose the interval bounds
     if (options[["ciLevel"]] != .95) {
-      # maybe this first element differs between analyses...???
-      draws <- outmodel$corrdraws[[1]]
-      bounds <- apply(draws, c(2, 3), function(x) {
-        coda::HPDinterval(coda::as.mcmc(x), prob = options[["ciLevel"]])
+      # now lets get the fitted object for this:
+      fitObj <- bfpackContainer[["estimatesState"]]$object
+
+      if (type == "correlation") {
+        draws <- fitObj$corrdraws[[1]]
+        bounds <- apply(draws, c(2, 3), function(x) {
+          coda::HPDinterval(coda::as.mcmc(x), prob = options[["ciLevel"]])
         })
-      boundsLow <- bounds[1, , ]
-      boundsUp <- bounds[2, , ]
-      # kind of hope this structure never changes so the elements are always in the correct order
-      boundsLow <- boundsLow[lower.tri(boundsLow)]
-      boundsUp <- boundsUp[lower.tri(boundsUp)]
+        boundsLow <- bounds[1, , ]
+        boundsUp <- bounds[2, , ]
+        # kind of hope this structure never changes so the elements are always in the correct order
+        boundsLow <- boundsLow[lower.tri(boundsLow)]
+        boundsUp <- boundsUp[lower.tri(boundsUp)]
+      } else {
+        int <- confint(fitObj, level = options[["ciLevel"]])
+        boundsLow <- int[, 1]
+        boundsUp <- int[, 2]
+      }
+
       dtFill[, c("lower", "upper")] <- cbind(boundsLow, boundsUp)
 
     }
-    descriptivesTable$setData(dtFill)
+    coefficientsTable$setData(dtFill)
+    footnt <- switch(type,
+                     "correlation" = gettext("The uncertainty interval is a highest posterior density credible interval."),
+                     "regression" = gettext("The uncertainty interval is a confidence interval."))
+    coefficientsTable$addFootnote(footnt)
   }
 
 
@@ -484,6 +516,52 @@ gettextf <- function(fmt, ..., domain = NULL)  {
 
 
 ####### PLOTS ########
+
+.bfpackPriorPosteriorPlot <- function(options, bfpackContainer, type, position = 1) {
+  if (!is.null(bfpackContainer[["plotContainer"]][["priorPlot"]]) || !options[["plots"]]) {
+    return()
+  }
+
+  plotContainer <- createJaspContainer(gettext("Prior and Posterior Probabilities"))
+  plotContainer$dependOn(optionsFromObject = bfpackContainer[["resultsContainer"]])
+  bfpackContainer[["plotContainer"]] <- plotContainer
+
+  result <- bfpackContainer[["resultsContainer"]][["resultsState"]]$object
+
+  if (!bfpackContainer$getError() && !is.null(result$PHP_confirmatory)) {
+    post <- result$PHP_confirmatory
+    prior <- result$prior.hyp.conf
+
+    priorPlot <- .plotHelper(prior, gettext("Prior probabilities"))
+    plotContainer[["priorPlot"]] <- priorPlot
+
+    postPlot <- .plotHelper(post, gettext("Posterior probabilities"))
+    plotContainer[["postPlot"]] <- postPlot
+
+  }
+
+}
+
+.plotHelper <- function(probs, name) {
+
+  dat <- data.frame(y = probs, group = paste0(gettext("H"), seq_len(length(probs))))
+
+  pl <- ggplot2::ggplot(data = dat, mapping = ggplot2::aes(x = "", y = y, fill = group)) +
+    ggplot2::geom_bar(width = 1, stat = "identity", show.legend = TRUE, color = "black", linewidth = 1.5) +
+    ggplot2::coord_polar(direction = -1, theta = "y") +
+    jaspGraphs::getEmptyTheme() +
+    ggplot2::scale_fill_discrete(name = gettext("Hypothesis")) +
+    ggplot2::theme(legend.key.size = ggplot2::unit(1, 'cm'), #change legend key size
+          legend.key.height = ggplot2::unit(1, 'cm'), #change legend key height
+          legend.key.width = ggplot2::unit(1, 'cm'), #change legend key width
+          legend.title = ggplot2::element_text(size=14), #change legend title font size
+          legend.text = ggplot2::element_text(size=14)) #change legend text font size
+
+  out <- createJaspPlot(pl, title = name, width = 250, height = 250)
+
+  return(out)
+}
+
 
 # Create the posterior probability plots
 .bfpackPosteriorProbabilityPlot <- function(dataset, options, bfpackContainer, ready, type, position) {
@@ -1450,7 +1528,7 @@ gettextf <- function(fmt, ..., domain = NULL)  {
 # }
 #
 # # Create the descriptive statistics table
-# .bfpackDescriptivesTable <- function(dataset, options, bfpackContainer, ready, type, position) {
+# .bfpackCoefficientsTable <- function(dataset, options, bfpackContainer, ready, type, position) {
 #   if (!is.null(bfpackContainer[["descriptivesTable"]]) || !options[["descriptives"]]) {
 #     return()
 #   }

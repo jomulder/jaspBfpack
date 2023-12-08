@@ -15,7 +15,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-BfpackCorrelation <- function(jaspResults, dataset, options, ...) {
+bfpackCorrelation <- function(jaspResults, dataset, options, ...) {
 
   # sink(file = "~/Downloads/logBf.txt")
   # on.exit(sink(NULL))
@@ -55,16 +55,8 @@ BfpackCorrelation <- function(jaspResults, dataset, options, ...) {
   .bfpackSpecificationTable(options, bfpackContainer, type, position = 5)
 
   # coefficients table
-  .bfpackDescriptivesTable(options, bfpackContainer, type, position = 6)
+  .bfpackCoefficientsTable(options, bfpackContainer, type, position = 6)
 
-  # # Create a table containing the main analysis results
-  # .bfpackTestResultsTable(dataList, options, bfpackContainer,  ready, type, position = 1)
-
-  # # Create the Bayes factor matrix
-  # .bfpackBfMatrix(dataList[["dataset"]], options, bfpackContainer, ready, type, position = 2)
-  #
-
-  #
-  # # Create the posterior probability plots
-  # .bfpackPosteriorProbabilityPlot(dataList[["dataset"]], options, bfpackContainer, ready, type, position = 4)
+  # Create the prior and posterior probability plots
+  .bfpackPriorPosteriorPlot(options, bfpackContainer, type)
 }

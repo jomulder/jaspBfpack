@@ -204,7 +204,7 @@ Form
 			CheckBox
 			{
 				name: 						"plots"
-				text: 						qsTr("Plots")
+				text: 						qsTr("Manual hypotheses plots")
 			}
 		}
 

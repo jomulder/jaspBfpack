@@ -14,7 +14,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-BfpackAncova <- function(jaspResults, dataset, options, ...) {
+bfpackAncova <- function(jaspResults, dataset, options, ...) {
 
   # What type of Bfpack analysis is being conducted?
   type <- "ancova"
@@ -32,7 +32,7 @@ BfpackAncova <- function(jaspResults, dataset, options, ...) {
   bfpackContainer <- .bfpackCreateContainer(jaspResults, deps = c("dependent", "fixedFactors", "covariates", "model", "seed"))
 
   # Create a legend containing the order constrained hypotheses
-  .bfpackLegend(dataList[["dataset"]], options, type, jaspResults, position = 0)
+  .bfpackLegendTable(dataList[["dataset"]], options, type, jaspResults, position = 0)
 
   # Create a table containing the main analysis results
   .bfpackTestResultsTable(dataList[["dataset"]], options, bfpackContainer, dataList[["missing"]], ready, type, position = 1)
@@ -41,7 +41,7 @@ BfpackAncova <- function(jaspResults, dataset, options, ...) {
   .bfpackBfMatrix(dataList[["dataset"]], options, bfpackContainer, ready, type, position = 2)
 
   # Create the descriptive statistics (coefficients) table
-  .bfpackDescriptivesTable(dataList[["dataset"]], options, bfpackContainer, ready, type, position = 3)
+  .bfpackCoefficientsTable(dataList[["dataset"]], options, bfpackContainer, ready, type, position = 3)
 
   # Create the posterior probability plots
   .bfpackPosteriorProbabilityPlot(dataList[["dataset"]], options, bfpackContainer, ready, type, position = 4)

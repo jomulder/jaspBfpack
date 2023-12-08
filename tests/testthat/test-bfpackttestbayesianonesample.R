@@ -8,7 +8,7 @@ context("Bfpack One Sample T-Test")
 # tt <- t_test(sesamesim$age)
 # bfpackResult <- bfpack(tt,"x=51;x>51;x<51", fraction = 1)
 
-options <- jaspTools::analysisOptions("BfpackTTestBayesianOneSample")
+options <- jaspTools::analysisOptions("bfpackTTestBayesianOneSample")
 options$variables <- list("age")
 options$testValue <- 51
 options$descriptives <- TRUE
@@ -17,7 +17,7 @@ options$descriptivesPlot <- TRUE
 options$hypothesis <- "equalBiggerSmaller"
 options$bayesFactorType <- "BF01"
 set.seed(1)
-results <- jaspTools::runAnalysis("BfpackTTestBayesianOneSample", "sesame.csv", options)
+results <- jaspTools::runAnalysis("bfpackTTestBayesianOneSample", "sesame.csv", options)
 
 
 test_that("age plot matches", {
@@ -56,13 +56,13 @@ test_that("age plot matches", {
 # bfpackResult <- bfpack(tt,"x=30",fraction = 4)
 
 test_that("Bfpack One Sample T-test table results match", {
-	options <- jaspTools::analysisOptions("BfpackTTestBayesianOneSample")
+	options <- jaspTools::analysisOptions("bfpackTTestBayesianOneSample")
 	options$variables <- list("postnumb")
 	options$testValue <- 30
 	options$hypothesis <- "equalNotEqual"
 	options$bayesFactorType <- "BF01"
 	set.seed(1)
-	results <- jaspTools::runAnalysis("BfpackTTestBayesianOneSample", "sesame.csv", options)
+	results <- jaspTools::runAnalysis("bfpackTTestBayesianOneSample", "sesame.csv", options)
 	table <- results[["results"]][["bfpackContainer"]][["collection"]][["bfpackContainer_mainResultsTable"]][["data"]]
 	jaspTools::expect_equal_tables(table,
 		list(6.16007603449518, "", "postnumb", "H0: Equal", "H1: Not equal",
@@ -78,13 +78,13 @@ test_that("Bfpack One Sample T-test table results match", {
 # bfpackResult <- bfpack(tt,"x=30;x>30",fraction = 4)
 
 test_that("Bfpack One Sample T-test table results match", {
-	options <- jaspTools::analysisOptions("BfpackTTestBayesianOneSample")
+	options <- jaspTools::analysisOptions("bfpackTTestBayesianOneSample")
 	options$variables <- list("postnumb")
 	options$testValue <- 30
 	options$hypothesis <- "equalBigger"
 	options$bayesFactorType <- "BF01"
 	set.seed(1)
-	results <- jaspTools::runAnalysis("BfpackTTestBayesianOneSample", "sesame.csv", options)
+	results <- jaspTools::runAnalysis("bfpackTTestBayesianOneSample", "sesame.csv", options)
 	table <- results[["results"]][["bfpackContainer"]][["collection"]][["bfpackContainer_mainResultsTable"]][["data"]]
 	jaspTools::expect_equal_tables(table,
 		list(12.3576651279192, "", "postnumb", "H0: Equal", "H1: Bigger", 0.925136617034224,
@@ -100,13 +100,13 @@ test_that("Bfpack One Sample T-test table results match", {
 # bfpackResult <- bfpack(tt,"x=30;x<30", fraction = 4)
 
 test_that("Bfpack One Sample T-test table results match", {
-	options <- jaspTools::analysisOptions("BfpackTTestBayesianOneSample")
+	options <- jaspTools::analysisOptions("bfpackTTestBayesianOneSample")
 	options$variables <- list("postnumb")
 	options$testValue <- 30
 	options$hypothesis <- "equalSmaller"
 	options$bayesFactorType <- "BF01"
 	set.seed(1)
-	results <- jaspTools::runAnalysis("BfpackTTestBayesianOneSample", "sesame.csv", options)
+	results <- jaspTools::runAnalysis("bfpackTTestBayesianOneSample", "sesame.csv", options)
 	table <- results[["results"]][["bfpackContainer"]][["collection"]][["bfpackContainer_mainResultsTable"]][["data"]]
 	jaspTools::expect_equal_tables(table,
 		list(4.10256609199393, "", "postnumb", "H0: Equal", "H1: Smaller",
@@ -122,14 +122,14 @@ test_that("Bfpack One Sample T-test table results match", {
 # bfpackResult <- bfpack(tt,"x>30;x<30", fraction = 4)
 
 test_that("Bfpack One Sample T-test table results match", {
-	options <- jaspTools::analysisOptions("BfpackTTestBayesianOneSample")
+	options <- jaspTools::analysisOptions("bfpackTTestBayesianOneSample")
 	options$variables <- list("postnumb")
 	options$testValue <- 30
 
 	options$hypothesis <- "biggerSmaller"
 	options$bayesFactorType <- "BF01"
 	set.seed(1)
-	results <- jaspTools::runAnalysis("BfpackTTestBayesianOneSample", "sesame.csv", options)
+	results <- jaspTools::runAnalysis("bfpackTTestBayesianOneSample", "sesame.csv", options)
 	table <- results[["results"]][["bfpackContainer"]][["collection"]][["bfpackContainer_mainResultsTable"]][["data"]]
 	jaspTools::expect_equal_tables(table,
 		list(0.331985536873399, "", "postnumb", "H1: Bigger", "H2: Smaller",
@@ -145,14 +145,14 @@ test_that("Bfpack One Sample T-test table results match", {
 # bfpackResult <- bfpack(tt,"x=30;x>30;x<30", fraction = 4)
 
 test_that("Bfpack One Sample T-test table results match", {
-	options <- jaspTools::analysisOptions("BfpackTTestBayesianOneSample")
+	options <- jaspTools::analysisOptions("bfpackTTestBayesianOneSample")
 	options$variables <- list("postnumb")
 	options$testValue <- 30
 
 	options$hypothesis <- "equalBiggerSmaller"
 	options$bayesFactorType <- "BF01"
 	set.seed(1)
-	results <- jaspTools::runAnalysis("BfpackTTestBayesianOneSample", "sesame.csv", options)
+	results <- jaspTools::runAnalysis("bfpackTTestBayesianOneSample", "sesame.csv", options)
 	table <- results[["results"]][["bfpackContainer"]][["collection"]][["bfpackContainer_mainResultsTable"]][["data"]]
 	jaspTools::expect_equal_tables(table,
 		list("", 12.3576651279192, 4.10256609199393, "postnumb", 0.754904244575,

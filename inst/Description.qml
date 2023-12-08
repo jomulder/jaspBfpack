@@ -24,19 +24,19 @@ Description
 	{
 		menu:			"Welch's T-Test"
 		title:		"BFpack Welch's T-Test"
-		func:			"BfpackTTestIndependentSamples"
+		func:			"bfpackTTestIndependentSamples"
 	}
 	Analysis
 	{
 		menu: 		"Paired Samples T-Test"
 		title:		"BFpack Paired Samples T-Test"
-		func:			"BfpackTTestPairedSamples"
+		func:			"bfpackTTestPairedSamples"
 	}
 	Analysis
 	{
 		menu:  		"One Sample T-Test"
 		title:		"BFpack One Sample T-Test"
-		func:			"BfpackTTestOneSample"
+		func:			"bfpackTTestOneSample"
 	}
 
 	GroupTitle
@@ -48,13 +48,13 @@ Description
 	{
 		menu:   	"ANOVA"
 		title:		"BFpack ANOVA"
-		func:			"BfpackAnova"
+		func:			"bfpackAnova"
 	}
 	Analysis
 	{
 		menu:   	"ANCOVA"
 		title:		"BFpack ANCOVA"
-		func:			"BfpackAncova"
+		func:			"bfpackAncova"
 	}
 
 	GroupTitle
@@ -66,7 +66,7 @@ Description
 	{
 		menu:   	"Linear Regression"
 		title:		"Regression"
-		func:			"BfpackRegressionLinear"
+		func:			"bfpackRegressionLinear"
 	}
 
 	GroupTitle
@@ -77,6 +77,6 @@ Description
 	Analysis
 	{
 		title:		"Correlation"
-		func:			"BfpackCorrelation"
+		func:			"bfpackCorrelation"
 	}
 }

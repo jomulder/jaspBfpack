@@ -11,7 +11,7 @@ context("Bfpack ANOVA")
 #                         site1 < site2 < site3 < site4 < site5;
 #                         site1 > site2 > site3 > site4 > site5", fraction = 1)
 
-options <- jaspTools::analysisOptions("BfpackAnovaBayesian")
+options <- jaspTools::analysisOptions("bfpackAnovaBayesian")
 options$dependent <- "age"
 options$fixedFactors <- "site"
 options$bayesFactorMatrix <- TRUE
@@ -20,7 +20,7 @@ options$bayesFactorPlot <- TRUE
 options$descriptivesPlot <- TRUE
 options$model <- "site1 = site2 = site3 = site4 = site5;site1 < site2 < site3 < site4 < site5;site1 > site2 > site3 > site4 > site5"
 set.seed(1)
-results <- jaspTools::runAnalysis("BfpackAnovaBayesian", "sesame.csv", options)
+results <- jaspTools::runAnalysis("bfpackAnovaBayesian", "sesame.csv", options)
 
 
 test_that("Bayes Factor Matrix table results match", {
@@ -86,7 +86,7 @@ test_that("Hypothesis Legend table results match", {
 # bfpackResult <- bfpack(tt,"site1 =site2=site3=site4=site5;
 #               site3 < site4 < site1 < site5 < site2", fraction = 4)
 
-options <- jaspTools::analysisOptions("BfpackAnovaBayesian")
+options <- jaspTools::analysisOptions("bfpackAnovaBayesian")
 options$dependent <- "postnumb"
 options$fixedFactors <- "site"
 options$bayesFactorMatrix <- TRUE
@@ -94,7 +94,7 @@ options$descriptives <- TRUE
 options$seed <- 900
 options$model <- "site1 = site2 = site3 = site4 = site5;site3 < site4 < site1 < site5 < site2"
 set.seed(1)
-results <- jaspTools::runAnalysis("BfpackAnovaBayesian", "sesame.csv", options)
+results <- jaspTools::runAnalysis("bfpackAnovaBayesian", "sesame.csv", options)
 
 
 test_that("Bayes Factor Matrix table results match", {

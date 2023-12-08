@@ -15,7 +15,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-BfpackRegressionLinear <- function(jaspResults, dataset, options, ...) {
+bfpackRegressionLinear <- function(jaspResults, dataset, options, ...) {
+
 
   # What type of Bfpack analysis is being conducted?
   type <- "regression"
@@ -30,20 +31,28 @@ BfpackRegressionLinear <- function(jaspResults, dataset, options, ...) {
   .bfpackDataReady(dataList[["dataset"]], options, type)
 
   # Create a container for the results
-  bfpackContainer <- .bfpackCreateContainer(jaspResults, deps = c("dependent", "covariates", "model", "seed", "standardized"))
+  bfpackContainer <- .bfpackCreateContainer(jaspResults, deps = c("dependent", "covariates", "runAnalysisBox"))
+
+  .bfpackGetParameterEstimates(dataList, options, bfpackContainer, ready, type, jaspResults)
+
+  # compute the results, aka BFs
+  .bfpackComputeResults(dataList, options, bfpackContainer, ready, type)
+
+  .bfpackParameterTable(options, bfpackContainer, type, position = 1)
 
   # Create a legend containing the order constrained hypotheses
-  .bfpackLegend(dataList[["dataset"]], options, type, jaspResults, position = 0)
+  .bfpackLegendTable(options, type, bfpackContainer, position = 2)
 
-  # Create a table containing the main analysis results
-  .bfpackTestResultsTable(dataList[["dataset"]], options, bfpackContainer, dataList[["missing"]], ready, type, position = 1)
+  .bfpackMatrixTable(options, bfpackContainer, type, position = 3)
 
-  # Create the Bayes factor matrix
-  .bfpackBfMatrix(dataList[["dataset"]], options, bfpackContainer, ready, type, position = 2)
+  .bfpackPosteriorHypothesesTable(options, bfpackContainer, type, position = 4)
 
-  # Create the descriptive statistics (coefficients) table
-  .bfpackDescriptivesTable(dataList[["dataset"]], options, bfpackContainer, ready, type, position = 3)
+  .bfpackSpecificationTable(options, bfpackContainer, type, position = 5)
 
-  # Create the posterior probability plots
-  .bfpackPosteriorProbabilityPlot(dataList[["dataset"]], options, bfpackContainer, ready, type, position = 4)
+  # coefficients table
+  .bfpackCoefficientsTable(options, bfpackContainer, type)
+
+  # Create the prior and posterior probability plots
+  .bfpackPriorPosteriorPlot(options, bfpackContainer, type)
+
 }

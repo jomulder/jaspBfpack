@@ -15,7 +15,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-BfpackTTestOneSample <- function(jaspResults, dataset, options, ...) {
+bfpackTTestOneSample <- function(jaspResults, dataset, options, ...) {
 
   # What type of Bfpack analysis is being conducted?
   type <- "onesampleTTest"
@@ -36,7 +36,7 @@ BfpackTTestOneSample <- function(jaspResults, dataset, options, ...) {
   .bfpackTestResultsTable(dataList[["dataset"]], options, bfpackContainer, dataList[["missing"]], ready, type, position = 1)
 
   # Create the descriptive statistics table
-  .bfpackDescriptivesTable(dataList[["dataset"]], options, bfpackContainer, ready, type, position = 2)
+  .bfpackCoefficientsTable(dataList[["dataset"]], options, bfpackContainer, ready, type, position = 2)
 
   # Create the posterior probability plots
   .bfpackPosteriorProbabilityPlot(dataList[["dataset"]], options, bfpackContainer, ready, type, position = 3)

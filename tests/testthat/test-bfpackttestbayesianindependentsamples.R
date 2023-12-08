@@ -10,7 +10,7 @@ context("Bfpack Independent Samples T-Test")
 # tt <- t_test(x,y,paired = FALSE, var.equal = FALSE)
 # bfpackResult <- bfpack(tt,"x=y;x>y;x<y", fraction = 1)
 
-options <- jaspTools::analysisOptions("BfpackTTestBayesianIndependentSamples")
+options <- jaspTools::analysisOptions("bfpackTTestBayesianIndependentSamples")
 options$variables <- list("age")
 options$groupingVariable <- "sex"
 options$descriptives <- TRUE
@@ -19,7 +19,7 @@ options$descriptivesPlot <- TRUE
 options$hypothesis <- "equalBiggerSmaller"
 options$bayesFactorType <- "BF01"
 set.seed(1)
-results <- jaspTools::runAnalysis("BfpackTTestBayesianIndependentSamples", "sesame.csv", options)
+results <- jaspTools::runAnalysis("bfpackTTestBayesianIndependentSamples", "sesame.csv", options)
 
 
 test_that("age plot matches", {
@@ -60,7 +60,7 @@ test_that("age plot matches", {
 # tt <- t_test(x,y,paired = FALSE, var.equal = FALSE)
 # bfpackResult <- bfpack(tt,"x=y",fraction = 4)
 
-options <- jaspTools::analysisOptions("BfpackTTestBayesianIndependentSamples")
+options <- jaspTools::analysisOptions("bfpackTTestBayesianIndependentSamples")
 options$variables <- list("postnumb")
 options$groupingVariable <- "sex"
 options$seed <- 900
@@ -68,7 +68,7 @@ options$descriptives <- TRUE
 options$hypothesis <- "equalNotEqual"
 options$bayesFactorType <- "BF01"
 set.seed(1)
-results <- jaspTools::runAnalysis("BfpackTTestBayesianIndependentSamples", "sesame.csv", options)
+results <- jaspTools::runAnalysis("bfpackTTestBayesianIndependentSamples", "sesame.csv", options)
 
 
 test_that("Descriptive Statistics table results match", {
@@ -97,14 +97,14 @@ test_that("Bfpack Independent Samples Welch's T-Test table results match", {
 # bfpackResult <- bfpack(tt,"x=y;x>y", fraction = 4)
 
 test_that("Bfpack Independent Samples Welch's T-Test table results match", {
-	options <- jaspTools::analysisOptions("BfpackTTestBayesianIndependentSamples")
+	options <- jaspTools::analysisOptions("bfpackTTestBayesianIndependentSamples")
 	options$variables <- list("postnumb")
 	options$groupingVariable <- "sex"
 	options$seed <- 900
 	options$hypothesis <- "equalBigger"
 	options$bayesFactorType <- "BF01"
 	set.seed(1)
-	results <- jaspTools::runAnalysis("BfpackTTestBayesianIndependentSamples", "sesame.csv", options)
+	results <- jaspTools::runAnalysis("bfpackTTestBayesianIndependentSamples", "sesame.csv", options)
 	table <- results[["results"]][["bfpackContainer"]][["collection"]][["bfpackContainer_mainResultsTable"]][["data"]]
 	jaspTools::expect_equal_tables(table,
 		list(3.73180139745868, "", "postnumb", "H0: Equal", "H1: Bigger", 0.788663995801457,
@@ -122,14 +122,14 @@ test_that("Bfpack Independent Samples Welch's T-Test table results match", {
 # bfpackResult <- bfpack(tt,"x=y;x<y", fraction = 4)
 
 test_that("Bfpack Independent Samples Welch's T-Test table results match", {
-	options <- jaspTools::analysisOptions("BfpackTTestBayesianIndependentSamples")
+	options <- jaspTools::analysisOptions("bfpackTTestBayesianIndependentSamples")
 	options$variables <- list("postnumb")
 	options$groupingVariable <- "sex"
 	options$seed <- 900
 	options$hypothesis <- "equalSmaller"
 	options$bayesFactorType <- "BF01"
 	set.seed(1)
-	results <- jaspTools::runAnalysis("BfpackTTestBayesianIndependentSamples", "sesame.csv", options)
+	results <- jaspTools::runAnalysis("bfpackTTestBayesianIndependentSamples", "sesame.csv", options)
 	table <- results[["results"]][["bfpackContainer"]][["collection"]][["bfpackContainer_mainResultsTable"]][["data"]]
 	jaspTools::expect_equal_tables(table,
 		list(12.9384998340372, "", "postnumb", "H0: Equal", "H1: Smaller",
@@ -147,14 +147,14 @@ test_that("Bfpack Independent Samples Welch's T-Test table results match", {
 # bfpackResult <- bfpack(tt,"x>y;x<y", fraction = 4)
 
 test_that("Bfpack Independent Samples Welch's T-Test table results match", {
-	options <- jaspTools::analysisOptions("BfpackTTestBayesianIndependentSamples")
+	options <- jaspTools::analysisOptions("bfpackTTestBayesianIndependentSamples")
 	options$variables <- list("postnumb")
 	options$groupingVariable <- "sex"
 	options$seed <- 900
 	options$hypothesis <- "biggerSmaller"
 	options$bayesFactorType <- "BF01"
 	set.seed(1)
-	results <- jaspTools::runAnalysis("BfpackTTestBayesianIndependentSamples", "sesame.csv", options)
+	results <- jaspTools::runAnalysis("bfpackTTestBayesianIndependentSamples", "sesame.csv", options)
 	table <- results[["results"]][["bfpackContainer"]][["collection"]][["bfpackContainer_mainResultsTable"]][["data"]]
 	jaspTools::expect_equal_tables(table,
 		list(3.46709228493461, "", "postnumb", "H1: Bigger", "H2: Smaller",
@@ -172,14 +172,14 @@ test_that("Bfpack Independent Samples Welch's T-Test table results match", {
 # bfpackResult <- bfpack(tt,"x=y;x>y;x<y", fraction = 4)
 
 test_that("Bfpack Independent Samples Welch's T-Test table results match", {
-	options <- jaspTools::analysisOptions("BfpackTTestBayesianIndependentSamples")
+	options <- jaspTools::analysisOptions("bfpackTTestBayesianIndependentSamples")
 	options$variables <- list("postnumb")
 	options$groupingVariable <- "sex"
 	options$seed <- 900
 	options$hypothesis <- "equalBiggerSmaller"
 	options$bayesFactorType <- "BF01"
 	set.seed(1)
-	results <- jaspTools::runAnalysis("BfpackTTestBayesianIndependentSamples", "sesame.csv", options)
+	results <- jaspTools::runAnalysis("bfpackTTestBayesianIndependentSamples", "sesame.csv", options)
 	table <- results[["results"]][["bfpackContainer"]][["collection"]][["bfpackContainer_mainResultsTable"]][["data"]]
 	jaspTools::expect_equal_tables(table,
 		list("", 3.73180139745868, 12.9384998340372, "postnumb", 0.743353041114553,

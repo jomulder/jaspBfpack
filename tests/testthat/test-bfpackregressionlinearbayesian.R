@@ -9,7 +9,7 @@ context("Bfpack Linear Regression")
 # bfpackResult <- bfpack(tt,"peabody < 0 & prenumb > 0;peabody = 0 & postnumb = 0;postnumb > 0 & funumb > 0",
 #                standardize = FALSE, fraction = 1)
 
-options <- jaspTools::analysisOptions("BfpackRegressionLinearBayesian")
+options <- jaspTools::analysisOptions("bfpackRegressionLinearBayesian")
 options$dependent <- "age"
 options$covariates <- list("peabody", "prenumb", "postnumb", "funumb")
 options$bayesFactorMatrix <- TRUE
@@ -17,7 +17,7 @@ options$descriptives <- TRUE
 options$bayesFactorPlot <- TRUE
 options$model <- "peabody < 0 & prenumb > 0;peabody = 0 & postnumb = 0;postnumb > 0 & funumb > 0"
 set.seed(1)
-results <- jaspTools::runAnalysis("BfpackRegressionLinearBayesian", "sesame.csv", options)
+results <- jaspTools::runAnalysis("bfpackRegressionLinearBayesian", "sesame.csv", options)
 
 
 test_that("Bayes Factor Matrix table results match", {
@@ -73,7 +73,7 @@ test_that("Hypothesis Legend table results match", {
 # bfpackResult <- bfpack(tt,"prenumb = funumb = peabody = 0;prenumb > 0 & funumb > 0 & peabody > 0 ",
 #                standardize = FALSE, fraction = 2)
 
-options <- jaspTools::analysisOptions("BfpackRegressionLinearBayesian")
+options <- jaspTools::analysisOptions("bfpackRegressionLinearBayesian")
 options$dependent <- "postnumb"
 options$covariates <- list("prenumb", "funumb", "peabody")
 options$bayesFactorMatrix <- TRUE
@@ -81,7 +81,7 @@ options$descriptives <- TRUE
 options$seed <- 900
 options$model <- "prenumb = funumb = peabody = 0;prenumb > 0 & funumb > 0 & peabody > 0"
 set.seed(1)
-results <- jaspTools::runAnalysis("BfpackRegressionLinearBayesian", "sesame.csv", options)
+results <- jaspTools::runAnalysis("bfpackRegressionLinearBayesian", "sesame.csv", options)
 
 
 test_that("Bayes Factor Matrix table results match", {
@@ -127,7 +127,7 @@ test_that("Hypothesis Legend table results match", {
 # bfpackResult <- bfpack(tt,"prenumb = funumb = peabody = 0;prenumb > 0 & funumb > 0 & peabody > 0 ",
 #                standardize = TRUE, fraction = 3)
 
-options <- jaspTools::analysisOptions("BfpackRegressionLinearBayesian")
+options <- jaspTools::analysisOptions("bfpackRegressionLinearBayesian")
 options$dependent <- "postnumb"
 options$covariates <- list("prenumb", "funumb", "peabody")
 options$bayesFactorMatrix <- TRUE
@@ -136,7 +136,7 @@ options$seed <- 900
 options$standardized <- TRUE
 options$model <- "prenumb = funumb = peabody = 0;prenumb > 0 & funumb > 0 & peabody > 0"
 set.seed(1)
-results <- jaspTools::runAnalysis("BfpackRegressionLinearBayesian", "sesame.csv", options)
+results <- jaspTools::runAnalysis("bfpackRegressionLinearBayesian", "sesame.csv", options)
 
 
 test_that("Bayes Factor Matrix table results match", {
