@@ -20,11 +20,15 @@ import QtQuick
 import QtQuick.Layouts
 import JASP
 import JASP.Controls
+import "./common" as Common
 
 Form
 {
+
 	VariablesForm
 	{
+		implicitHeight: 200 * preferencesModel.uiScale
+
 		AvailableVariablesList
 		{
 			name: 						"variablesList"
@@ -32,103 +36,190 @@ Form
 		
 		AssignedVariablesList
 		{
-			name: 						"dependent"
-			title: 						qsTr("Dependent Variable")
-			singleVariable: 			true
-			allowedColumns: 			["scale"]
-		}
-
-		AssignedVariablesList
-		{
-			name: 						"covariates"
-			title: 						qsTr("Covariates")
-			suggestedColumns: 			["scale"]
+			name: 								"variables"
+			singleVariable: 			false
+			allowedColumns: 			["scale", "ordinal"]
 		}
 	}
 
+	CheckBox
+	{
+		Layout.columnSpan: 2
+		id: 						runAnalysisBox
+		name: 					"runAnalysisBox"
+		label: 					qsTr("<b>Run Analysis</b>")
+		checked: 				false
+		Component.onCompleted:
+		{
+			background.color = "#ff8600"
+		}
+	}
+
+	// Common.HypothesesWindowStandard{}
 	Group
 	{
-		title: 							qsTr("Tables")
+		columns: 1
+		// implicitHeight: 140 * preferencesModel.uiScale
+		title: qsTr("Standard hypothesis test")
 
-		CheckBox
+		Text { text: qsTr("Hypotheses   Prior probabilities")}
+		ComponentsList 
 		{
-			name: 						"bayesFactorMatrix"
-			text:					 	qsTr("Bayes factor matrix")
-		}
-
-		CheckBox
-		{
-			name: 						"descriptives"
-			text: 						qsTr("Coefficients")
-
-			CIField
-			{
-				name: 					"credibleInterval"
-				text: 					qsTr("Credible interval")
+			implicitHeight: 90 * preferencesModel.uiScale
+			implicitWidth: 200 * preferencesModel.uiScale
+			source: [{
+				values: [qsTr("H0: rho = 0 "), qsTr("H1: rho < 0 "), qsTr("H2: rho > 0 ")]
+			}]
+			name: "standardHypotheses"
+			// titles: [qsTr("Hypotheses"), qsTr("Prior probabilities")]
+			rowComponent: RowLayout {
+				Text { text: rowValue }
+				FormulaField {
+					implicitWidth: 100 * preferencesModel.uiScale
+					name: "priorProb"
+					fieldWidth: 50
+					defaultValue: "1/3"
+					}
 			}
 		}
 	}
-
 	Group
 	{
-		title: 							qsTr("Plots")
+		columns: 1
+		title: qsTr("Manual hypothesis test")
 
-		CheckBox
-		{
-			name: 						"bayesFactorPlot"
-			text: 						qsTr("Posterior probabilities")
+		ComponentsList {
+			name: "hiddenNames"
+			id: hiddenNames
+			// source: [{values: ["est1", "est2", "est3"]}]
+			rSource: "estimateNamesForQml"
+			visible: false
 		}
-	}
-
-	Group
-	{
-		title: 							qsTr("Additional Options")
-
-		DoubleField
+		Text { text: qsTr("Once you drag variables to the analysis window the names \nof the estimates that you may use to specify manual \nhypotheses will display here:") }
+		Flow
 		{
-			name: 						"seed"
-			text: 						qsTr("Seed")
-			defaultValue: 				100
-			min: 						-999999
-			max: 						999999
-			fieldWidth: 				60 * preferencesModel.uiScale
-		}
-
-		DoubleField
-		{
-			name: 						"fraction"
-			text: 						qsTr("Fraction")
-			defaultValue: 				1
-			min: 						0.01
-			max: 						100
-			fieldWidth: 				60 * preferencesModel.uiScale
+			width: parent.width
+			// anchors.margins: 1
+			spacing: 5
+			Repeater
+			{
+						model: hiddenNames.model // estimates must be the id of the hidden ComponentList
+						TextEdit {
+							text: model.name
+							readOnly: true
+							wrapMode: Text.WordWrap
+							selectByMouse: true
+						}
+			}
 		}
 
-		CheckBox
-		{
-			name: 						"standardized"
-			text: 						qsTr("Standardize coefficients")
-		}
-	}
+		Text { text: qsTr("<b>An example may be</b>: ")}
 
+		InputListView
+		{
+			name				: "manualHypotheses"
+			title				: qsTr("Hypotheses")
+			optionKey			: "name"
+			defaultValues		: ["...", "..."]
+			placeHolder			: qsTr("New hypothesis")
+			minRows				: 2
+
+			// preferredWidth		: (2*form.width)/3
+			preferredHeight: 100 * preferencesModel.uiScale
+			rowComponentTitle	: qsTr("Prior probabilities")
+			rowComponent: FormulaField
+			{
+				fieldWidth: 60
+				name: "priorProbManual"
+				defaultValue: "1/2"
+			}
+		}
+
+		CheckBox {
+			name: "complement"
+			label: qsTr("Complement:")
+			checked: true
+			childrenOnSameRow: true
+			FormulaField {
+				fieldWidth: 60
+				name: "priorProbComplement"
+				label: qsTr("Prior Probability")
+				defaultValue: "1/2"
+			}
+		}
+	}	
+	// Common.HypothesesWindowManual{}
 
 	Section
 	{
-		text: 							qsTr("Model Constraints")
-		columns: 						1
-
-		Text
+		title: 	qsTr("Options")
+		Group
 		{
-			text: 						qsTr("Place each hypothesis on a new line. For example:\n\nage = length = weight\nage < length < weight,\n\nwhere age, length and weight are the names of the predictors.\nRead the help file for further instructions.")
+			title: qsTr("Bayes Factor")
+			Layout.rowSpan: 2
+
+			CheckBox
+			{
+				name: "logScale"
+				label: qsTr("On log scale")
+			}
+
+			RadioButtonGroup
+			{
+				name: "bfType"
+				title: qsTr("Type")
+				radioButtonsOnSameRow: false
+				RadioButton { value: "fractional"; label: qsTr("Fractional"); checked: true}
+				RadioButton { value: "adjusted"; label: qsTr("Adjusted fractional")}
+			}
+		}
+		Group
+		{
+			title: 							qsTr("Tables")
+
+			CheckBox 
+			{
+				name: "specificationTable"
+				text: qsTr("Specification")
+			}
+
+			CheckBox
+			{
+				name: 						"coefficientsTable"
+				text: 						qsTr("Coefficients")
+
+				CIField
+				{
+					name: 					"ciLevel"
+					text: 					qsTr("Credible interval")
+				}
+			}
 		}
 
-		TextArea
+		Group
 		{
-			name: 						"model"
-			text: 						""
-			textType: 					JASP.TextTypeModel
-			trim: 						true
-			implicitHeight:				200 * preferencesModel.uiScale
+			
+
+			CheckBox
+			{
+				name: 						"plots"
+				text: 						qsTr("Plots")
+			}
+		}
+
+		Group
+		{
+			title: 							qsTr("Additional Options")
+
+			DoubleField
+			{
+				name: 						"seed"
+				text: 						qsTr("Seed")
+				defaultValue: 				100
+				min: 						-999999
+				max: 						999999
+				fieldWidth: 				60 * preferencesModel.uiScale
+			}
 		}
 	}
 }

@@ -20,9 +20,11 @@ import QtQuick
 import QtQuick.Layouts
 import JASP
 import JASP.Controls
+import "./common" as Common
 
 Form
 {
+
 	VariablesForm
 	{
 		implicitHeight: 200 * preferencesModel.uiScale
@@ -52,12 +54,14 @@ Form
 			background.color = "#ff8600"
 		}
 	}
+
 	Group
 	{
 		columns: 1
 		// implicitHeight: 140 * preferencesModel.uiScale
 		title: qsTr("Standard hypothesis test")
 
+		Text { text: qsTr("Hypotheses   Prior probabilities")}
 		ComponentsList 
 		{
 			implicitHeight: 90 * preferencesModel.uiScale
@@ -66,7 +70,7 @@ Form
 				values: [qsTr("H0: rho = 0 "), qsTr("H1: rho < 0 "), qsTr("H2: rho > 0 ")]
 			}]
 			name: "standardHypotheses"
-			titles: [qsTr("Hypotheses"), qsTr("Prior probabilities")]
+			// titles: [qsTr("Hypotheses"), qsTr("Prior probabilities")]
 			rowComponent: RowLayout {
 				Text { text: rowValue }
 				FormulaField {
@@ -78,7 +82,6 @@ Form
 			}
 		}
 	}
-
 	Group
 	{
 		columns: 1
@@ -91,7 +94,7 @@ Form
 			rSource: "estimateNamesForQml"
 			visible: false
 		}
-		Text { text: qsTr("Once you drag variables to the analysis window the following will \ndisplay the names of the estimates that you may use to specify \nmanual hypotheses:") }
+		Text { text: qsTr("Once you drag variables to the analysis window the names \nof the estimates that you may use to specify manual \nhypotheses will display here:") }
 		Flow
 		{
 			width: parent.width
@@ -106,15 +109,6 @@ Form
 							wrapMode: Text.WordWrap
 							selectByMouse: true
 						}
-						// onCountChanged: 
-            //         {
-            //             for (var i = 0; i < count; i++)
-            //             {
-            //                 itemAt(i).visible = (i < 3)
-            //                 if (i >= 3)
-            //                     itemAt(i).width = 0
-            //             }
-            //         }
 			}
 		}
 
@@ -152,9 +146,8 @@ Form
 				defaultValue: "1/2"
 			}
 		}
-	}
-	
-
+	}	
+	// Common.HypothesesWindowManual{}
 
 	Section
 	{
@@ -172,25 +165,33 @@ Form
 
 			RadioButtonGroup
 			{
+				// set visible to false to still get the option set in R
+				visible: false
 				name: "bfType"
 				title: qsTr("Type")
 				radioButtonsOnSameRow: false
 				RadioButton { value: "fractional"; label: qsTr("Fractional"); checked: true}
-				RadioButton { value: "adjusted"; label: qsTr("Adjusted fractional")}
+				// RadioButton { value: "adjusted"; label: qsTr("Adjusted fractional")}
 			}
 		}
 		Group
 		{
 			title: 							qsTr("Tables")
 
+			CheckBox 
+			{
+				name: "specificationTable"
+				text: qsTr("Specification")
+			}
+
 			CheckBox
 			{
-				name: 						"coefficients"
+				name: 						"coefficientsTable"
 				text: 						qsTr("Coefficients")
 
 				CIField
 				{
-					name: 					"credibleInterval"
+					name: 					"ciLevel"
 					text: 					qsTr("Credible interval")
 				}
 			}
@@ -198,12 +199,12 @@ Form
 
 		Group
 		{
-			title: 							qsTr("Plots")
+			
 
 			CheckBox
 			{
-				name: 						"probabilitiesPlot"
-				text: 						qsTr("Probabilities")
+				name: 						"plots"
+				text: 						qsTr("Plots")
 			}
 		}
 

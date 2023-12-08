@@ -15,9 +15,10 @@ Imports:
   stats,
   ggplot2,
   stringr,
+  coda,
   jaspBase,
   jaspGraphs
 Remotes:
   jasp-stats/jaspBase,
   jasp-stats/jaspGraphs,
-  jasp-stats/jaspSem
+  jomulder/BFpack

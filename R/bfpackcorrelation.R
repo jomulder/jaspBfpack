@@ -36,7 +36,7 @@ BfpackCorrelation <- function(jaspResults, dataset, options, ...) {
   .bfpackDataReady(dataList[["dataset"]], options, type)
 
   # Create a container for the results
-  bfpackContainer <- .bfpackCreateContainer(jaspResults, deps = c("variables"))
+  bfpackContainer <- .bfpackCreateContainer(jaspResults, deps = c("variables", "runAnalysisBox"))
 
   .bfpackGetParameterEstimates(dataList, options, bfpackContainer, ready, type, jaspResults)
 
@@ -52,14 +52,18 @@ BfpackCorrelation <- function(jaspResults, dataset, options, ...) {
 
   .bfpackPosteriorHypothesesTable(options, bfpackContainer, type, position = 4)
 
+  .bfpackSpecificationTable(options, bfpackContainer, type, position = 5)
+
+  # coefficients table
+  .bfpackDescriptivesTable(options, bfpackContainer, type, position = 6)
+
   # # Create a table containing the main analysis results
   # .bfpackTestResultsTable(dataList, options, bfpackContainer,  ready, type, position = 1)
 
   # # Create the Bayes factor matrix
   # .bfpackBfMatrix(dataList[["dataset"]], options, bfpackContainer, ready, type, position = 2)
   #
-  # # Create the descriptive statistics (coefficients) table
-  # .bfpackDescriptivesTable(dataList[["dataset"]], options, bfpackContainer, ready, type, position = 3)
+
   #
   # # Create the posterior probability plots
   # .bfpackPosteriorProbabilityPlot(dataList[["dataset"]], options, bfpackContainer, ready, type, position = 4)

@@ -194,7 +194,8 @@ gettextf <- function(fmt, ..., domain = NULL)  {
 
   # create a container because both the results and the tables depending on them have the same dependencies
   # start with common deps, and then do the switch
-  deps <- c("complement", "logScale", "manualHypotheses", "priorProbManual", "priorProb", "priorProbComplement", "seed")
+  deps <- c("complement", "logScale", "manualHypotheses", "priorProbManual", "priorProb", "priorProbComplement", "seed",
+            "descriptivesTable")
   depsAddOn <- switch(type,
                       "independentTTest" = c("variables", "bayesFactorType", "hypothesis"),
                       "pairedTTest" = c("pairs", "hypothesis", "bayesFactorType"),
@@ -217,6 +218,11 @@ gettextf <- function(fmt, ..., domain = NULL)  {
 
   if (!is.null(bfpackContainer[["estimatesState"]])) {
     estimates <- bfpackContainer[["estimatesState"]]$object
+
+    # standard hypotheses priors
+    standHypos <- options[["standardHypotheses"]]
+    # those standard priors should not be allowed to be empty
+    standPrior <- sapply(standHypos, function(x) eval(parse(text = x[["priorProb"]])))
 
     # check if there are manual hypotheses
     manualHyp <- sapply(options[["manualHypotheses"]], function(x) x[["name"]])
@@ -254,7 +260,8 @@ gettextf <- function(fmt, ..., domain = NULL)  {
 
     results <- try(BFpack::BF(estimates, hypothesis = manualHyp,
                              complement = options[["complement"]],
-                             prior.hyp = manualPrior,
+                             prior.hyp.conf = manualPrior,
+                             prior.hyp.explo = standPrior,
                              log = options[["logScale"]],
                              BF.type = bftype))
 
@@ -273,253 +280,6 @@ gettextf <- function(fmt, ..., domain = NULL)  {
   return()
 }
 
-
-# Call to bain for 't_test' objects (Welch t-test, Paired t-test, One sample t-test)
-.bfpackTTestRaw <- function(options, x, y = NULL, nu = 0, type = 1, paired = FALSE) {
-
-  if (is.null(y) && !paired) {
-    x <- x[!is.na(x)] # Here we remove the missing values per dependent variable
-    test <- bain::t_test(x = x)
-    hypothesis <- switch(type,
-      "1" = paste0("x=", nu),
-      "2" = paste0("x=", nu, "; x>", nu),
-      "3" = paste0("x=", nu, "; x<", nu),
-      "4" = paste0("x>", nu, "; x<", nu),
-      "5" = paste0("x=", nu, "; x>", nu, "; x<", nu)
-    )
-  }
-
-  if (!is.null(y) && !paired) {
-    test <- bain::t_test(x = x, y = y, paired = FALSE, var.equal = FALSE)
-    hypothesis <- switch(type,
-      "1" = "difference=0",
-      "2" = "difference=0; difference>0",
-      "3" = "difference=0; difference<0",
-      "4" = "difference>0; difference<0",
-      "5" = "difference=0; difference>0; difference<0"
-    )
-  }
-
-  if (!is.null(y) && paired) {
-    test <- bain::t_test(x = x, y = y, paired = TRUE)
-    hypothesis <- switch(type,
-      "1" = "difference=0",
-      "2" = "difference=0;difference>0",
-      "3" = "difference=0;difference<0",
-      "4" = "difference>0;difference<0",
-      "5" = "difference=0;difference>0;difference<0"
-    )
-  }
-
-  bfpackResult <- BFpack::BF(x = test, hypothesis = hypothesis)
-
-  return(bfpackResult)
-}
-
-# Call to bfpack for 'lm' objects (ANOVA, ANCOVA, Regression)
-.bfpackRegressionRaw <- function(dataset, options, type) {
-  dependent <- options[["dependent"]]
-  standardized <- options[["standardized"]]
-  hypothesis <- NULL
-  if (options[["model"]] != "") {
-    hypothesis <- encodeColNames(.bfpackCleanModelInput(options[["model"]]))
-  }
-
-  if (type == "regression") {
-    ncov <- length(options[["covariates"]])
-    covariates <- paste0(options[["covariates"]], collapse = "+")
-    formula <- as.formula(paste0(dependent, "~", covariates))
-  } else if (type == "anova" || type == "ancova") {
-    grouping <- options[["fixedFactors"]]
-    dataset[, options[["fixedFactors"]]] <- as.factor(dataset[, options[["fixedFactors"]]])
-
-    if (type == "anova") {
-      formula <- as.formula(paste0(dependent, "~", grouping, "-1"))
-    } else {
-      ncov <- length(options[["covariates"]])
-      covariates <- paste0(options[["covariates"]], collapse = "+")
-      formula <- as.formula(paste0(dependent, "~", grouping, "+", covariates, "-1"))
-    }
-  }
-
-  if (type == "regression") {
-    # I cannot find out why bfpack won't work in regression with stats::lm(formula = formula, data = dataset)
-    # Error: object of type 'closure' is not subsettable
-    args <- list(formula = as.formula(paste0(dependent, "~", covariates)), data = dataset)
-    fit <- do.call(stats::lm, args)
-  } else {
-    fit <- stats::lm(formula = formula, data = dataset)
-  }
-
-  if (is.null(hypothesis)) {
-    if (type == "regression") {
-      hypothesis <- paste0(paste0(names(stats::coef(fit))[-1], "=0"), collapse = " & ")
-    } else if (type == "anova") {
-      hypothesis <- paste0(names(stats::coef(fit)), collapse = "=")
-    } else if (type == "ancova") {
-      hypothesis <- names(stats::coef(fit))
-      hypothesis <- hypothesis[1:(length(hypothesis) - ncov)]
-      hypothesis <- paste0(hypothesis, collapse = "=")
-    }
-  }
-
-  bfpackResult <- BFpack::BF(x = fit, hypothesis = hypothesis, standardize = standardized)
-  return(bfpackResult)
-}
-
-
-####### EXTRACTING AND STORING RESULTS ########
-
-
-
-.bfpackGetGeneralTestResults <- function(dataset, options, bfpackContainer, ready, type, variable = NULL, pair = NULL, testType = NULL) {
-  set.seed(options[["seed"]])
-
-  if (type %in% c("onesampleTTest", "independentTTest")) {
-    result <- .bfpackGetTTestResults(dataset, options, bfpackContainer, ready, type, variable, testType)
-  } else if (type == "pairedTTest") {
-    result <- .bfpackGetPairedTTestResults(dataset, options, bfpackContainer, ready, type, pair, testType)
-  } else if (type %in% c("anova", "ancova", "regression", "sem")) {
-    result <- .bfpackGetRegressionResults(dataset, options, bfpackContainer, ready, type)
-  }
-
-  return(result)
-}
-
-.bfpackGetTTestResults <- function(dataset, options, bfpackContainer, ready, type, variable, testType) {
-  if (!is.null(bfpackContainer[[variable]])) {
-    return(bfpackContainer[[variable]]$object)
-  }
-
-  variableData <- dataset[[variable]]
-  testValue <- format(options[["testValue"]], scientific = FALSE)
-
-  p <- try({
-    if (type == "onesampleTTest") {
-      bfpackResult <- .bfpackTTestRaw(options, x = variableData, nu = testValue, type = testType)
-    } else if (type == "independentTTest") {
-      levels <- levels(dataset[[options[["groupingVariable"]]]])
-      if (length(levels) != 2) {
-        g1 <- "1"
-        g2 <- "2"
-      } else {
-        g1 <- levels[1]
-        g2 <- levels[2]
-      }
-      subDataSet <- dataset[, c(variable, options[["groupingVariable"]])]
-      group1 <- subDataSet[subDataSet[[options[["groupingVariable"]]]] == g1, variable]
-      group2 <- subDataSet[subDataSet[[options[["groupingVariable"]]]] == g2, variable]
-      bfpackResult <- .bfpackTTestRaw(options, x = group1, y = group2, type = testType)
-    }
-  })
-
-  if (isTryError(p)) {
-    return(p)
-  }
-
-  bfpackContainer[[variable]] <- createJaspState(bfpackResult, dependencies = c("testValue", "hypothesis"))
-  bfpackContainer[[variable]]$dependOn(optionContainsValue = list("variables" = variable))
-  return(bfpackContainer[[variable]]$object)
-}
-
-.bfpackGetPairedTTestResults <- function(dataset, options, bfpackContainer, ready, type, pair, testType) {
-  currentPair <- paste(pair, collapse = " - ")
-
-  if (!is.null(bfpackContainer[[currentPair]])) {
-    return(bfpackContainer[[currentPair]]$object)
-  }
-
-  if (pair[[2]] != "" && pair[[1]] != pair[[2]] && pair[[1]] != "") {
-    subDataSet <- subset(dataset, select = c(pair[[1]], pair[[2]]))
-    c1 <- subDataSet[[pair[[1]]]]
-    c2 <- subDataSet[[pair[[2]]]]
-
-    p <- try({
-      bfpackResult <- .bfpackTTestRaw(options, x = c1, y = c2, type = testType, paired = TRUE)
-    })
-
-    if (isTryError(p)) {
-      return(p)
-    }
-
-    bfpackContainer[[currentPair]] <- createJaspState(bfpackResult, dependencies = "hypothesis")
-    bfpackContainer[[currentPair]]$dependOn(optionContainsValue = list("pairs" = pair))
-    return(bfpackContainer[[currentPair]]$object)
-  }
-}
-
-.bfpackGetRegressionResults <- function(dataset, options, bfpackContainer, ready, type) {
-
-  if (!is.null(bfpackContainer[["bfpackResult"]])) {
-    return(bfpackContainer[["bfpackResult"]]$object)
-  } else if (ready) {
-    if (type == "anova" || type == "ancova") {
-      groupCol <- dataset[, options[["fixedFactors"]]]
-      varLevels <- levels(groupCol)
-      if (length(varLevels) > 15) {
-        bfpackContainer$setError(gettext("The fixed factor has too many levels for a Bfpack analysis."))
-        return()
-      }
-    }
-
-    p <- try({
-      if (type == "sem") {
-        bfpackResult <- .bfpackSemRaw(dataset, options, bfpackContainer, ready)
-      } else {
-        bfpackResult <- .bfpackRegressionRaw(dataset, options, type)
-      }
-    })
-
-    if (isTryError(p)) {
-      bfpackContainer$setError(gettextf("An error occurred in the analysis:<br>%1$s<br><br>Please double check if the variables in the 'Model Contraints' section match the variables in your data set.", jaspBase::.extractErrorMessage(p)))
-      return()
-    }
-
-    bfpackContainer[["bfpackResult"]] <- createJaspState(bfpackResult)
-    return(bfpackContainer[["bfpackResult"]]$object)
-  }
-}
-
-.bfpackExtractTableValuesFromObject <- function(options, bfpackResult, testType) {
-  if (testType == 1) {
-    BF_0u <- bfpackResult$fit$BF[1]
-    PMP_u <- bfpackResult$fit$PMPb[2]
-    PMP_0 <- bfpackResult$fit$PMPb[1]
-    if (options$bayesFactorType == "BF10") {
-      BF_0u <- 1 / BF_0u
-    }
-    return(list(BF_0u = BF_0u, PMP_0 = PMP_0, PMP_u = PMP_u))
-  } else if (testType == 2) {
-    BF_01 <- bfpackResult$BFmatrix[1, 2]
-    PMP_1 <- bfpackResult$fit$PMPa[2]
-    PMP_0 <- bfpackResult$fit$PMPa[1]
-    if (options$bayesFactorType == "BF10") {
-      BF_01 <- 1 / BF_01
-    }
-    return(list(BF_01 = BF_01, PMP_0 = PMP_0, PMP_1 = PMP_1))
-  } else if (testType == 3 || testType == 4) {
-    BF_01 <- bfpackResult$BFmatrix[1, 2]
-    PMP_0 <- bfpackResult$fit$PMPa[1]
-    PMP_1 <- bfpackResult$fit$PMPa[2]
-    if (options$bayesFactorType == "BF10") {
-      BF_01 <- 1 / BF_01
-    }
-    return(list(BF_01 = BF_01, PMP_0 = PMP_0, PMP_1 = PMP_1))
-  } else if (testType == 5) {
-    BF_01 <- bfpackResult$BFmatrix[1, 2]
-    BF_02 <- bfpackResult$BFmatrix[1, 3]
-    BF_12 <- bfpackResult$BFmatrix[2, 3]
-    PMP_0 <- bfpackResult$fit$PMPa[1]
-    PMP_1 <- bfpackResult$fit$PMPa[2]
-    PMP_2 <- bfpackResult$fit$PMPa[3]
-    if (options$bayesFactorType == "BF10") {
-      BF_01 <- 1 / BF_01
-      BF_02 <- 1 / BF_02
-      BF_12 <- 1 / BF_12
-    }
-    return(list(BF_01 = BF_01, BF_02 = BF_02, BF_12 = BF_12, PMP_0 = PMP_0, PMP_1 = PMP_1, PMP_2 = PMP_2))
-  }
-}
 
 ####### TABLES #######
 # table for the posterior probabilities of the parameter estimates
@@ -540,10 +300,10 @@ gettextf <- function(fmt, ..., domain = NULL)  {
 
   bfpackContainer[["parameterTable"]] <- parameterTable
 
-  results <- bfpackContainer[["resultsContainer"]][["resultsState"]]$object
-  if (!is.null(results)) {
-    dtFill <- data.frame(coefficient = rownames(results$PHP_exploratory))
-    dtFill[, c("equal", "smaller", "larger")] <- results$PHP_exploratory
+  parPhp <- bfpackContainer[["resultsContainer"]][["resultsState"]]$object$PHP_exploratory
+  if (!is.null(parPhp)) {
+    dtFill <- data.frame(coefficient = rownames(parPhp))
+    dtFill[, c("equal", "smaller", "larger")] <- parPhp
     parameterTable$setData(dtFill)
   }
 
@@ -551,7 +311,7 @@ gettextf <- function(fmt, ..., domain = NULL)  {
 
 
 # Create a legend containing the order constrained hypotheses
-.bfpackLegendTable <- function(options, type, bfpackContainer, position, ready) {
+.bfpackLegendTable <- function(options, type, bfpackContainer, position) {
 
   if (!is.null(bfpackContainer[["legendTable"]])) return()
 
@@ -578,7 +338,7 @@ gettextf <- function(fmt, ..., domain = NULL)  {
 
 
 # table for the posterior probabilities of the parameter estimates
-.bfpackMatrixTable <- function(options, bfpackContainer, type, position, ready) {
+.bfpackMatrixTable <- function(options, bfpackContainer, type, position) {
 
   if (!is.null(bfpackContainer[["resultsContainer"]][["matrixTable"]])) return()
 
@@ -611,7 +371,8 @@ gettextf <- function(fmt, ..., domain = NULL)  {
 }
 
 
-# create the tbale containing the posterior probabilities for the manual hypotheses
+
+# create the table containing the posterior probabilities for the manual hypotheses
 .bfpackPosteriorHypothesesTable <- function(options, bfpackContainer, type, position) {
 
   if (!is.null(bfpackContainer[["resultsContainer"]][["postTable"]])) return()
@@ -637,565 +398,89 @@ gettextf <- function(fmt, ..., domain = NULL)  {
 }
 
 
-# Create a table containing the main analysis results
-.bfpackTestResultsTable <- function(dataList, options, bfpackContainer, ready, type, position) {
+# specification table
+.bfpackSpecificationTable <- function(options, bfpackContainer, type, position) {
 
-  if (!is.null(bfpackContainer[["mainResultsTable"]])) {
-    return()
+  if (!is.null(bfpackContainer[["resultsContainer"]][["specTable"]]) ||
+      !options[["specificationTable"]]) return()
+
+  specTable <- createJaspTable(gettext("Specification table"))
+  specTable$dependOn("specificationTable")
+  specTable$position <- position
+
+  specTable$addColumnInfo(name = "hypothesis", title = "", type = "string")
+  specTable$addColumnInfo(name = "complex=", title = gettext("Equal-complex"), type = "number")
+  specTable$addColumnInfo(name = "complex>", title = gettext("Order-complex"), type = "number")
+  specTable$addColumnInfo(name = "fit=", title = gettext("Equal-fit"), type = "number")
+  specTable$addColumnInfo(name = "fit>", title = gettext("Order-fit"), type = "number")
+  specTable$addColumnInfo(name = "BF=", title = gettext("Equal-BF"), type = "number")
+  specTable$addColumnInfo(name = "BF>", title = gettext("Order-BF"), type = "number")
+  specTable$addColumnInfo(name = "BF", title = gettext("BF"), type = "number")
+
+  bfpackContainer[["resultsContainer"]][["specTable"]] <- specTable
+
+  spec <- bfpackContainer[["resultsContainer"]][["resultsState"]]$object$BFtable_confirmatory
+  if (!is.null(spec)) {
+    dtFill <- data.frame(hypothesis = rownames(spec))
+    dtFill[, c("complex=", "complex>", "fit=", "fit>", "BF=", "BF>", "BF")] <- spec[, 1:7]
+    specTable$setData(dtFill)
+
   }
 
-  dataset <- dataList[["dataset"]]
-  missing <- dataList[["missing"]]
 
-  title <- switch(type,
-    "independentTTest" = gettext("Bfpack Independent Samples Welch's T-Test"),
-    "pairedTTest" = gettext("Bfpack Paired Samples T-Test"),
-    "onesampleTTest" = gettext("Bfpack One Sample T-test"),
-    "anova" = gettext("Bfpack ANOVA"),
-    "ancova" = gettext("Bfpack ANCOVA"),
-    "regression" = gettext("Bfpack Linear Regression"),
-    "correlation" = gettext("Bfpack Correlation")
-  )
-  deps <- switch(type,
-    "independentTTest" = c("variables", "bayesFactorType", "hypothesis"),
-    "pairedTTest" = c("pairs", "hypothesis", "bayesFactorType"),
-    "onesampleTTest" = c("variables", "hypothesis", "bayesFactorType"),
-    "anova" = NULL,
-    "ancova" = NULL,
-    "regression" = "standardized",
-    "correlation" = NULL
-  )
-  table <- createJaspTable(title)
-  table$dependOn(options = deps)
-  table$position <- position
-  if (type %in% c("independentTTest", "pairedTTest", "onesampleTTest")) {
-    if (options$hypothesis == "equalBiggerSmaller") {
-      table$addColumnInfo(name = "Variable", type = "string", title = "")
-      table$addColumnInfo(name = "type[equal]", type = "string", title = gettext("Hypothesis"))
-      table$addColumnInfo(name = "BF[equal]", type = "number", title = gettext("BF"))
-      table$addColumnInfo(name = "pmp[equal]", type = "number", format = "dp:3", title = gettext("Posterior probability"))
-      table$addColumnInfo(name = "type[greater]", type = "string", title = gettext("Hypothesis"))
-      table$addColumnInfo(name = "BF[greater]", type = "number", title = gettext("BF"))
-      table$addColumnInfo(name = "pmp[greater]", type = "number", format = "dp:3", title = gettext("Posterior probability"))
-      table$addColumnInfo(name = "type[less]", type = "string", title = gettext("Hypothesis"))
-      table$addColumnInfo(name = "BF[less]", type = "number", title = gettext("BF"))
-      table$addColumnInfo(name = "pmp[less]", type = "number", format = "dp:3", title = gettext("Posterior probability"))
-    } else {
-      table$addColumnInfo(name = "Variable", type = "string", title = "")
-      table$addColumnInfo(name = "hypothesis[type1]", type = "string", title = gettext("Hypothesis"))
-      table$addColumnInfo(name = "BF[type1]", type = "number", title = gettext("BF"))
-      table$addColumnInfo(name = "pmp[type1]", type = "number", format = "dp:3", title = gettext("Posterior probability"))
-      table$addColumnInfo(name = "hypothesis[type2]", type = "string", title = gettext("Hypothesis"))
-      table$addColumnInfo(name = "BF[type2]", type = "number", title = gettext("BF"))
-      table$addColumnInfo(name = "pmp[type2]", type = "number", format = "dp:3", title = gettext("Posterior probability"))
-    }
-    if (type == "onesampleTTest") {
-      message <- switch(options[["hypothesis"]],
-        "equalNotEqual" = gettextf("The alternative hypothesis H1 specifies that the mean is unequal to %s. The posterior probabilities are based on equal prior probabilities.", options[["testValue"]]),
-        "equalBigger" = gettextf("The alternative hypothesis H1 specifies that the mean is bigger than %s. The posterior probabilities are based on equal prior probabilities.", options[["testValue"]]),
-        "equalSmaller" = gettextf("The alternative hypothesis H1 specifies that the mean is smaller than %s. The posterior probabilities are based on equal prior probabilities.", options[["testValue"]]),
-        "biggerSmaller" = gettextf("The hypothesis H1 specifies that the mean is bigger than %1$s and the hypothesis H2 specifies that the mean is smaller than %1$s. The posterior probabilities are based on equal prior probabilities.", options[["testValue"]]),
-        "equalBiggerSmaller" = gettextf("The null hypothesis H0 with test value %1$s is tested against the other hypotheses. H1 states that the mean is bigger than %1$s and H2 states that the mean is smaller than %1$s. The posterior probabilities are based on equal prior probabilities.", options[["testValue"]])
-      )
-    }
-    if (type == "independentTTest") {
-      message <- switch(options[["hypothesis"]],
-        "equalNotEqual" = gettext("The alternative hypothesis H1 specifies that the mean of group 1 is unequal to the mean of group 2. The posterior probabilities are based on equal prior probabilities."),
-        "equalSmaller" = gettext("The alternative hypothesis H1 specifies that the mean of group 1 is smaller than the mean of group 2. The posterior probabilities are based on equal prior probabilities."),
-        "equalBigger" = gettext("The alternative hypothesis H1 specifies that mean of group 1 is bigger than the mean of group 2. The posterior probabilities are based on equal prior probabilities."),
-        "biggerSmaller" = gettext("The hypothesis H1 specifies that the mean of group 1 is bigger than the mean of group 2. The hypothesis H2 specifies that the mean in group 1 is smaller than the mean in group 2. The posterior probabilities are based on equal prior probabilities."),
-        "equalBiggerSmaller" = gettext("The null hypothesis H0 (equal group means) is tested against H1 (first mean larger than second mean) and H2 (first mean smaller than second mean). The posterior probabilities are based on equal prior probabilities.")
-      )
-    }
-    if (type == "pairedTTest") {
-      message <- switch(options[["hypothesis"]],
-        "equalNotEqual"       = gettext("The alternative hypothesis H1 specifies that the mean of variable 1 is unequal to the mean of variable 2. The posterior probabilities are based on equal prior probabilities."),
-        "equalBigger"         = gettext("The alternative hypothesis H1 specifies that the mean of variable 1 is bigger than the mean of variable 2. The posterior probabilities are based on equal prior probabilities."),
-        "equalSmaller"        = gettext("The alternative hypothesis H1 specifies that the mean of variable 1 is smaller than the mean of variable 2. The posterior probabilities are based on equal prior probabilities."),
-        "biggerSmaller"       = gettext("The hypothesis H1 specifies that the mean of variable 1 is bigger than the mean of variable 2, while the hypothesis H2 specifies that it is smaller. The posterior probabilities are based on equal prior probabilities."),
-        "equalBiggerSmaller"  = gettext("The null hypothesis H0 with equal means is tested against the other hypotheses. The alternative hypothesis H1 states that the mean of variable 1 is bigger than the mean of variable 2. The alternative hypothesis H2 states that the mean of variable 1 is smaller than the mean of variable 2. The posterior probabilities are based on equal prior probabilities.")
-      )
-    }
-  } else if (type %in% c("anova", "ancova", "regression", "correlation")) {
-    table$addColumnInfo(name = "hypotheses", type = "string", title = "")
-    table$addColumnInfo(name = "BFu", type = "number", title = gettext("BF.u"))
-    table$addColumnInfo(name = "BF", type = "number", title = gettext("BF.c"))
-    table$addColumnInfo(name = "PMP1", type = "number", title = gettext("PMP a"))
-    table$addColumnInfo(name = "PMP2", type = "number", title = gettext("PMP b"))
-	  table$addColumnInfo(name = "PMP3", type = "number", title = gettext("PMP c"))
-    message <- gettext("BF.u denotes the Bayes factor of the hypothesis at hand versus the unconstrained hypothesis Hu. \
-                        BF.c denotes the Bayes factor of the hypothesis at hand versus its complement. \
-                        PMPa contains the posterior model probabilities of the hypotheses specified. \
-                        PMPb adds Hu, the unconstrained hypothesis. \
-                        PMPc adds Hc, the complement of the union of the hypotheses specified. \
-                        All PMPs are based on equal prior model probabilities.")
-  }
-  table$addFootnote(message = message)
-  table$addCitation(.bfpackGetCitations())
-  bfpackContainer[["mainResultsTable"]] <- table
-
-  if (!ready || (type == "sem" && options[["model"]] == "")) {
-    return()
-  }
-
-  if (type %in% c("onesampleTTest", "independentTTest")) {
-    testType <- switch(options[["hypothesis"]],
-      "equalNotEqual"       = 1,
-      "equalBigger"         = 2,
-      "equalSmaller"        = 3,
-      "biggerSmaller"       = 4,
-      "equalBiggerSmaller"  = 5
-    )
-
-    table$setExpectedSize(length(options[["variables"]]))
-    startProgressbar(length(options[["variables"]]))
-
-    for (variable in options[["variables"]]) {
-      bfpackResult <- .bfpackGetGeneralTestResults(dataset, options, bfpackContainer, ready, type, variable = variable, testType = testType)
-
-      if (isTryError(bfpackResult)) {
-        table$addRows(list(Variable = variable), rowNames = variable)
-        table$addFootnote(message = gettextf("Results not computed: %1$s.", jaspBase::.extractErrorMessage(bfpackResult)), colNames = "Variable", rowNames = variable)
-        progressbarTick()
-        next
-      }
-
-      if (variable %in% missing) {
-        table$addFootnote(message = gettext("Variable contains missing values, the rows containing these values are removed in the analysis."), colNames = "Variable", rowNames = variable)
-      }
-
-      tableResults <- .bfpackExtractTableValuesFromObject(options, bfpackResult, testType)
-
-      if (options$bayesFactorType == "BF01") {
-        if (options$hypothesis == "equalNotEqual") {
-          row <- list(
-            Variable = variable, "hypothesis[type1]" = gettext("H0: Equal"), "BF[type1]" = tableResults[["BF_0u"]], "pmp[type1]" = tableResults[["PMP_0"]],
-            "hypothesis[type2]" = gettext("H1: Not equal"), "BF[type2]" = "", "pmp[type2]" = tableResults[["PMP_u"]]
-          )
-        } else if (options$hypothesis == "equalBigger") {
-          row <- list(
-            Variable = variable, "hypothesis[type1]" = gettext("H0: Equal"), "BF[type1]" = tableResults[["BF_01"]], "pmp[type1]" = tableResults[["PMP_0"]],
-            "hypothesis[type2]" = gettext("H1: Bigger"), "BF[type2]" = "", "pmp[type2]" = tableResults[["PMP_1"]]
-          )
-        } else if (options$hypothesis == "equalSmaller") {
-          row <- list(
-            Variable = variable, "hypothesis[type1]" = gettext("H0: Equal"), "BF[type1]" = tableResults[["BF_01"]], "pmp[type1]" = tableResults[["PMP_0"]],
-            "hypothesis[type2]" = gettext("H1: Smaller"), "BF[type2]" = "", "pmp[type2]" = tableResults[["PMP_1"]]
-          )
-        } else if (options$hypothesis == "biggerSmaller") {
-          row <- list(
-            Variable = variable, "hypothesis[type1]" = gettext("H1: Bigger"), "BF[type1]" = tableResults[["BF_01"]], "pmp[type1]" = tableResults[["PMP_0"]],
-            "hypothesis[type2]" = gettext("H2: Smaller"), "BF[type2]" = "", "pmp[type2]" = tableResults[["PMP_1"]]
-          )
-        } else if (options$hypothesis == "equalBiggerSmaller") {
-          row <- list(
-            Variable = variable, "type[equal]" = gettext("H0: Equal"), "BF[equal]" = "", "pmp[equal]" = tableResults[["PMP_0"]],
-            "type[greater]" = gettext("H1: Bigger"), "BF[greater]" = tableResults[["BF_01"]], "pmp[greater]" = tableResults[["PMP_1"]],
-            "type[less]" = gettext("H2: Smaller"), "BF[less]" = tableResults[["BF_02"]], "pmp[less]" = tableResults[["PMP_2"]]
-          )
-        }
-      } else if (options$bayesFactorType == "BF10") {
-        if (options$hypothesis == "equalNotEqual") {
-          row <- list(
-            Variable = variable, "hypothesis[type1]" = gettext("H0: Equal"), "BF[type1]" = "", "pmp[type1]" = tableResults[["PMP_0"]],
-            "hypothesis[type2]" = gettext("H1: Not equal"), "BF[type2]" = tableResults[["BF_0u"]], "pmp[type2]" = tableResults[["PMP_u"]]
-          )
-        } else if (options$hypothesis == "equalBigger") {
-          row <- list(
-            Variable = variable, "hypothesis[type1]" = gettext("H0: Equal"), "BF[type1]" = "", "pmp[type1]" = tableResults[["PMP_0"]],
-            "hypothesis[type2]" = gettext("H1: Bigger"), "BF[type2]" = tableResults[["BF_01"]], "pmp[type2]" = tableResults[["PMP_1"]]
-          )
-        } else if (options$hypothesis == "equalSmaller") {
-          row <- list(
-            Variable = variable, "hypothesis[type1]" = gettext("H0: Equal"), "BF[type1]" = "", "pmp[type1]" = tableResults[["PMP_0"]],
-            "hypothesis[type2]" = gettext("H1: Smaller"), "BF[type2]" = tableResults[["BF_01"]], "pmp[type2]" = tableResults[["PMP_1"]]
-          )
-        } else if (options$hypothesis == "biggerSmaller") {
-          row <- list(
-            Variable = variable, "hypothesis[type1]" = gettext("H1: Bigger"), "BF[type1]" = "", "pmp[type1]" = tableResults[["PMP_0"]],
-            "hypothesis[type2]" = gettext("H2: Smaller"), "BF[type2]" = tableResults[["BF_01"]], "pmp[type2]" = tableResults[["PMP_1"]]
-          )
-        } else if (options$hypothesis == "equalBiggerSmaller") {
-          row <- list(
-            Variable = variable, "type[equal]" = gettext("H0: Equal"), "BF[equal]" = "", "pmp[equal]" = tableResults[["PMP_0"]],
-            "type[greater]" = gettext("H1: Bigger"), "BF[greater]" = tableResults[["BF_01"]], "pmp[greater]" = tableResults[["PMP_1"]],
-            "type[less]" = gettext("H2: Smaller"), "BF[less]" = tableResults[["BF_02"]], "pmp[less]" = tableResults[["PMP_2"]]
-          )
-        }
-      }
-      table$addRows(row, rowNames = variable)
-      progressbarTick()
-    }
-  } else if (type == "pairedTTest") {
-    testType <- switch(options[["hypothesis"]],
-      "equalNotEqual"       = 1,
-      "equalBigger"         = 2,
-      "equalSmaller"        = 3,
-      "biggerSmaller"       = 4,
-      "equalBiggerSmaller"  = 5
-    )
-
-    table$setExpectedSize(length(options[["pairs"]]))
-
-    startProgressbar(length(options[["pairs"]]))
-
-    for (pair in options[["pairs"]]) {
-      currentPair <- paste(pair, collapse = " - ")
-
-      if (pair[[1]] != "" || pair[[2]] != "") {
-        bfpackResult <- .bfpackGetGeneralTestResults(dataset, options, bfpackContainer, ready, type, pair = pair, testType = testType)
-
-        if (isTryError(bfpackResult)) {
-          table$addRows(list(Variable = currentPair), rowNames = currentPair)
-          table$addFootnote(message = gettextf("Results not computed: %s", jaspBase::.extractErrorMessage(bfpackResult)), colNames = "Variable", rowNames = currentPair)
-          progressbarTick()
-          next
-        }
-
-        if (any(pair %in% missing)) {
-          i <- which(pair %in% missing)
-          if (length(i) > 1) {
-            message <- gettext("Both variables contain missing values, the rows containing these values are removed in the analysis.")
-          } else {
-            message <- gettextf("The variable %s contains missing values, the rows containing these values are removed in the analysis.", pair[i])
-          }
-          table$addFootnote(message = message, colNames = "Variable", rowNames = currentPair)
-        }
-
-        tableResults <- .bfpackExtractTableValuesFromObject(options, bfpackResult, testType)
-
-        if (options$bayesFactorType == "BF01") {
-          if (options$hypothesis == "equalNotEqual") {
-            row <- list(
-              Variable = currentPair, "hypothesis[type1]" = gettext("H0: Equal"), "BF[type1]" = tableResults[["BF_0u"]], "pmp[type1]" = tableResults[["PMP_0"]],
-              "hypothesis[type2]" = gettext("H1: Not equal"), "BF[type2]" = "", "pmp[type2]" = tableResults[["PMP_u"]]
-            )
-          }
-          if (options$hypothesis == "equalSmaller") {
-            row <- list(
-              Variable = currentPair, "hypothesis[type1]" = gettext("H0: Equal"), "BF[type1]" = tableResults[["BF_01"]], "pmp[type1]" = tableResults[["PMP_0"]],
-              "hypothesis[type2]" = gettext("H1: Smaller"), "BF[type2]" = "", "pmp[type2]" = tableResults[["PMP_1"]]
-            )
-          }
-          if (options$hypothesis == "equalBigger") {
-            row <- list(
-              Variable = currentPair, "hypothesis[type1]" = gettext("H0: Equal"), "BF[type1]" = tableResults[["BF_01"]], "pmp[type1]" = tableResults[["PMP_0"]],
-              "hypothesis[type2]" = gettext("H1: Bigger"), "BF[type2]" = "", "pmp[type2]" = tableResults[["PMP_1"]]
-            )
-          }
-          if (options$hypothesis == "biggerSmaller") {
-            row <- list(
-              Variable = currentPair, "hypothesis[type1]" = gettext("H1: Bigger"), "BF[type1]" = tableResults[["BF_01"]], "pmp[type1]" = tableResults[["PMP_0"]],
-              "hypothesis[type2]" = gettext("H2: Smaller"), "BF[type2]" = "", "pmp[type2]" = tableResults[["PMP_1"]]
-            )
-          }
-          if (options$hypothesis == "equalBiggerSmaller") {
-            row <- list(
-              Variable = currentPair,
-              "type[equal]" = gettext("H0: Equal"),
-              "BF[equal]" = "",
-              "pmp[equal]" = tableResults[["PMP_0"]],
-              "type[greater]" = gettext("H1: Bigger"),
-              "BF[greater]" = tableResults[["BF_01"]],
-              "pmp[greater]" = tableResults[["PMP_1"]],
-              "type[less]" = gettext("H2: Smaller"),
-              "BF[less]" = tableResults[["BF_02"]],
-              "pmp[less]" = tableResults[["PMP_2"]]
-            )
-          }
-        } else if (options$bayesFactorType == "BF10") {
-          if (options$hypothesis == "equalNotEqual") {
-            row <- list(
-              Variable = currentPair, "hypothesis[type1]" = gettext("H0: Equal"), "BF[type1]" = "", "pmp[type1]" = tableResults[["PMP_0"]],
-              "hypothesis[type2]" = gettext("H1: Not equal"), "BF[type2]" = tableResults[["BF_0u"]], "pmp[type2]" = tableResults[["PMP_u"]]
-            )
-          } else if (options$hypothesis == "equalSmaller") {
-            row <- list(
-              Variable = currentPair, "hypothesis[type1]" = gettext("H0: Equal"), "BF[type1]" = "", "pmp[type1]" = tableResults[["PMP_0"]],
-              "hypothesis[type2]" = gettext("H1: Smaller"), "BF[type2]" = tableResults[["BF_01"]], "pmp[type2]" = tableResults[["PMP_1"]]
-            )
-          } else if (options$hypothesis == "equalBigger") {
-            row <- list(
-              Variable = currentPair, "hypothesis[type1]" = gettext("H0: Equal"), "BF[type1]" = "", "pmp[type1]" = tableResults[["PMP_0"]],
-              "hypothesis[type2]" = gettext("H1: Bigger"), "BF[type2]" = tableResults[["BF_01"]], "pmp[type2]" = tableResults[["PMP_1"]]
-            )
-          } else if (options$hypothesis == "biggerSmaller") {
-            row <- list(
-              Variable = currentPair, "hypothesis[type1]" = gettext("H1: Bigger"), "BF[type1]" = "", "pmp[type1]" = tableResults[["PMP_0"]],
-              "hypothesis[type2]" = gettext("H2: Smaller"), "BF[type2]" = tableResults[["BF_01"]], "pmp[type2]" = tableResults[["PMP_1"]]
-            )
-          } else if (options$hypothesis == "equalBiggerSmaller") {
-            row <- list(
-              Variable = currentPair,
-              "type[equal]" = gettext("H0: Equal"),
-              "BF[equal]" = "",
-              "pmp[equal]" = tableResults[["PMP_0"]],
-              "type[greater]" = gettext("H1: Bigger"),
-              "BF[greater]" = tableResults[["BF_01"]],
-              "pmp[greater]" = tableResults[["PMP_1"]],
-              "type[less]" = gettext("H2: Smaller"),
-              "BF[less]" = tableResults[["BF_02"]],
-              "pmp[less]" = tableResults[["PMP_2"]]
-            )
-          }
-        }
-      } else {
-        if (options$hypothesis == "equalBiggerSmaller") {
-          row <- list(
-            Variable = currentPair, "type[equal]" = ".", "BF[equal]" = ".", "pmp[equal]" = ".",
-            "type[greater]" = ".", "BF[greater]" = ".", "pmp[greater]" = ".",
-            "type[less]" = ".", "BF[less]" = ".", "pmp[less]" = "."
-          )
-        } else {
-          row <- list(
-            Variable = currentPair, "hypothesis[type1]" = ".", "BF[type1]" = ".", "pmp[type1]" = ".",
-            "hypothesis[type2]" = ".", "BF[type2]" = ".", "pmp[type2]" = "."
-          )
-        }
-      }
-      table$addRows(row, rowNames = currentPair)
-
-      if (pair[[1]] == pair[[2]]) {
-        table$addFootnote(message = gettext("Results not computed: The variables in this pair are the same."), colNames = "Variable", rowNames = currentPair)
-      } else if (pair[[1]] == "" || pair[[2]] == "") {
-        table$addFootnote(message = gettext("Results not computed: The pair is incomplete."), colNames = "Variable", rowNames = currentPair)
-      }
-      progressbarTick()
-    }
-  } else if (type %in% c("anova", "ancova", "regression", "sem")) {
-    if (bfpackContainer$getError()) {
-      return()
-    }
-    variables <- switch(type,
-      "anova" = c(options[["dependent"]], options[["fixedFactors"]]),
-      "ancova" = c(options[["dependent"]], options[["fixedFactors"]], unlist(options[["covariates"]])),
-      "regression" = c(options[["dependent"]], unlist(options[["covariates"]])),
-      "sem" = .bfpackSemGetUsedVars(.bfpackSemTranslateModel(options[["syntax"]]$model, dataset), colnames(dataset))
-    )
-    if (any(variables %in% missing)) {
-      i <- which(variables %in% missing)
-      if (length(i) > 1) {
-        if (type == "regression" || type == "ancova" || type == "sem") {
-          table$addFootnote(message = gettextf("The variables %1$s contain missing values, the rows containing these values are removed in the analysis.", paste(variables[i], collapse = ", ")), symbol = gettext("<b>Warning.</b>"))
-        } else if (type == "anova") {
-          table$addFootnote(message = gettextf("The variables %1$s and %2$s contain missing values, the rows containing these values are removed in the analysis.", variables[1], variables[2]), symbol = gettext("<b>Warning.</b>"))
-        }
-      } else if (length(i) == 1) {
-        table$addFootnote(message = gettextf("The variable %1$s contains missing values, the rows containing these values are removed in the analysis.", variables[i]), symbol = gettext("<b>Warning.</b>"))
-      }
-    }
-    bfpackResult <- .bfpackGetGeneralTestResults(dataset, options, bfpackContainer, ready, type)
-    for (i in 1:(length(bfpackResult[["fit"]]$BF) - 2)) {
-      row <- list(hypotheses = gettextf("H%1$i", i), BFu = bfpackResult[["fit"]]$BF.u[i], BF = bfpackResult[["fit"]]$BF.c[i], PMP1 = bfpackResult[["fit"]]$PMPa[i], PMP2 = bfpackResult[["fit"]]$PMPb[i], PMP3 = bfpackResult[["fit"]]$PMPc[i])
-      table$addRows(row)
-    }
-    rows <- list(
-        list(hypotheses = gettext("Hu"), BFu = "", BF = "", PMP1 = "", PMP2 = bfpackResult[["fit"]]$PMPb[length(bfpackResult[["fit"]]$BF) - 1], PMP3 = ""),
-        list(hypotheses = gettext("Hc"), BFu = bfpackResult[["fit"]]$BF.u[length(bfpackResult[["fit"]]$BF.u)], BF = "", PMP1 = "", PMP2 = "", PMP3 = bfpackResult[["fit"]]$PMPc[length(bfpackResult[["fit"]]$BF)])
-    )
-    table$addRows(rows)
-  }
-  if (!isTryError(bfpackResult) && any(is.nan(unlist(bfpackResult[["fit"]])))) {
-    table$addFootnote(symbol = gettext("<b>Warning</b>"), message = gettext("The entered model constraints are incompatible with the data and therefore the computed results contain NaNs."))
-  }
-  if (type %in% c("anova", "ancova", "regression", "sem") && !is.null(bfpackResult)) {
-    complexity <- bfpackResult[["fit"]]$Com[length(bfpackResult[["fit"]]$Com)]
-    if (!is.na(complexity) && complexity < .05) {
-     table$addFootnote(gettext("<b>Your hypotheses (almost) completely cover the parameter space. Therefore instead of PMPc, you should interpret PMPa.</b>"))
-    }
-  }
+  return()
 }
 
-# Create the Bayes factor matrix
-.bfpackBfMatrix <- function(dataset, options, bfpackContainer, ready, type, position) {
-  if (!is.null(bfpackContainer[["bayesFactorMatrix"]]) || !options[["bayesFactorMatrix"]]) {
-    return()
-  }
 
-  bayesFactorMatrix <- createJaspTable(gettext("Bayes Factor Matrix"))
-  bayesFactorMatrix$position <- position
-  bayesFactorMatrix$dependOn(options = c("bayesFactorMatrix", "standardized"))
-  bayesFactorMatrix$addColumnInfo(name = "hypothesis", title = "", type = "string")
-  bayesFactorMatrix$addColumnInfo(name = "H1", title = gettext("H1"), type = "number")
-  bfpackContainer[["bayesFactorMatrix"]] <- bayesFactorMatrix
+.bfpackDescriptivesTable <- function(options, bfpackContainer, type, position) {
+  if (!is.null(bfpackContainer[["resultsContainer"]][["descriptivesTable"]]) ||
+      !options[["coefficientsTable"]]) return()
 
-  if (!ready || bfpackContainer$getError() || (type == "sem" && options[["model"]] == "")) {
-    row <- data.frame(hypothesis = gettext("H1"), H1 = ".")
-    bayesFactorMatrix$addRows(row)
-    return()
-  }
+  descriptivesTable <- createJaspTable(gettext("Descriptives table"))
+  descriptivesTable$dependOn(c("coefficientsTable", "ciLevel"))
+  descriptivesTable$position <- position
 
-  bfpackResult <- .bfpackGetGeneralTestResults(dataset, options, bfpackContainer, ready, type)
-  BFmatrix <- bfpackResult[["BFmatrix"]]
-  if (nrow(BFmatrix) > 1) {
-    for (i in 2:nrow(BFmatrix)) {
-      bayesFactorMatrix$addColumnInfo(name = paste0("H", i), title = gettextf("H%i", i), type = "number")
+  interval <- gettextf("%s%% CI", format(100 * options[["ciLevel"]], digits = 3, drop0trailing = TRUE))
+  intervalLow <- gettextf("%s lower bound", interval)
+  intervalUp <- gettextf("%s upper bound", interval)
+
+  descriptivesTable$addColumnInfo(name = "coefficient", title = "", type = "string")
+  descriptivesTable$addColumnInfo(name = "mean", title = gettext("Mean"), type = "number")
+  descriptivesTable$addColumnInfo(name = "median", title = gettext("Median"), type = "number")
+  descriptivesTable$addColumnInfo(name = "lower", title = intervalLow, type = "number")
+  descriptivesTable$addColumnInfo(name = "upper", title = intervalUp, type = "number")
+
+  bfpackContainer[["resultsContainer"]][["descriptivesTable"]] <- descriptivesTable
+
+  outmodel <- bfpackContainer[["resultsContainer"]][["resultsState"]]$object$model
+  if (!is.null(outmodel)) {
+
+    dtFill <- data.frame(coefficient = rownames(outmodel$correstimates))
+    # the regular bfpack output has the 95% interval bounds
+    dtFill[, c("mean", "median", "lower", "upper")] <- outmodel$correstimates
+
+    # we also let users choose the interval bounds
+    if (options[["ciLevel"]] != .95) {
+      # maybe this first element differs between analyses...???
+      draws <- outmodel$corrdraws[[1]]
+      bounds <- apply(draws, c(2, 3), function(x) {
+        coda::HPDinterval(coda::as.mcmc(x), prob = options[["ciLevel"]])
+        })
+      boundsLow <- bounds[1, , ]
+      boundsUp <- bounds[2, , ]
+      # kind of hope this structure never changes so the elements are always in the correct order
+      boundsLow <- boundsLow[lower.tri(boundsLow)]
+      boundsUp <- boundsUp[lower.tri(boundsUp)]
+      dtFill[, c("lower", "upper")] <- cbind(boundsLow, boundsUp)
+
     }
+    descriptivesTable$setData(dtFill)
   }
-  for (i in seq_len(nrow(BFmatrix))) {
-    tmp <- list(hypothesis = gettextf("H%i", i))
-    for (j in seq_len(ncol(BFmatrix))) {
-      tmp[[paste0("H", j)]] <- BFmatrix[i, j]
-    }
-    row <- tmp
-    bayesFactorMatrix$addRows(row)
-  }
+
+
+  return()
 }
 
-# Create the descriptive statistics table
-.bfpackDescriptivesTable <- function(dataset, options, bfpackContainer, ready, type, position) {
-  if (!is.null(bfpackContainer[["descriptivesTable"]]) || !options[["descriptives"]]) {
-    return()
-  }
-
-  if (type == "ancova") {
-    title <- gettext("Coefficients for Groups plus Covariates")
-  } else if (type == "regression" || type == "sem") {
-    title <- gettext("Coefficients for Parameters")
-  } else {
-    title <- gettext("Descriptive Statistics")
-  }
-  meanTitle <- ifelse(type %in% c("ancova", "regression"), yes = gettext("Coefficient"), no = gettext("Mean"))
-  table <- createJaspTable(title)
-  table$dependOn(options = c("variables", "descriptives", "credibleInterval", "pairs"))
-  table$position <- position
-  overTitle <- gettextf("%.0f%% Credible Interval", 100 * options[["credibleInterval"]])
-  table$addColumnInfo(name = "v", title = "", type = "string")
-  if (type == "independentTTest") {
-    table$addColumnInfo(name = "group", title = gettext("Group"), type = "string")
-  }
-  table$addColumnInfo(name = "N", title = gettext("N"), type = "integer")
-  table$addColumnInfo(name = "mean", title = meanTitle, type = "number")
-  if (type %in% c("independentTTest", "pairedTTest", "onesampleTTest", "anova")) {
-    table$addColumnInfo(name = "sd", title = gettext("SD"), type = "number")
-  }
-  table$addColumnInfo(name = "se", title = gettext("SE"), type = "number")
-  table$addColumnInfo(name = "lowerCI", title = gettext("Lower"), type = "number", overtitle = overTitle)
-  table$addColumnInfo(name = "upperCI", title = gettext("Upper"), type = "number", overtitle = overTitle)
-  bfpackContainer[["descriptivesTable"]] <- table
-  if (type == "regression" || type == "sem") {
-    table$addFootnote(message = ifelse(options[["standardized"]], yes = gettext("The displayed coefficients are standardized."), no = gettext("The displayed coefficients are unstandardized.")))
-  }
-
-  if (!ready || bfpackContainer$getError()) {
-    return()
-  }
-
-  if (type == "independentTTest") {
-    table$setExpectedSize(length(options[["variables"]]) * 2)
-    levels <- levels(dataset[[options[["groupingVariable"]]]])
-    if (length(levels) != 2) {
-      g1 <- "1"
-      g2 <- "2"
-    } else {
-      g1 <- levels[1]
-      g2 <- levels[2]
-    }
-    for (variable in options[["variables"]]) {
-      bfpackResult <- .bfpackGetGeneralTestResults(dataset, options, bfpackContainer, ready, type, variable = variable)
-      if (isTryError(bfpackResult)) {
-        table$addRows(list(v = variable), rowNames = variable)
-        table$addFootnote(message = gettext("The results for this variable were not computed."), colNames = "v", rowNames = variable)
-      } else {
-        bfpackSummary <- summary(bfpackResult, ci = options[["credibleInterval"]])
-
-        N <- bfpackSummary[["n"]]
-        mu <- bfpackSummary[["Estimate"]]
-        CiLower <- bfpackSummary[["lb"]]
-        CiUpper <- bfpackSummary[["ub"]]
-        sd <- aggregate(dataset[, variable], list(dataset[, options[["groupingVariable"]]]), sd)[, 2]
-        se <- sqrt(diag(bfpackResult[["posterior"]]))
-        row <- data.frame(v = variable, group = g1, N = N[1], mean = mu[1], sd = sd[1], se = se[1], lowerCI = CiLower[1], upperCI = CiUpper[1])
-        table$addRows(row)
-        row <- data.frame(v = "", group = g2, N = N[2], mean = mu[2], sd = sd[2], se = se[2], lowerCI = CiLower[2], upperCI = CiUpper[2])
-        table$addRows(row)
-      }
-    }
-  } else if (type == "pairedTTest") {
-    table$setExpectedSize(length(options[["pairs"]]))
-    for (pair in options[["pairs"]]) {
-      if (pair[[2]] != "" && pair[[1]] != pair[[2]]) {
-        subDataSet <- subset(dataset, select = c(pair[[1]], pair[[2]]))
-        c1 <- subDataSet[[pair[[1]]]]
-        c2 <- subDataSet[[pair[[2]]]]
-        difference <- c1 - c2
-        currentPair <- paste(pair, collapse = " - ")
-        testType <- switch(options[["hypothesis"]],
-          "equalNotEqual"       = 1,
-          "equalBigger"         = 2,
-          "equalSmaller"        = 3,
-          "biggerSmaller"       = 4,
-          "equalBiggerSmaller"  = 5
-        )
-        bfpackResult <- .bfpackGetGeneralTestResults(dataset, options, bfpackContainer, ready, type, pair = pair, testType = testType)
-        if (isTryError(bfpackResult)) {
-          table$addRows(list(v = currentPair), rowNames = currentPair)
-          table$addFootnote(message = gettext("The results for this variable were not computed."), colNames = "v", rowNames = currentPair)
-        } else {
-          bfpackSummary <- summary(bfpackResult, ci = options[["credibleInterval"]])
-          N <- bfpackSummary[["n"]]
-          mu <- bfpackSummary[["Estimate"]]
-          CiLower <- bfpackSummary[["lb"]]
-          CiUpper <- bfpackSummary[["ub"]]
-          se <- sqrt(diag(bfpackResult[["posterior"]]))
-          sd <- sd(difference, na.rm = TRUE)
-          row <- list(v = currentPair, N = N, mean = mu, sd = sd, se = se, lowerCI = CiLower, upperCI = CiUpper)
-          table$addRows(row)
-        }
-      }
-    }
-  } else if (type == "onesampleTTest") {
-    table$setExpectedSize(length(options[["variables"]]))
-    for (variable in options[["variables"]]) {
-      bfpackResult <- .bfpackGetGeneralTestResults(dataset, options, bfpackContainer, ready, type, variable = variable)
-      if (isTryError(bfpackResult)) {
-        table$addRows(list(v = variable), rowNames = variable)
-        table$addFootnote(message = gettext("The results for this variable were not computed."), colNames = "v", rowNames = variable)
-      } else {
-        bfpackSummary <- summary(bfpackResult, ci = options[["credibleInterval"]])
-        N <- bfpackSummary[["n"]]
-        mu <- bfpackSummary[["Estimate"]]
-        CiLower <- bfpackSummary[["lb"]]
-        CiUpper <- bfpackSummary[["ub"]]
-        sd <- sd(dataset[, variable], na.rm = TRUE)
-        se <- sqrt(diag(bfpackResult[["posterior"]]))
-        row <- list(v = variable, N = N, mean = mu, sd = sd, se = se, lowerCI = CiLower, upperCI = CiUpper)
-        table$addRows(row)
-      }
-    }
-  } else if (type %in% c("anova", "ancova")) {
-    groupCol <- dataset[, options[["fixedFactors"]]]
-    bfpackResult <- .bfpackGetGeneralTestResults(dataset, options, bfpackContainer, ready, type)
-    bfpackSummary <- summary(bfpackResult, ci = options[["credibleInterval"]])
-    sigma <- diag(bfpackResult[["posterior"]])
-    variable <- bfpackSummary[["Parameter"]]
-    N <- bfpackSummary[["n"]]
-    mu <- bfpackSummary[["Estimate"]]
-    CiLower <- bfpackSummary[["lb"]]
-    CiUpper <- bfpackSummary[["ub"]]
-    se <- sqrt(sigma)
-    row <- data.frame(v = variable, N = N, mean = mu, se = se, lowerCI = CiLower, upperCI = CiUpper)
-    if (type == "anova") {
-      sd <- aggregate(dataset[, options[["dependent"]]], list(dataset[, options[["fixedFactors"]]]), sd)[, 2]
-      row <- cbind(row, sd = sd)
-    }
-    table$addRows(row)
-  } else if (type %in% c("regression", "sem")) {
-    bfpackResult <- .bfpackGetGeneralTestResults(dataset, options, bfpackContainer, ready, type)
-    if (is.null(bfpackResult)) {
-      return()
-    }
-    bfpackSummary <- summary(bfpackResult, ci = options[["credibleInterval"]])
-    groups <- bfpackSummary[["Parameter"]]
-    N <- bfpackSummary[["n"]]
-    mu <- bfpackSummary[["Estimate"]]
-    CiLower <- bfpackSummary[["lb"]]
-    CiUpper <- bfpackSummary[["ub"]]
-    se <- sqrt(diag(bfpackResult[["posterior"]]))
-    row <- data.frame(v = groups, N = N, mean = mu, se = se, lowerCI = CiLower, upperCI = CiUpper)
-    table$addRows(row)
-  }
-}
 
 
 ####### PLOTS ########
@@ -1513,3 +798,809 @@ gettextf <- function(fmt, ..., domain = NULL)  {
   p <- jaspGraphs::ggMatrixPlot(plotList = plotMat, layout = matrix(c(seq_along(plotMat)), nrow = 1))
   return(p)
 }
+
+
+
+#### MAYBE ####
+# Call to bain for 't_test' objects (Welch t-test, Paired t-test, One sample t-test)
+.bfpackTTestRaw <- function(options, x, y = NULL, nu = 0, type = 1, paired = FALSE) {
+
+  if (is.null(y) && !paired) {
+    x <- x[!is.na(x)] # Here we remove the missing values per dependent variable
+    test <- bain::t_test(x = x)
+    hypothesis <- switch(type,
+                         "1" = paste0("x=", nu),
+                         "2" = paste0("x=", nu, "; x>", nu),
+                         "3" = paste0("x=", nu, "; x<", nu),
+                         "4" = paste0("x>", nu, "; x<", nu),
+                         "5" = paste0("x=", nu, "; x>", nu, "; x<", nu)
+    )
+  }
+
+  if (!is.null(y) && !paired) {
+    test <- bain::t_test(x = x, y = y, paired = FALSE, var.equal = FALSE)
+    hypothesis <- switch(type,
+                         "1" = "difference=0",
+                         "2" = "difference=0; difference>0",
+                         "3" = "difference=0; difference<0",
+                         "4" = "difference>0; difference<0",
+                         "5" = "difference=0; difference>0; difference<0"
+    )
+  }
+
+  if (!is.null(y) && paired) {
+    test <- bain::t_test(x = x, y = y, paired = TRUE)
+    hypothesis <- switch(type,
+                         "1" = "difference=0",
+                         "2" = "difference=0;difference>0",
+                         "3" = "difference=0;difference<0",
+                         "4" = "difference>0;difference<0",
+                         "5" = "difference=0;difference>0;difference<0"
+    )
+  }
+
+  bfpackResult <- BFpack::BF(x = test, hypothesis = hypothesis)
+
+  return(bfpackResult)
+}
+
+# Call to bfpack for 'lm' objects (ANOVA, ANCOVA, Regression)
+.bfpackRegressionRaw <- function(dataset, options, type) {
+  dependent <- options[["dependent"]]
+  standardized <- options[["standardized"]]
+  hypothesis <- NULL
+  if (options[["model"]] != "") {
+    hypothesis <- encodeColNames(.bfpackCleanModelInput(options[["model"]]))
+  }
+
+  if (type == "regression") {
+    ncov <- length(options[["covariates"]])
+    covariates <- paste0(options[["covariates"]], collapse = "+")
+    formula <- as.formula(paste0(dependent, "~", covariates))
+  } else if (type == "anova" || type == "ancova") {
+    grouping <- options[["fixedFactors"]]
+    dataset[, options[["fixedFactors"]]] <- as.factor(dataset[, options[["fixedFactors"]]])
+
+    if (type == "anova") {
+      formula <- as.formula(paste0(dependent, "~", grouping, "-1"))
+    } else {
+      ncov <- length(options[["covariates"]])
+      covariates <- paste0(options[["covariates"]], collapse = "+")
+      formula <- as.formula(paste0(dependent, "~", grouping, "+", covariates, "-1"))
+    }
+  }
+
+  if (type == "regression") {
+    # I cannot find out why bfpack won't work in regression with stats::lm(formula = formula, data = dataset)
+    # Error: object of type 'closure' is not subsettable
+    args <- list(formula = as.formula(paste0(dependent, "~", covariates)), data = dataset)
+    fit <- do.call(stats::lm, args)
+  } else {
+    fit <- stats::lm(formula = formula, data = dataset)
+  }
+
+  if (is.null(hypothesis)) {
+    if (type == "regression") {
+      hypothesis <- paste0(paste0(names(stats::coef(fit))[-1], "=0"), collapse = " & ")
+    } else if (type == "anova") {
+      hypothesis <- paste0(names(stats::coef(fit)), collapse = "=")
+    } else if (type == "ancova") {
+      hypothesis <- names(stats::coef(fit))
+      hypothesis <- hypothesis[1:(length(hypothesis) - ncov)]
+      hypothesis <- paste0(hypothesis, collapse = "=")
+    }
+  }
+
+  bfpackResult <- BFpack::BF(x = fit, hypothesis = hypothesis, standardize = standardized)
+  return(bfpackResult)
+}
+
+.bfpackGetGeneralTestResults <- function(dataset, options, bfpackContainer, ready, type, variable = NULL, pair = NULL, testType = NULL) {
+  set.seed(options[["seed"]])
+
+  if (type %in% c("onesampleTTest", "independentTTest")) {
+    result <- .bfpackGetTTestResults(dataset, options, bfpackContainer, ready, type, variable, testType)
+  } else if (type == "pairedTTest") {
+    result <- .bfpackGetPairedTTestResults(dataset, options, bfpackContainer, ready, type, pair, testType)
+  } else if (type %in% c("anova", "ancova", "regression", "sem")) {
+    result <- .bfpackGetRegressionResults(dataset, options, bfpackContainer, ready, type)
+  }
+
+  return(result)
+}
+
+.bfpackGetTTestResults <- function(dataset, options, bfpackContainer, ready, type, variable, testType) {
+  if (!is.null(bfpackContainer[[variable]])) {
+    return(bfpackContainer[[variable]]$object)
+  }
+
+  variableData <- dataset[[variable]]
+  testValue <- format(options[["testValue"]], scientific = FALSE)
+
+  p <- try({
+    if (type == "onesampleTTest") {
+      bfpackResult <- .bfpackTTestRaw(options, x = variableData, nu = testValue, type = testType)
+    } else if (type == "independentTTest") {
+      levels <- levels(dataset[[options[["groupingVariable"]]]])
+      if (length(levels) != 2) {
+        g1 <- "1"
+        g2 <- "2"
+      } else {
+        g1 <- levels[1]
+        g2 <- levels[2]
+      }
+      subDataSet <- dataset[, c(variable, options[["groupingVariable"]])]
+      group1 <- subDataSet[subDataSet[[options[["groupingVariable"]]]] == g1, variable]
+      group2 <- subDataSet[subDataSet[[options[["groupingVariable"]]]] == g2, variable]
+      bfpackResult <- .bfpackTTestRaw(options, x = group1, y = group2, type = testType)
+    }
+  })
+
+  if (isTryError(p)) {
+    return(p)
+  }
+
+  bfpackContainer[[variable]] <- createJaspState(bfpackResult, dependencies = c("testValue", "hypothesis"))
+  bfpackContainer[[variable]]$dependOn(optionContainsValue = list("variables" = variable))
+  return(bfpackContainer[[variable]]$object)
+}
+
+.bfpackGetPairedTTestResults <- function(dataset, options, bfpackContainer, ready, type, pair, testType) {
+  currentPair <- paste(pair, collapse = " - ")
+
+  if (!is.null(bfpackContainer[[currentPair]])) {
+    return(bfpackContainer[[currentPair]]$object)
+  }
+
+  if (pair[[2]] != "" && pair[[1]] != pair[[2]] && pair[[1]] != "") {
+    subDataSet <- subset(dataset, select = c(pair[[1]], pair[[2]]))
+    c1 <- subDataSet[[pair[[1]]]]
+    c2 <- subDataSet[[pair[[2]]]]
+
+    p <- try({
+      bfpackResult <- .bfpackTTestRaw(options, x = c1, y = c2, type = testType, paired = TRUE)
+    })
+
+    if (isTryError(p)) {
+      return(p)
+    }
+
+    bfpackContainer[[currentPair]] <- createJaspState(bfpackResult, dependencies = "hypothesis")
+    bfpackContainer[[currentPair]]$dependOn(optionContainsValue = list("pairs" = pair))
+    return(bfpackContainer[[currentPair]]$object)
+  }
+}
+
+.bfpackGetRegressionResults <- function(dataset, options, bfpackContainer, ready, type) {
+
+  if (!is.null(bfpackContainer[["bfpackResult"]])) {
+    return(bfpackContainer[["bfpackResult"]]$object)
+  } else if (ready) {
+    if (type == "anova" || type == "ancova") {
+      groupCol <- dataset[, options[["fixedFactors"]]]
+      varLevels <- levels(groupCol)
+      if (length(varLevels) > 15) {
+        bfpackContainer$setError(gettext("The fixed factor has too many levels for a Bfpack analysis."))
+        return()
+      }
+    }
+
+    p <- try({
+      if (type == "sem") {
+        bfpackResult <- .bfpackSemRaw(dataset, options, bfpackContainer, ready)
+      } else {
+        bfpackResult <- .bfpackRegressionRaw(dataset, options, type)
+      }
+    })
+
+    if (isTryError(p)) {
+      bfpackContainer$setError(gettextf("An error occurred in the analysis:<br>%1$s<br><br>Please double check if the variables in the 'Model Contraints' section match the variables in your data set.", jaspBase::.extractErrorMessage(p)))
+      return()
+    }
+
+    bfpackContainer[["bfpackResult"]] <- createJaspState(bfpackResult)
+    return(bfpackContainer[["bfpackResult"]]$object)
+  }
+}
+
+.bfpackExtractTableValuesFromObject <- function(options, bfpackResult, testType) {
+  if (testType == 1) {
+    BF_0u <- bfpackResult$fit$BF[1]
+    PMP_u <- bfpackResult$fit$PMPb[2]
+    PMP_0 <- bfpackResult$fit$PMPb[1]
+    if (options$bayesFactorType == "BF10") {
+      BF_0u <- 1 / BF_0u
+    }
+    return(list(BF_0u = BF_0u, PMP_0 = PMP_0, PMP_u = PMP_u))
+  } else if (testType == 2) {
+    BF_01 <- bfpackResult$BFmatrix[1, 2]
+    PMP_1 <- bfpackResult$fit$PMPa[2]
+    PMP_0 <- bfpackResult$fit$PMPa[1]
+    if (options$bayesFactorType == "BF10") {
+      BF_01 <- 1 / BF_01
+    }
+    return(list(BF_01 = BF_01, PMP_0 = PMP_0, PMP_1 = PMP_1))
+  } else if (testType == 3 || testType == 4) {
+    BF_01 <- bfpackResult$BFmatrix[1, 2]
+    PMP_0 <- bfpackResult$fit$PMPa[1]
+    PMP_1 <- bfpackResult$fit$PMPa[2]
+    if (options$bayesFactorType == "BF10") {
+      BF_01 <- 1 / BF_01
+    }
+    return(list(BF_01 = BF_01, PMP_0 = PMP_0, PMP_1 = PMP_1))
+  } else if (testType == 5) {
+    BF_01 <- bfpackResult$BFmatrix[1, 2]
+    BF_02 <- bfpackResult$BFmatrix[1, 3]
+    BF_12 <- bfpackResult$BFmatrix[2, 3]
+    PMP_0 <- bfpackResult$fit$PMPa[1]
+    PMP_1 <- bfpackResult$fit$PMPa[2]
+    PMP_2 <- bfpackResult$fit$PMPa[3]
+    if (options$bayesFactorType == "BF10") {
+      BF_01 <- 1 / BF_01
+      BF_02 <- 1 / BF_02
+      BF_12 <- 1 / BF_12
+    }
+    return(list(BF_01 = BF_01, BF_02 = BF_02, BF_12 = BF_12, PMP_0 = PMP_0, PMP_1 = PMP_1, PMP_2 = PMP_2))
+  }
+}
+
+# # Create a table containing the main analysis results
+# .bfpackTestResultsTable <- function(dataList, options, bfpackContainer, ready, type, position) {
+#
+#   if (!is.null(bfpackContainer[["mainResultsTable"]])) {
+#     return()
+#   }
+#
+#   dataset <- dataList[["dataset"]]
+#   missing <- dataList[["missing"]]
+#
+#   title <- switch(type,
+#                   "independentTTest" = gettext("Bfpack Independent Samples Welch's T-Test"),
+#                   "pairedTTest" = gettext("Bfpack Paired Samples T-Test"),
+#                   "onesampleTTest" = gettext("Bfpack One Sample T-test"),
+#                   "anova" = gettext("Bfpack ANOVA"),
+#                   "ancova" = gettext("Bfpack ANCOVA"),
+#                   "regression" = gettext("Bfpack Linear Regression"),
+#                   "correlation" = gettext("Bfpack Correlation")
+#   )
+#   deps <- switch(type,
+#                  "independentTTest" = c("variables", "bayesFactorType", "hypothesis"),
+#                  "pairedTTest" = c("pairs", "hypothesis", "bayesFactorType"),
+#                  "onesampleTTest" = c("variables", "hypothesis", "bayesFactorType"),
+#                  "anova" = NULL,
+#                  "ancova" = NULL,
+#                  "regression" = "standardized",
+#                  "correlation" = NULL
+#   )
+#   table <- createJaspTable(title)
+#   table$dependOn(options = deps)
+#   table$position <- position
+#   if (type %in% c("independentTTest", "pairedTTest", "onesampleTTest")) {
+#     if (options$hypothesis == "equalBiggerSmaller") {
+#       table$addColumnInfo(name = "Variable", type = "string", title = "")
+#       table$addColumnInfo(name = "type[equal]", type = "string", title = gettext("Hypothesis"))
+#       table$addColumnInfo(name = "BF[equal]", type = "number", title = gettext("BF"))
+#       table$addColumnInfo(name = "pmp[equal]", type = "number", format = "dp:3", title = gettext("Posterior probability"))
+#       table$addColumnInfo(name = "type[greater]", type = "string", title = gettext("Hypothesis"))
+#       table$addColumnInfo(name = "BF[greater]", type = "number", title = gettext("BF"))
+#       table$addColumnInfo(name = "pmp[greater]", type = "number", format = "dp:3", title = gettext("Posterior probability"))
+#       table$addColumnInfo(name = "type[less]", type = "string", title = gettext("Hypothesis"))
+#       table$addColumnInfo(name = "BF[less]", type = "number", title = gettext("BF"))
+#       table$addColumnInfo(name = "pmp[less]", type = "number", format = "dp:3", title = gettext("Posterior probability"))
+#     } else {
+#       table$addColumnInfo(name = "Variable", type = "string", title = "")
+#       table$addColumnInfo(name = "hypothesis[type1]", type = "string", title = gettext("Hypothesis"))
+#       table$addColumnInfo(name = "BF[type1]", type = "number", title = gettext("BF"))
+#       table$addColumnInfo(name = "pmp[type1]", type = "number", format = "dp:3", title = gettext("Posterior probability"))
+#       table$addColumnInfo(name = "hypothesis[type2]", type = "string", title = gettext("Hypothesis"))
+#       table$addColumnInfo(name = "BF[type2]", type = "number", title = gettext("BF"))
+#       table$addColumnInfo(name = "pmp[type2]", type = "number", format = "dp:3", title = gettext("Posterior probability"))
+#     }
+#     if (type == "onesampleTTest") {
+#       message <- switch(options[["hypothesis"]],
+#                         "equalNotEqual" = gettextf("The alternative hypothesis H1 specifies that the mean is unequal to %s. The posterior probabilities are based on equal prior probabilities.", options[["testValue"]]),
+#                         "equalBigger" = gettextf("The alternative hypothesis H1 specifies that the mean is bigger than %s. The posterior probabilities are based on equal prior probabilities.", options[["testValue"]]),
+#                         "equalSmaller" = gettextf("The alternative hypothesis H1 specifies that the mean is smaller than %s. The posterior probabilities are based on equal prior probabilities.", options[["testValue"]]),
+#                         "biggerSmaller" = gettextf("The hypothesis H1 specifies that the mean is bigger than %1$s and the hypothesis H2 specifies that the mean is smaller than %1$s. The posterior probabilities are based on equal prior probabilities.", options[["testValue"]]),
+#                         "equalBiggerSmaller" = gettextf("The null hypothesis H0 with test value %1$s is tested against the other hypotheses. H1 states that the mean is bigger than %1$s and H2 states that the mean is smaller than %1$s. The posterior probabilities are based on equal prior probabilities.", options[["testValue"]])
+#       )
+#     }
+#     if (type == "independentTTest") {
+#       message <- switch(options[["hypothesis"]],
+#                         "equalNotEqual" = gettext("The alternative hypothesis H1 specifies that the mean of group 1 is unequal to the mean of group 2. The posterior probabilities are based on equal prior probabilities."),
+#                         "equalSmaller" = gettext("The alternative hypothesis H1 specifies that the mean of group 1 is smaller than the mean of group 2. The posterior probabilities are based on equal prior probabilities."),
+#                         "equalBigger" = gettext("The alternative hypothesis H1 specifies that mean of group 1 is bigger than the mean of group 2. The posterior probabilities are based on equal prior probabilities."),
+#                         "biggerSmaller" = gettext("The hypothesis H1 specifies that the mean of group 1 is bigger than the mean of group 2. The hypothesis H2 specifies that the mean in group 1 is smaller than the mean in group 2. The posterior probabilities are based on equal prior probabilities."),
+#                         "equalBiggerSmaller" = gettext("The null hypothesis H0 (equal group means) is tested against H1 (first mean larger than second mean) and H2 (first mean smaller than second mean). The posterior probabilities are based on equal prior probabilities.")
+#       )
+#     }
+#     if (type == "pairedTTest") {
+#       message <- switch(options[["hypothesis"]],
+#                         "equalNotEqual"       = gettext("The alternative hypothesis H1 specifies that the mean of variable 1 is unequal to the mean of variable 2. The posterior probabilities are based on equal prior probabilities."),
+#                         "equalBigger"         = gettext("The alternative hypothesis H1 specifies that the mean of variable 1 is bigger than the mean of variable 2. The posterior probabilities are based on equal prior probabilities."),
+#                         "equalSmaller"        = gettext("The alternative hypothesis H1 specifies that the mean of variable 1 is smaller than the mean of variable 2. The posterior probabilities are based on equal prior probabilities."),
+#                         "biggerSmaller"       = gettext("The hypothesis H1 specifies that the mean of variable 1 is bigger than the mean of variable 2, while the hypothesis H2 specifies that it is smaller. The posterior probabilities are based on equal prior probabilities."),
+#                         "equalBiggerSmaller"  = gettext("The null hypothesis H0 with equal means is tested against the other hypotheses. The alternative hypothesis H1 states that the mean of variable 1 is bigger than the mean of variable 2. The alternative hypothesis H2 states that the mean of variable 1 is smaller than the mean of variable 2. The posterior probabilities are based on equal prior probabilities.")
+#       )
+#     }
+#   } else if (type %in% c("anova", "ancova", "regression", "correlation")) {
+#     table$addColumnInfo(name = "hypotheses", type = "string", title = "")
+#     table$addColumnInfo(name = "BFu", type = "number", title = gettext("BF.u"))
+#     table$addColumnInfo(name = "BF", type = "number", title = gettext("BF.c"))
+#     table$addColumnInfo(name = "PMP1", type = "number", title = gettext("PMP a"))
+#     table$addColumnInfo(name = "PMP2", type = "number", title = gettext("PMP b"))
+#     table$addColumnInfo(name = "PMP3", type = "number", title = gettext("PMP c"))
+#     message <- gettext("BF.u denotes the Bayes factor of the hypothesis at hand versus the unconstrained hypothesis Hu. \
+#                         BF.c denotes the Bayes factor of the hypothesis at hand versus its complement. \
+#                         PMPa contains the posterior model probabilities of the hypotheses specified. \
+#                         PMPb adds Hu, the unconstrained hypothesis. \
+#                         PMPc adds Hc, the complement of the union of the hypotheses specified. \
+#                         All PMPs are based on equal prior model probabilities.")
+#   }
+#   table$addFootnote(message = message)
+#   table$addCitation(.bfpackGetCitations())
+#   bfpackContainer[["mainResultsTable"]] <- table
+#
+#   if (!ready || (type == "sem" && options[["model"]] == "")) {
+#     return()
+#   }
+#
+#   if (type %in% c("onesampleTTest", "independentTTest")) {
+#     testType <- switch(options[["hypothesis"]],
+#                        "equalNotEqual"       = 1,
+#                        "equalBigger"         = 2,
+#                        "equalSmaller"        = 3,
+#                        "biggerSmaller"       = 4,
+#                        "equalBiggerSmaller"  = 5
+#     )
+#
+#     table$setExpectedSize(length(options[["variables"]]))
+#     startProgressbar(length(options[["variables"]]))
+#
+#     for (variable in options[["variables"]]) {
+#       bfpackResult <- .bfpackGetGeneralTestResults(dataset, options, bfpackContainer, ready, type, variable = variable, testType = testType)
+#
+#       if (isTryError(bfpackResult)) {
+#         table$addRows(list(Variable = variable), rowNames = variable)
+#         table$addFootnote(message = gettextf("Results not computed: %1$s.", jaspBase::.extractErrorMessage(bfpackResult)), colNames = "Variable", rowNames = variable)
+#         progressbarTick()
+#         next
+#       }
+#
+#       if (variable %in% missing) {
+#         table$addFootnote(message = gettext("Variable contains missing values, the rows containing these values are removed in the analysis."), colNames = "Variable", rowNames = variable)
+#       }
+#
+#       tableResults <- .bfpackExtractTableValuesFromObject(options, bfpackResult, testType)
+#
+#       if (options$bayesFactorType == "BF01") {
+#         if (options$hypothesis == "equalNotEqual") {
+#           row <- list(
+#             Variable = variable, "hypothesis[type1]" = gettext("H0: Equal"), "BF[type1]" = tableResults[["BF_0u"]], "pmp[type1]" = tableResults[["PMP_0"]],
+#             "hypothesis[type2]" = gettext("H1: Not equal"), "BF[type2]" = "", "pmp[type2]" = tableResults[["PMP_u"]]
+#           )
+#         } else if (options$hypothesis == "equalBigger") {
+#           row <- list(
+#             Variable = variable, "hypothesis[type1]" = gettext("H0: Equal"), "BF[type1]" = tableResults[["BF_01"]], "pmp[type1]" = tableResults[["PMP_0"]],
+#             "hypothesis[type2]" = gettext("H1: Bigger"), "BF[type2]" = "", "pmp[type2]" = tableResults[["PMP_1"]]
+#           )
+#         } else if (options$hypothesis == "equalSmaller") {
+#           row <- list(
+#             Variable = variable, "hypothesis[type1]" = gettext("H0: Equal"), "BF[type1]" = tableResults[["BF_01"]], "pmp[type1]" = tableResults[["PMP_0"]],
+#             "hypothesis[type2]" = gettext("H1: Smaller"), "BF[type2]" = "", "pmp[type2]" = tableResults[["PMP_1"]]
+#           )
+#         } else if (options$hypothesis == "biggerSmaller") {
+#           row <- list(
+#             Variable = variable, "hypothesis[type1]" = gettext("H1: Bigger"), "BF[type1]" = tableResults[["BF_01"]], "pmp[type1]" = tableResults[["PMP_0"]],
+#             "hypothesis[type2]" = gettext("H2: Smaller"), "BF[type2]" = "", "pmp[type2]" = tableResults[["PMP_1"]]
+#           )
+#         } else if (options$hypothesis == "equalBiggerSmaller") {
+#           row <- list(
+#             Variable = variable, "type[equal]" = gettext("H0: Equal"), "BF[equal]" = "", "pmp[equal]" = tableResults[["PMP_0"]],
+#             "type[greater]" = gettext("H1: Bigger"), "BF[greater]" = tableResults[["BF_01"]], "pmp[greater]" = tableResults[["PMP_1"]],
+#             "type[less]" = gettext("H2: Smaller"), "BF[less]" = tableResults[["BF_02"]], "pmp[less]" = tableResults[["PMP_2"]]
+#           )
+#         }
+#       } else if (options$bayesFactorType == "BF10") {
+#         if (options$hypothesis == "equalNotEqual") {
+#           row <- list(
+#             Variable = variable, "hypothesis[type1]" = gettext("H0: Equal"), "BF[type1]" = "", "pmp[type1]" = tableResults[["PMP_0"]],
+#             "hypothesis[type2]" = gettext("H1: Not equal"), "BF[type2]" = tableResults[["BF_0u"]], "pmp[type2]" = tableResults[["PMP_u"]]
+#           )
+#         } else if (options$hypothesis == "equalBigger") {
+#           row <- list(
+#             Variable = variable, "hypothesis[type1]" = gettext("H0: Equal"), "BF[type1]" = "", "pmp[type1]" = tableResults[["PMP_0"]],
+#             "hypothesis[type2]" = gettext("H1: Bigger"), "BF[type2]" = tableResults[["BF_01"]], "pmp[type2]" = tableResults[["PMP_1"]]
+#           )
+#         } else if (options$hypothesis == "equalSmaller") {
+#           row <- list(
+#             Variable = variable, "hypothesis[type1]" = gettext("H0: Equal"), "BF[type1]" = "", "pmp[type1]" = tableResults[["PMP_0"]],
+#             "hypothesis[type2]" = gettext("H1: Smaller"), "BF[type2]" = tableResults[["BF_01"]], "pmp[type2]" = tableResults[["PMP_1"]]
+#           )
+#         } else if (options$hypothesis == "biggerSmaller") {
+#           row <- list(
+#             Variable = variable, "hypothesis[type1]" = gettext("H1: Bigger"), "BF[type1]" = "", "pmp[type1]" = tableResults[["PMP_0"]],
+#             "hypothesis[type2]" = gettext("H2: Smaller"), "BF[type2]" = tableResults[["BF_01"]], "pmp[type2]" = tableResults[["PMP_1"]]
+#           )
+#         } else if (options$hypothesis == "equalBiggerSmaller") {
+#           row <- list(
+#             Variable = variable, "type[equal]" = gettext("H0: Equal"), "BF[equal]" = "", "pmp[equal]" = tableResults[["PMP_0"]],
+#             "type[greater]" = gettext("H1: Bigger"), "BF[greater]" = tableResults[["BF_01"]], "pmp[greater]" = tableResults[["PMP_1"]],
+#             "type[less]" = gettext("H2: Smaller"), "BF[less]" = tableResults[["BF_02"]], "pmp[less]" = tableResults[["PMP_2"]]
+#           )
+#         }
+#       }
+#       table$addRows(row, rowNames = variable)
+#       progressbarTick()
+#     }
+#   } else if (type == "pairedTTest") {
+#     testType <- switch(options[["hypothesis"]],
+#                        "equalNotEqual"       = 1,
+#                        "equalBigger"         = 2,
+#                        "equalSmaller"        = 3,
+#                        "biggerSmaller"       = 4,
+#                        "equalBiggerSmaller"  = 5
+#     )
+#
+#     table$setExpectedSize(length(options[["pairs"]]))
+#
+#     startProgressbar(length(options[["pairs"]]))
+#
+#     for (pair in options[["pairs"]]) {
+#       currentPair <- paste(pair, collapse = " - ")
+#
+#       if (pair[[1]] != "" || pair[[2]] != "") {
+#         bfpackResult <- .bfpackGetGeneralTestResults(dataset, options, bfpackContainer, ready, type, pair = pair, testType = testType)
+#
+#         if (isTryError(bfpackResult)) {
+#           table$addRows(list(Variable = currentPair), rowNames = currentPair)
+#           table$addFootnote(message = gettextf("Results not computed: %s", jaspBase::.extractErrorMessage(bfpackResult)), colNames = "Variable", rowNames = currentPair)
+#           progressbarTick()
+#           next
+#         }
+#
+#         if (any(pair %in% missing)) {
+#           i <- which(pair %in% missing)
+#           if (length(i) > 1) {
+#             message <- gettext("Both variables contain missing values, the rows containing these values are removed in the analysis.")
+#           } else {
+#             message <- gettextf("The variable %s contains missing values, the rows containing these values are removed in the analysis.", pair[i])
+#           }
+#           table$addFootnote(message = message, colNames = "Variable", rowNames = currentPair)
+#         }
+#
+#         tableResults <- .bfpackExtractTableValuesFromObject(options, bfpackResult, testType)
+#
+#         if (options$bayesFactorType == "BF01") {
+#           if (options$hypothesis == "equalNotEqual") {
+#             row <- list(
+#               Variable = currentPair, "hypothesis[type1]" = gettext("H0: Equal"), "BF[type1]" = tableResults[["BF_0u"]], "pmp[type1]" = tableResults[["PMP_0"]],
+#               "hypothesis[type2]" = gettext("H1: Not equal"), "BF[type2]" = "", "pmp[type2]" = tableResults[["PMP_u"]]
+#             )
+#           }
+#           if (options$hypothesis == "equalSmaller") {
+#             row <- list(
+#               Variable = currentPair, "hypothesis[type1]" = gettext("H0: Equal"), "BF[type1]" = tableResults[["BF_01"]], "pmp[type1]" = tableResults[["PMP_0"]],
+#               "hypothesis[type2]" = gettext("H1: Smaller"), "BF[type2]" = "", "pmp[type2]" = tableResults[["PMP_1"]]
+#             )
+#           }
+#           if (options$hypothesis == "equalBigger") {
+#             row <- list(
+#               Variable = currentPair, "hypothesis[type1]" = gettext("H0: Equal"), "BF[type1]" = tableResults[["BF_01"]], "pmp[type1]" = tableResults[["PMP_0"]],
+#               "hypothesis[type2]" = gettext("H1: Bigger"), "BF[type2]" = "", "pmp[type2]" = tableResults[["PMP_1"]]
+#             )
+#           }
+#           if (options$hypothesis == "biggerSmaller") {
+#             row <- list(
+#               Variable = currentPair, "hypothesis[type1]" = gettext("H1: Bigger"), "BF[type1]" = tableResults[["BF_01"]], "pmp[type1]" = tableResults[["PMP_0"]],
+#               "hypothesis[type2]" = gettext("H2: Smaller"), "BF[type2]" = "", "pmp[type2]" = tableResults[["PMP_1"]]
+#             )
+#           }
+#           if (options$hypothesis == "equalBiggerSmaller") {
+#             row <- list(
+#               Variable = currentPair,
+#               "type[equal]" = gettext("H0: Equal"),
+#               "BF[equal]" = "",
+#               "pmp[equal]" = tableResults[["PMP_0"]],
+#               "type[greater]" = gettext("H1: Bigger"),
+#               "BF[greater]" = tableResults[["BF_01"]],
+#               "pmp[greater]" = tableResults[["PMP_1"]],
+#               "type[less]" = gettext("H2: Smaller"),
+#               "BF[less]" = tableResults[["BF_02"]],
+#               "pmp[less]" = tableResults[["PMP_2"]]
+#             )
+#           }
+#         } else if (options$bayesFactorType == "BF10") {
+#           if (options$hypothesis == "equalNotEqual") {
+#             row <- list(
+#               Variable = currentPair, "hypothesis[type1]" = gettext("H0: Equal"), "BF[type1]" = "", "pmp[type1]" = tableResults[["PMP_0"]],
+#               "hypothesis[type2]" = gettext("H1: Not equal"), "BF[type2]" = tableResults[["BF_0u"]], "pmp[type2]" = tableResults[["PMP_u"]]
+#             )
+#           } else if (options$hypothesis == "equalSmaller") {
+#             row <- list(
+#               Variable = currentPair, "hypothesis[type1]" = gettext("H0: Equal"), "BF[type1]" = "", "pmp[type1]" = tableResults[["PMP_0"]],
+#               "hypothesis[type2]" = gettext("H1: Smaller"), "BF[type2]" = tableResults[["BF_01"]], "pmp[type2]" = tableResults[["PMP_1"]]
+#             )
+#           } else if (options$hypothesis == "equalBigger") {
+#             row <- list(
+#               Variable = currentPair, "hypothesis[type1]" = gettext("H0: Equal"), "BF[type1]" = "", "pmp[type1]" = tableResults[["PMP_0"]],
+#               "hypothesis[type2]" = gettext("H1: Bigger"), "BF[type2]" = tableResults[["BF_01"]], "pmp[type2]" = tableResults[["PMP_1"]]
+#             )
+#           } else if (options$hypothesis == "biggerSmaller") {
+#             row <- list(
+#               Variable = currentPair, "hypothesis[type1]" = gettext("H1: Bigger"), "BF[type1]" = "", "pmp[type1]" = tableResults[["PMP_0"]],
+#               "hypothesis[type2]" = gettext("H2: Smaller"), "BF[type2]" = tableResults[["BF_01"]], "pmp[type2]" = tableResults[["PMP_1"]]
+#             )
+#           } else if (options$hypothesis == "equalBiggerSmaller") {
+#             row <- list(
+#               Variable = currentPair,
+#               "type[equal]" = gettext("H0: Equal"),
+#               "BF[equal]" = "",
+#               "pmp[equal]" = tableResults[["PMP_0"]],
+#               "type[greater]" = gettext("H1: Bigger"),
+#               "BF[greater]" = tableResults[["BF_01"]],
+#               "pmp[greater]" = tableResults[["PMP_1"]],
+#               "type[less]" = gettext("H2: Smaller"),
+#               "BF[less]" = tableResults[["BF_02"]],
+#               "pmp[less]" = tableResults[["PMP_2"]]
+#             )
+#           }
+#         }
+#       } else {
+#         if (options$hypothesis == "equalBiggerSmaller") {
+#           row <- list(
+#             Variable = currentPair, "type[equal]" = ".", "BF[equal]" = ".", "pmp[equal]" = ".",
+#             "type[greater]" = ".", "BF[greater]" = ".", "pmp[greater]" = ".",
+#             "type[less]" = ".", "BF[less]" = ".", "pmp[less]" = "."
+#           )
+#         } else {
+#           row <- list(
+#             Variable = currentPair, "hypothesis[type1]" = ".", "BF[type1]" = ".", "pmp[type1]" = ".",
+#             "hypothesis[type2]" = ".", "BF[type2]" = ".", "pmp[type2]" = "."
+#           )
+#         }
+#       }
+#       table$addRows(row, rowNames = currentPair)
+#
+#       if (pair[[1]] == pair[[2]]) {
+#         table$addFootnote(message = gettext("Results not computed: The variables in this pair are the same."), colNames = "Variable", rowNames = currentPair)
+#       } else if (pair[[1]] == "" || pair[[2]] == "") {
+#         table$addFootnote(message = gettext("Results not computed: The pair is incomplete."), colNames = "Variable", rowNames = currentPair)
+#       }
+#       progressbarTick()
+#     }
+#   } else if (type %in% c("anova", "ancova", "regression", "sem")) {
+#     if (bfpackContainer$getError()) {
+#       return()
+#     }
+#     variables <- switch(type,
+#                         "anova" = c(options[["dependent"]], options[["fixedFactors"]]),
+#                         "ancova" = c(options[["dependent"]], options[["fixedFactors"]], unlist(options[["covariates"]])),
+#                         "regression" = c(options[["dependent"]], unlist(options[["covariates"]])),
+#                         "sem" = .bfpackSemGetUsedVars(.bfpackSemTranslateModel(options[["syntax"]]$model, dataset), colnames(dataset))
+#     )
+#     if (any(variables %in% missing)) {
+#       i <- which(variables %in% missing)
+#       if (length(i) > 1) {
+#         if (type == "regression" || type == "ancova" || type == "sem") {
+#           table$addFootnote(message = gettextf("The variables %1$s contain missing values, the rows containing these values are removed in the analysis.", paste(variables[i], collapse = ", ")), symbol = gettext("<b>Warning.</b>"))
+#         } else if (type == "anova") {
+#           table$addFootnote(message = gettextf("The variables %1$s and %2$s contain missing values, the rows containing these values are removed in the analysis.", variables[1], variables[2]), symbol = gettext("<b>Warning.</b>"))
+#         }
+#       } else if (length(i) == 1) {
+#         table$addFootnote(message = gettextf("The variable %1$s contains missing values, the rows containing these values are removed in the analysis.", variables[i]), symbol = gettext("<b>Warning.</b>"))
+#       }
+#     }
+#     bfpackResult <- .bfpackGetGeneralTestResults(dataset, options, bfpackContainer, ready, type)
+#     for (i in 1:(length(bfpackResult[["fit"]]$BF) - 2)) {
+#       row <- list(hypotheses = gettextf("H%1$i", i), BFu = bfpackResult[["fit"]]$BF.u[i], BF = bfpackResult[["fit"]]$BF.c[i], PMP1 = bfpackResult[["fit"]]$PMPa[i], PMP2 = bfpackResult[["fit"]]$PMPb[i], PMP3 = bfpackResult[["fit"]]$PMPc[i])
+#       table$addRows(row)
+#     }
+#     rows <- list(
+#       list(hypotheses = gettext("Hu"), BFu = "", BF = "", PMP1 = "", PMP2 = bfpackResult[["fit"]]$PMPb[length(bfpackResult[["fit"]]$BF) - 1], PMP3 = ""),
+#       list(hypotheses = gettext("Hc"), BFu = bfpackResult[["fit"]]$BF.u[length(bfpackResult[["fit"]]$BF.u)], BF = "", PMP1 = "", PMP2 = "", PMP3 = bfpackResult[["fit"]]$PMPc[length(bfpackResult[["fit"]]$BF)])
+#     )
+#     table$addRows(rows)
+#   }
+#   if (!isTryError(bfpackResult) && any(is.nan(unlist(bfpackResult[["fit"]])))) {
+#     table$addFootnote(symbol = gettext("<b>Warning</b>"), message = gettext("The entered model constraints are incompatible with the data and therefore the computed results contain NaNs."))
+#   }
+#   if (type %in% c("anova", "ancova", "regression", "sem") && !is.null(bfpackResult)) {
+#     complexity <- bfpackResult[["fit"]]$Com[length(bfpackResult[["fit"]]$Com)]
+#     if (!is.na(complexity) && complexity < .05) {
+#       table$addFootnote(gettext("<b>Your hypotheses (almost) completely cover the parameter space. Therefore instead of PMPc, you should interpret PMPa.</b>"))
+#     }
+#   }
+# }
+#
+# # Create the Bayes factor matrix
+# .bfpackBfMatrix <- function(dataset, options, bfpackContainer, ready, type, position) {
+#   if (!is.null(bfpackContainer[["bayesFactorMatrix"]]) || !options[["bayesFactorMatrix"]]) {
+#     return()
+#   }
+#
+#   bayesFactorMatrix <- createJaspTable(gettext("Bayes Factor Matrix"))
+#   bayesFactorMatrix$position <- position
+#   bayesFactorMatrix$dependOn(options = c("bayesFactorMatrix", "standardized"))
+#   bayesFactorMatrix$addColumnInfo(name = "hypothesis", title = "", type = "string")
+#   bayesFactorMatrix$addColumnInfo(name = "H1", title = gettext("H1"), type = "number")
+#   bfpackContainer[["bayesFactorMatrix"]] <- bayesFactorMatrix
+#
+#   if (!ready || bfpackContainer$getError() || (type == "sem" && options[["model"]] == "")) {
+#     row <- data.frame(hypothesis = gettext("H1"), H1 = ".")
+#     bayesFactorMatrix$addRows(row)
+#     return()
+#   }
+#
+#   bfpackResult <- .bfpackGetGeneralTestResults(dataset, options, bfpackContainer, ready, type)
+#   BFmatrix <- bfpackResult[["BFmatrix"]]
+#   if (nrow(BFmatrix) > 1) {
+#     for (i in 2:nrow(BFmatrix)) {
+#       bayesFactorMatrix$addColumnInfo(name = paste0("H", i), title = gettextf("H%i", i), type = "number")
+#     }
+#   }
+#   for (i in seq_len(nrow(BFmatrix))) {
+#     tmp <- list(hypothesis = gettextf("H%i", i))
+#     for (j in seq_len(ncol(BFmatrix))) {
+#       tmp[[paste0("H", j)]] <- BFmatrix[i, j]
+#     }
+#     row <- tmp
+#     bayesFactorMatrix$addRows(row)
+#   }
+# }
+#
+# # Create the descriptive statistics table
+# .bfpackDescriptivesTable <- function(dataset, options, bfpackContainer, ready, type, position) {
+#   if (!is.null(bfpackContainer[["descriptivesTable"]]) || !options[["descriptives"]]) {
+#     return()
+#   }
+#
+#   if (type == "ancova") {
+#     title <- gettext("Coefficients for Groups plus Covariates")
+#   } else if (type == "regression" || type == "sem") {
+#     title <- gettext("Coefficients for Parameters")
+#   } else {
+#     title <- gettext("Descriptive Statistics")
+#   }
+#   meanTitle <- ifelse(type %in% c("ancova", "regression"), yes = gettext("Coefficient"), no = gettext("Mean"))
+#   table <- createJaspTable(title)
+#   table$dependOn(options = c("variables", "descriptives", "credibleInterval", "pairs"))
+#   table$position <- position
+#   overTitle <- gettextf("%.0f%% Credible Interval", 100 * options[["credibleInterval"]])
+#   table$addColumnInfo(name = "v", title = "", type = "string")
+#   if (type == "independentTTest") {
+#     table$addColumnInfo(name = "group", title = gettext("Group"), type = "string")
+#   }
+#   table$addColumnInfo(name = "N", title = gettext("N"), type = "integer")
+#   table$addColumnInfo(name = "mean", title = meanTitle, type = "number")
+#   if (type %in% c("independentTTest", "pairedTTest", "onesampleTTest", "anova")) {
+#     table$addColumnInfo(name = "sd", title = gettext("SD"), type = "number")
+#   }
+#   table$addColumnInfo(name = "se", title = gettext("SE"), type = "number")
+#   table$addColumnInfo(name = "lowerCI", title = gettext("Lower"), type = "number", overtitle = overTitle)
+#   table$addColumnInfo(name = "upperCI", title = gettext("Upper"), type = "number", overtitle = overTitle)
+#   bfpackContainer[["descriptivesTable"]] <- table
+#   if (type == "regression" || type == "sem") {
+#     table$addFootnote(message = ifelse(options[["standardized"]], yes = gettext("The displayed coefficients are standardized."), no = gettext("The displayed coefficients are unstandardized.")))
+#   }
+#
+#   if (!ready || bfpackContainer$getError()) {
+#     return()
+#   }
+#
+#   if (type == "independentTTest") {
+#     table$setExpectedSize(length(options[["variables"]]) * 2)
+#     levels <- levels(dataset[[options[["groupingVariable"]]]])
+#     if (length(levels) != 2) {
+#       g1 <- "1"
+#       g2 <- "2"
+#     } else {
+#       g1 <- levels[1]
+#       g2 <- levels[2]
+#     }
+#     for (variable in options[["variables"]]) {
+#       bfpackResult <- .bfpackGetGeneralTestResults(dataset, options, bfpackContainer, ready, type, variable = variable)
+#       if (isTryError(bfpackResult)) {
+#         table$addRows(list(v = variable), rowNames = variable)
+#         table$addFootnote(message = gettext("The results for this variable were not computed."), colNames = "v", rowNames = variable)
+#       } else {
+#         bfpackSummary <- summary(bfpackResult, ci = options[["credibleInterval"]])
+#
+#         N <- bfpackSummary[["n"]]
+#         mu <- bfpackSummary[["Estimate"]]
+#         CiLower <- bfpackSummary[["lb"]]
+#         CiUpper <- bfpackSummary[["ub"]]
+#         sd <- aggregate(dataset[, variable], list(dataset[, options[["groupingVariable"]]]), sd)[, 2]
+#         se <- sqrt(diag(bfpackResult[["posterior"]]))
+#         row <- data.frame(v = variable, group = g1, N = N[1], mean = mu[1], sd = sd[1], se = se[1], lowerCI = CiLower[1], upperCI = CiUpper[1])
+#         table$addRows(row)
+#         row <- data.frame(v = "", group = g2, N = N[2], mean = mu[2], sd = sd[2], se = se[2], lowerCI = CiLower[2], upperCI = CiUpper[2])
+#         table$addRows(row)
+#       }
+#     }
+#   } else if (type == "pairedTTest") {
+#     table$setExpectedSize(length(options[["pairs"]]))
+#     for (pair in options[["pairs"]]) {
+#       if (pair[[2]] != "" && pair[[1]] != pair[[2]]) {
+#         subDataSet <- subset(dataset, select = c(pair[[1]], pair[[2]]))
+#         c1 <- subDataSet[[pair[[1]]]]
+#         c2 <- subDataSet[[pair[[2]]]]
+#         difference <- c1 - c2
+#         currentPair <- paste(pair, collapse = " - ")
+#         testType <- switch(options[["hypothesis"]],
+#                            "equalNotEqual"       = 1,
+#                            "equalBigger"         = 2,
+#                            "equalSmaller"        = 3,
+#                            "biggerSmaller"       = 4,
+#                            "equalBiggerSmaller"  = 5
+#         )
+#         bfpackResult <- .bfpackGetGeneralTestResults(dataset, options, bfpackContainer, ready, type, pair = pair, testType = testType)
+#         if (isTryError(bfpackResult)) {
+#           table$addRows(list(v = currentPair), rowNames = currentPair)
+#           table$addFootnote(message = gettext("The results for this variable were not computed."), colNames = "v", rowNames = currentPair)
+#         } else {
+#           bfpackSummary <- summary(bfpackResult, ci = options[["credibleInterval"]])
+#           N <- bfpackSummary[["n"]]
+#           mu <- bfpackSummary[["Estimate"]]
+#           CiLower <- bfpackSummary[["lb"]]
+#           CiUpper <- bfpackSummary[["ub"]]
+#           se <- sqrt(diag(bfpackResult[["posterior"]]))
+#           sd <- sd(difference, na.rm = TRUE)
+#           row <- list(v = currentPair, N = N, mean = mu, sd = sd, se = se, lowerCI = CiLower, upperCI = CiUpper)
+#           table$addRows(row)
+#         }
+#       }
+#     }
+#   } else if (type == "onesampleTTest") {
+#     table$setExpectedSize(length(options[["variables"]]))
+#     for (variable in options[["variables"]]) {
+#       bfpackResult <- .bfpackGetGeneralTestResults(dataset, options, bfpackContainer, ready, type, variable = variable)
+#       if (isTryError(bfpackResult)) {
+#         table$addRows(list(v = variable), rowNames = variable)
+#         table$addFootnote(message = gettext("The results for this variable were not computed."), colNames = "v", rowNames = variable)
+#       } else {
+#         bfpackSummary <- summary(bfpackResult, ci = options[["credibleInterval"]])
+#         N <- bfpackSummary[["n"]]
+#         mu <- bfpackSummary[["Estimate"]]
+#         CiLower <- bfpackSummary[["lb"]]
+#         CiUpper <- bfpackSummary[["ub"]]
+#         sd <- sd(dataset[, variable], na.rm = TRUE)
+#         se <- sqrt(diag(bfpackResult[["posterior"]]))
+#         row <- list(v = variable, N = N, mean = mu, sd = sd, se = se, lowerCI = CiLower, upperCI = CiUpper)
+#         table$addRows(row)
+#       }
+#     }
+#   } else if (type %in% c("anova", "ancova")) {
+#     groupCol <- dataset[, options[["fixedFactors"]]]
+#     bfpackResult <- .bfpackGetGeneralTestResults(dataset, options, bfpackContainer, ready, type)
+#     bfpackSummary <- summary(bfpackResult, ci = options[["credibleInterval"]])
+#     sigma <- diag(bfpackResult[["posterior"]])
+#     variable <- bfpackSummary[["Parameter"]]
+#     N <- bfpackSummary[["n"]]
+#     mu <- bfpackSummary[["Estimate"]]
+#     CiLower <- bfpackSummary[["lb"]]
+#     CiUpper <- bfpackSummary[["ub"]]
+#     se <- sqrt(sigma)
+#     row <- data.frame(v = variable, N = N, mean = mu, se = se, lowerCI = CiLower, upperCI = CiUpper)
+#     if (type == "anova") {
+#       sd <- aggregate(dataset[, options[["dependent"]]], list(dataset[, options[["fixedFactors"]]]), sd)[, 2]
+#       row <- cbind(row, sd = sd)
+#     }
+#     table$addRows(row)
+#   } else if (type %in% c("regression", "sem")) {
+#     bfpackResult <- .bfpackGetGeneralTestResults(dataset, options, bfpackContainer, ready, type)
+#     if (is.null(bfpackResult)) {
+#       return()
+#     }
+#     bfpackSummary <- summary(bfpackResult, ci = options[["credibleInterval"]])
+#     groups <- bfpackSummary[["Parameter"]]
+#     N <- bfpackSummary[["n"]]
+#     mu <- bfpackSummary[["Estimate"]]
+#     CiLower <- bfpackSummary[["lb"]]
+#     CiUpper <- bfpackSummary[["ub"]]
+#     se <- sqrt(diag(bfpackResult[["posterior"]]))
+#     row <- data.frame(v = groups, N = N, mean = mu, se = se, lowerCI = CiLower, upperCI = CiUpper)
+#     table$addRows(row)
+#   }
+# }
+#
