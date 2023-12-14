@@ -171,7 +171,7 @@ Form
 				title: qsTr("Type")
 				radioButtonsOnSameRow: false
 				RadioButton { value: "fractional"; label: qsTr("Fractional"); checked: true}
-				// RadioButton { value: "adjusted"; label: qsTr("Adjusted fractional")}
+				RadioButton { value: "adjusted"; label: qsTr("Adjusted fractional")}
 			}
 		}
 		Group

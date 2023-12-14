@@ -33,11 +33,12 @@ gettextf <- function(fmt, ..., domain = NULL)  {
 
 # Read the data set
 .bfpackReadDataset <- function(options, type, dataset) {
+
   numerics <- switch(type,
     "onesampleTTest" = options[["variables"]],
     "pairedTTest" = unique(unlist(options[["pairs"]])),
     "independentTTest" = unlist(options[["variables"]]),
-    "anova" = options[["dependent"]],
+    "anova" = c(options[["dependent"]], unlist(options[["covariates"]])),
     "ancova" = c(options[["dependent"]], unlist(options[["covariates"]])),
     "regression" = c(options[["dependent"]], unlist(options[["covariates"]])),
     "correlation" = options[["variables"]]
@@ -64,7 +65,7 @@ gettextf <- function(fmt, ..., domain = NULL)  {
     } else {
       dataset <- .readDataSetToEnd(columns.as.numeric = numerics, columns.as.factor = factors, exclude.na.listwise = vars)
     }
-    if ((type == "anova" || type == "ancova") && options[["fixedFactors"]] != "") {
+    if ((type == "anova" || type == "ancova") && length(options[["fixedFactors"]]) > 0) {
       if (any(grepl(pattern = " ", x = levels(dataset[, options[["fixedFactors"]]])))) {
         jaspBase:::.quitAnalysis(gettext("Bfpack does not accept factor levels that contain spaces. Please remove the spaces from your factor levels to continue."))
       }
@@ -90,10 +91,11 @@ gettextf <- function(fmt, ..., domain = NULL)  {
     "independentTTest" = length(options[["variables"]][options[["variables"]] != ""] > 0) && options[["groupingVariable"]] != "",
     "pairedTTest" = !is.null(unlist(options[["pairs"]])),
     "onesampleTTest" = length(options[["variables"]][options[["variables"]] != ""] > 0),
-    "anova" = options[["fixedFactors"]] != "" && options[["dependent"]] != "",
+    "anova" = length(options[["dependent"]]) > 0 && length(options[["fixedFactors"]]) > 0,
     "ancova" = options[["dependent"]] != "" && options[["fixedFactors"]] != "" && !is.null(unlist(options[["covariates"]])),
     "regression" = (options[["dependent"]] != "" && all(unlist(options[["covariates"]]) != "") && !is.null(unlist(options[["covariates"]]))),
     "correlation" = length(options[["variables"]]) > 1)
+
   return(ready)
 }
 
@@ -165,16 +167,53 @@ gettextf <- function(fmt, ..., domain = NULL)  {
 
   # regression
   } else if (type == "regression") {
+
     dependent <- decodeColNames(options[["dependent"]])
     covariates <- decodeColNames(options[["covariates"]])
     ncov <- length(covariates)
     covariateString <- paste0(covariates, collapse = "+")
     formula <- as.formula(paste0(dependent, "~", covariateString))
     result <- try(lm(formula, data = dataset))
+  } else if (type == "independentTTest") {
+    variables <- decodeColNames(options[["variables"]])
+    grouping <- decodeColNames(options[["groupingVariable"]])
+    levels <- levels(dataset[[grouping]])
+    # take only the first two levels, give a table footnote if there are more than two levels
+    g1 <- levels[1]
+    g2 <- levels[2]
+    result <- list()
+    for (vv in variables) {
+      subDataSet <- dataset[, c(vv, grouping)]
+      group1 <- subDataSet[subDataSet[[grouping]] == g1, vv]
+      group2 <- subDataSet[subDataSet[[grouping]] == g2, vv]
+      result[[vv]] <- try(bain::t_test(x = group1, y = group2, paired = FALSE, var.equal = FALSE))
+    }
+
+  } else if (type == "anova") {
+    dependent <- decodeColNames(options[["dependent"]])
+    factorVar <- decodeColNames(options[["fixedFactors"]])
+    covariates <- decodeColNames(options[["covariates"]])
+
+    # treat the independent variables
+    istring <- paste0(factorVar, collapse = "*")
+
+    if (length(covariates) > 0) {
+      covString <- paste0(covariates, collapse = "*")
+      istring <- paste0(istring, "*", covString)
+    }
+
+    if (length(dependent) == 1) {
+      formula <- as.formula(paste0(dependent, "~", istring, "-1"))
+      result <- try(aov(formula, data = dataset))
+    } else { # manova
+      formula <- as.formula(paste0("cbind(", paste0(dependent, collapse = ","), ") ~ ", istring, "-1"))
+      result <- try(manova(formula, data = dataset))
+    }
   }
 
+  # what if results becomes a list of results... TODO
   if (isTryError(result)) {
-    bfpackContainer$setError(gettext("The parameter estimation failed. Error message: %1$s", jaspBase::.extractErrorMessage(result)))
+    bfpackContainer$setError(gettextf("The parameter estimation failed. Error message: %1$s", jaspBase::.extractErrorMessage(result)))
     return()
   }
 
@@ -189,7 +228,7 @@ gettextf <- function(fmt, ..., domain = NULL)  {
 
   estimateNames <- as.list(names(estimateNames$estimate))
   # remove intercept name for regression
-  if (type == "regression") estimateNames[[1]] <- NULL
+  if (type %in% c("regression", "anova")) estimateNames[[1]] <- NULL
 
   namesForQml <- createJaspQmlSource("estimateNamesForQml", estimateNames)
   namesForQml$dependOn("variables")
@@ -297,7 +336,7 @@ gettextf <- function(fmt, ..., domain = NULL)  {
 
 ####### TABLES #######
 # table for the posterior probabilities of the parameter estimates
-.bfpackParameterTable <- function(options, bfpackContainer, type, position) {
+.bfpackParameterTable <- function(options, bfpackContainer, type, dataset, position) {
 
   # the parameterTable does go into the outer container given it does not depend on the options for the
   # inner container
@@ -312,6 +351,8 @@ gettextf <- function(fmt, ..., domain = NULL)  {
   parameterTable$addColumnInfo(name = "smaller", type = "number", title = gettext("Pr(<0)"))
   parameterTable$addColumnInfo(name = "larger", type = "number", title = gettext("Pr(>0)"))
 
+  # assigning the table to the container here means we already display an empty table even if it is not yet
+  # filled with data
   bfpackContainer[["parameterTable"]] <- parameterTable
 
   parPhp <- bfpackContainer[["resultsContainer"]][["resultsState"]]$object$PHP_exploratory
@@ -321,6 +362,47 @@ gettextf <- function(fmt, ..., domain = NULL)  {
     parameterTable$setData(dtFill)
   }
 
+  if (type == "independentTTest") {
+    levels <- levels(dataset[[options[["groupingVariable"]]]])
+    if (length(levels) > 2) {
+      parameterTable$addFootnote(gettext("The number of factor levels in the grouping is greater than 2.
+                                         Only the first two levels were used."))
+    }
+  }
+
+  return()
+}
+
+
+# table for the posterior probabilities of the effects for anova models
+.bfpackEffectsTable <- function(options, bfpackContainer, type, position) {
+
+  # the effectsTable does go into the outer container given it does not depend on the options for the
+  # inner container
+  if (!is.null(bfpackContainer[["effectsTable"]])) return()
+
+  effectsTable <- createJaspTable(gettext("Posterior probabilities for full model"))
+  effectsTable$dependOn("priorProb")
+  effectsTable$position <- position
+
+  effectsTable$addColumnInfo(name = "coefficient", type = "string", title = "")
+  effectsTable$addColumnInfo(name = "noEffect", type = "number", title = gettext("Pr(no effect)"))
+  effectsTable$addColumnInfo(name = "fullModel", type = "number", title = gettext("Pr(full model)"))
+
+  bfpackContainer[["effectsTable"]] <- effectsTable
+
+  php <- bfpackContainer[["resultsContainer"]][["resultsState"]]$object$PHP_main
+  if (!is.null(php) && !bfpackContainer$getError()) {
+    if (!is.null(bfpackContainer[["resultsContainer"]][["resultsState"]]$object$PHP_interaction)) {
+      ia <- bfpackContainer[["resultsContainer"]][["resultsState"]]$object$PHP_interaction
+      php <- rbind(php, ia)
+    }
+    dtFill <- data.frame(coefficient = rownames(php))
+    dtFill[, c("noEffect", "fullModel")] <- php
+    effectsTable$setData(dtFill)
+  }
+
+  return()
 }
 
 
@@ -336,8 +418,6 @@ gettextf <- function(fmt, ..., domain = NULL)  {
   legendTable$addColumnInfo(name = "number", type = "string", title = "")
   legendTable$addColumnInfo(name = "hypothesis", type = "string", title = gettext("Hypothesis"))
 
-  bfpackContainer[["legendTable"]] <- legendTable
-
   hypos <- bfpackContainer[["resultsContainer"]][["resultsState"]]$object$hypotheses
 
   if (!is.null(hypos) && !bfpackContainer$getError()) {
@@ -345,6 +425,8 @@ gettextf <- function(fmt, ..., domain = NULL)  {
       row <- list(number = gettextf("H%i", i), hypothesis = hypos[i])
       legendTable$addRows(row)
     }
+    # putting the assignment to the container here means the table is only displayed if it is filled with data
+    bfpackContainer[["legendTable"]] <- legendTable
   }
 
   return()
@@ -362,8 +444,6 @@ gettextf <- function(fmt, ..., domain = NULL)  {
   matrixTable$addColumnInfo(name = "hypothesis", title = "", type = "string")
   matrixTable$addColumnInfo(name = "H1", title = gettext("H1"), type = "number")
 
-  bfpackContainer[["resultsContainer"]][["matrixTable"]] <- matrixTable
-
   bfMatrix <- bfpackContainer[["resultsContainer"]][["resultsState"]]$object$BFmatrix_confirmatory
   if (!is.null(bfMatrix) && !bfpackContainer$getError()) {
     if (nrow(bfMatrix) > 1) {
@@ -379,6 +459,9 @@ gettextf <- function(fmt, ..., domain = NULL)  {
       row <- tmp
       matrixTable$addRows(row)
     }
+
+    bfpackContainer[["resultsContainer"]][["matrixTable"]] <- matrixTable
+
   }
 
   return()
@@ -397,14 +480,15 @@ gettextf <- function(fmt, ..., domain = NULL)  {
   postTable$addColumnInfo(name = "hypothesis", title = "", type = "string")
   postTable$addColumnInfo(name = "prob", title = gettext("P(H|D)"), type = "number")
 
-  bfpackContainer[["resultsContainer"]][["postTable"]] <- postTable
-
   php <- bfpackContainer[["resultsContainer"]][["resultsState"]]$object$PHP_confirmatory
   if (!is.null(php) && !bfpackContainer$getError()) {
     for (i in seq_len(length(php))) {
       row <- list(hypothesis = gettextf("H%i", i), prob = php[i])
       postTable$addRows(row)
     }
+
+    bfpackContainer[["resultsContainer"]][["postTable"]] <- postTable
+
   }
 
   return()
@@ -503,9 +587,9 @@ gettextf <- function(fmt, ..., domain = NULL)  {
 
     }
     coefficientsTable$setData(dtFill)
-    footnt <- switch(type,
-                     "correlation" = gettext("The uncertainty interval is a highest posterior density credible interval."),
-                     "regression" = gettext("The uncertainty interval is a confidence interval."))
+    footnt <- ifelse(type == "correlation",
+                     gettext("The uncertainty interval is a highest posterior density credible interval."),
+                     gettext("The uncertainty interval is a confidence interval."))
     coefficientsTable$addFootnote(footnt)
   }
 

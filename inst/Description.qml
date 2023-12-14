@@ -22,8 +22,8 @@ Description
 	}
 	Analysis
 	{
-		menu:			"Welch's T-Test"
-		title:		"BFpack Welch's T-Test"
+		menu:			"Independent Samples T-Test"
+		title:		"BFpack Independent Samples T-Test"
 		func:			"bfpackTTestIndependentSamples"
 	}
 	Analysis
