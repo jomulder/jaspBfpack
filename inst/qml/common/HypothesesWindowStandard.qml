@@ -20,48 +20,33 @@ import QtQuick
 import QtQuick.Layouts
 import JASP
 import JASP.Controls
-import "./common" as Common
 
-Form
+Group
 {
+	property string parName: qsTr("mu")
 
-	VariablesForm
+	columns: 1
+	// implicitHeight: 140 * preferencesModel.uiScale
+	title: qsTr("Standard hypothesis test")
+
+	Text { text: qsTr("Hypotheses   Prior probabilities")}
+	ComponentsList 
 	{
-		implicitHeight: 200 * preferencesModel.uiScale
-
-		AvailableVariablesList
-		{
-			name: 						"variablesList"
+		implicitHeight: 90 * preferencesModel.uiScale
+		implicitWidth: 200 * preferencesModel.uiScale
+		source: [{
+			values: [qsTr("H0: ") + parName + " = 0 ", qsTr("H1: ") + parName + " < 0 ", qsTr("H2: ") + parName + " > 0 "]
+		}]
+		name: "standardHypotheses"
+		// titles: [qsTr("Hypotheses"), qsTr("Prior probabilities")]
+		rowComponent: RowLayout {
+			Text { text: rowValue }
+			FormulaField {
+				implicitWidth: 100 * preferencesModel.uiScale
+				name: "priorProb"
+				fieldWidth: 50
+				defaultValue: "1/3"
+				}
 		}
-		
-		AssignedVariablesList
-		{
-			name: 								"variables"
-			singleVariable: 			false
-			allowedColumns: 			["scale", "ordinal"]
-		}
-	}
-
-	CheckBox
-	{
-		Layout.columnSpan: 2
-		id: 						runAnalysisBox
-		name: 					"runAnalysisBox"
-		label: 					qsTr("<b>Run Analysis</b>")
-		checked: 				false
-		Component.onCompleted:
-		{
-			background.color = "#ff8600"
-		}
-	}
-
-	Common.HypothesesWindowStandard{
-		parName: qsTr("rho")
-	}
-
-	Common.HypothesesWindowManual{}
-
-	Common.Options{
-		bfTy: false
 	}
 }

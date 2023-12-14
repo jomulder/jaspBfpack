@@ -41,22 +41,13 @@ Group
 		spacing: 5
 		Repeater
 		{
-					model: hiddenNames.model // estimates must be the id of the hidden ComponentList
-					TextEdit {
-						text: model.name
-						readOnly: true
-						wrapMode: Text.WordWrap
-						selectByMouse: true
-					}
-					// onCountChanged: 
-					//         {
-					//             for (var i = 0; i < count; i++)
-					//             {
-					//                 itemAt(i).visible = (i < 3)
-					//                 if (i >= 3)
-					//                     itemAt(i).width = 0
-					//             }
-					//         }
+			model: hiddenNames.model // estimates must be the id of the hidden ComponentList
+			TextEdit {
+				text: model.name
+				readOnly: true
+				wrapMode: Text.WordWrap
+				selectByMouse: true
+			}
 		}
 	}
 

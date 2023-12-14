@@ -35,7 +35,7 @@ Form
 		AssignedVariablesList
 		{
 			name: 						"variables"
-			title: 						qsTr("Dependent Variables")
+			title: 						qsTr("Variables")
 			singleVariable: 			false
 			allowedColumns: 			["scale"]
 		}
@@ -51,7 +51,7 @@ Form
 
 	CheckBox
 	{
-		Layout.columnSpan: 2
+		// Layout.columnSpan: 2
 		id: 						runAnalysisBox
 		name: 					"runAnalysisBox"
 		label: 					qsTr("<b>Run Analysis</b>")
@@ -60,6 +60,16 @@ Form
 		{
 			background.color = "#ff8600"
 		}
+	}
+
+	DropDown
+	{
+		label: qsTr("T-test type")
+		id: type
+		name: "tTestType"
+		values: [{ value: "oneSample", label: qsTr("One-sample t-test")}, 
+						 { value: "pairedSamples", label: qsTr("Paired-samples t-test")},
+						 { value: "independentSamples", label: qsTr("Independent samples t-test")}]
 	}
 
 	Group
@@ -73,9 +83,8 @@ Form
 		{
 			implicitHeight: 90 * preferencesModel.uiScale
 			implicitWidth: 200 * preferencesModel.uiScale
-			source: [{
-				values: [qsTr("H0: delta = 0 "), qsTr("H1: delta < 0 "), qsTr("H2: delta > 0 ")]
-			}]
+			source: type.value == "oneSample" ? [{ values: [qsTr("H0: mu = 0 "), qsTr("H1: mu < 0 "), qsTr("H2: mu > 0 ")]}] :
+				[{ values: [qsTr("H0: delta = 0 "), qsTr("H1: delta < 0 "), qsTr("H2: delta > 0 ")]}]
 			name: "standardHypotheses"
 			// titles: [qsTr("Hypotheses"), qsTr("Prior probabilities")]
 			rowComponent: RowLayout {

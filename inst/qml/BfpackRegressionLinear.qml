@@ -61,99 +61,11 @@ Form
 		}
 	}
 
-	Group
-	{
-		columns: 1
-		// implicitHeight: 140 * preferencesModel.uiScale
-		title: qsTr("Standard hypothesis test")
-
-		Text { text: qsTr("Hypotheses   Prior probabilities")}
-		ComponentsList 
-		{
-			implicitHeight: 90 * preferencesModel.uiScale
-			implicitWidth: 200 * preferencesModel.uiScale
-			source: [{
-				values: [qsTr("H0: beta = 0 "), qsTr("H1: beta < 0 "), qsTr("H2: beta > 0 ")]
-			}]
-			name: "standardHypotheses"
-			// titles: [qsTr("Hypotheses"), qsTr("Prior probabilities")]
-			rowComponent: RowLayout {
-				Text { text: rowValue }
-				FormulaField {
-					implicitWidth: 100 * preferencesModel.uiScale
-					name: "priorProb"
-					fieldWidth: 50
-					defaultValue: "1/3"
-				}
-			}
-		}
+	Common.HypothesesWindowStandard{
+		parName: qsTr("beta")
 	}
-	Group
-	{
-		columns: 1
-		title: qsTr("Manual hypothesis test")
 
-		ComponentsList {
-			name: "hiddenNames"
-			id: hiddenNames
-			// source: [{values: ["est1", "est2", "est3"]}]
-			rSource: "estimateNamesForQml"
-			visible: false
-		}
-		Text { text: qsTr("Once you drag variables to the analysis window the names \nof the estimates that you may use to specify manual \nhypotheses will display here:") }
-		Flow
-		{
-			width: parent.width
-			// anchors.margins: 1
-			spacing: 5
-			Repeater
-			{
-						model: hiddenNames.model // estimates must be the id of the hidden ComponentList
-						TextEdit {
-							text: model.name
-							readOnly: true
-							wrapMode: Text.WordWrap
-							selectByMouse: true
-						}
-			}
-		}
-
-		Text { text: qsTr("<b>An example may be</b>: ")}
-
-		InputListView
-		{
-			name				: "manualHypotheses"
-			title				: qsTr("Hypotheses")
-			optionKey			: "name"
-			defaultValues		: ["...", "..."]
-			placeHolder			: qsTr("New hypothesis")
-			minRows				: 2
-
-			// preferredWidth		: (2*form.width)/3
-			preferredHeight: 100 * preferencesModel.uiScale
-			rowComponentTitle	: qsTr("Prior probabilities")
-			rowComponent: FormulaField
-			{
-				fieldWidth: 60
-				name: "priorProbManual"
-				defaultValue: "1/2"
-			}
-		}
-
-		CheckBox {
-			name: "complement"
-			label: qsTr("Complement:")
-			checked: true
-			childrenOnSameRow: true
-			FormulaField {
-				fieldWidth: 60
-				name: "priorProbComplement"
-				label: qsTr("Prior Probability")
-				defaultValue: "1/2"
-			}
-		}
-	}	
-	// Common.HypothesesWindowManual{}
+	Common.HypothesesWindowManual{}
 
 	Section
 	{

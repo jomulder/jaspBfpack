@@ -65,7 +65,7 @@ Description
 	Analysis
 	{
 		menu:   	"Linear Regression"
-		title:		"Regression"
+		title:		"Bfpack Regression"
 		func:			"bfpackRegressionLinear"
 	}
 
@@ -76,7 +76,7 @@ Description
 	}
 	Analysis
 	{
-		title:		"Correlation"
+		title:		"Bfpack Correlation"
 		func:			"bfpackCorrelation"
 	}
 }
