@@ -24,12 +24,52 @@ import JASP.Controls
 Section
 {
 	property bool bfTy: true
+	property bool iterations: false
+	property bool interactions: false
 
 	title: 	qsTr("Options")
+
+	Group 
+	{
+		title: qsTr("Interaction terms")
+		visible: interactions
+
+		// VariablesForm {
+		// 	preferredHeight: 300 * preferencesModel.uiScale
+
+		// 	AvailableVariablesList
+		// 	{
+		// 		name: "new"
+		// 		visible:false
+		// 		source: "covariates"
+		// 		implicitWidth: 0
+		// 	}
+		// 	AssignedVariablesList
+		// 	{ 
+		// 		name: "interactionTerms"
+		// 		source: "new"
+		// 		listViewType: JASP.Interaction
+		// 	}
+		// }
+
+		ComponentsList 
+		{
+			implicitHeight: 120 * preferencesModel.uiScale
+			titles: [qsTr("Include")]
+			name: "interactionTerms"
+			rSource: "interactionSource"
+			// source: "covariates"
+			rowComponent: RowLayout { 
+				Text {Layout.preferredWidth: 200; text: rowValue; visible: true}
+				CheckBox {Layout.preferredWidth: 100; name: "includeInteractionEffect"; checked:true}
+			}
+		}
+	}
+
 	Group
 	{
 		title: qsTr("Bayes Factor")
-		Layout.rowSpan: 2
+		// Layout.rowSpan: 2
 
 		CheckBox
 		{
@@ -73,7 +113,7 @@ Section
 	Group
 	{
 		
-
+		title: qsTr("Plots")
 		CheckBox
 		{
 			name: 						"plots"
@@ -84,6 +124,17 @@ Section
 	Group
 	{
 		title: 							qsTr("Additional Options")
+
+		IntegerField
+		{
+			visible: iterations
+			name: "iterations"
+			text: qsTr("No. iterations for parameter estimation")
+			defaultValue: 5000
+			min: 2000
+			fieldWidth: 60 * preferencesModel.uiScale
+
+		}
 
 		DoubleField
 		{

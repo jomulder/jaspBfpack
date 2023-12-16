@@ -76,7 +76,20 @@ Description
 	}
 	Analysis
 	{
+		menu: 		"Correlation"
 		title:		"Bfpack Correlation"
 		func:			"bfpackCorrelation"
+	}
+
+	GroupTitle
+	{
+		title: 		"Variances"
+		// icon: 		"analysis-bain-regression.svg"
+	}
+	Analysis
+	{
+		menu: 		"Variances"
+		title:		"Bfpack Variances"
+		func:			"bfpackVariances"
 	}
 }

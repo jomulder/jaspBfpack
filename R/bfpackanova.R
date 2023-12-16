@@ -21,6 +21,9 @@ bfpackAnova <- function(jaspResults, dataset, options, ...) {
   # What type of Bfpack analysis is being conducted?
   type <- "anova"
 
+  # feed back the interactions to qml
+  .bfpackFeedbackInteractions(jaspResults, options, type)
+
   # Check if current options allow for analysis
   ready <- .bfpackOptionsReady(options, type)
 
@@ -30,9 +33,11 @@ bfpackAnova <- function(jaspResults, dataset, options, ...) {
   # Check if current data allow for analysis
   .bfpackDataReady(dataList[["dataset"]], options, type)
 
+
+
   # Create a container for the results
   bfpackContainer <- .bfpackCreateContainer(jaspResults,
-                                            deps = c("dependent", "fixedFactors", "covariates", "runAnalysisBox"))
+                                            deps = c("dependent", "fixedFactors", "covariates", "runAnalysisBox", "seed"))
 
   .bfpackGetParameterEstimates(dataList, options, bfpackContainer, ready, type, jaspResults)
 
@@ -41,7 +46,8 @@ bfpackAnova <- function(jaspResults, dataset, options, ...) {
 
   .bfpackParameterTable(options, bfpackContainer, type, dataList[["dataset"]], position = 1)
 
-  .bfpackEffectsTable(options, bfpackContainer, type, position = 1.5)
+  .bfpackMainEffectsTable(options, bfpackContainer, type, position = 1.5)
+  .bfpackInteractionEffectsTable(options, bfpackContainer, type, position = 1.6)
 
   # Create a legend containing the order constrained hypotheses
   .bfpackLegendTable(options, type, bfpackContainer, position = 2)

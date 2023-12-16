@@ -15,11 +15,13 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-bfpackRegressionLinear <- function(jaspResults, dataset, options, ...) {
+bfpackVariances <- function(jaspResults, dataset, options, ...) {
 
+  # sink(file = "~/Downloads/logBf.txt")
+  # on.exit(sink(NULL))
 
   # What type of Bfpack analysis is being conducted?
-  type <- "regression"
+  type <- "variances"
 
   # Check if current options allow for analysis
   ready <- .bfpackOptionsReady(options, type)
@@ -31,7 +33,7 @@ bfpackRegressionLinear <- function(jaspResults, dataset, options, ...) {
   .bfpackDataReady(dataList[["dataset"]], options, type)
 
   # Create a container for the results
-  bfpackContainer <- .bfpackCreateContainer(jaspResults, deps = c("dependent", "covariates", "runAnalysisBox", "seed"))
+  bfpackContainer <- .bfpackCreateContainer(jaspResults, deps = c("variables", "seed", "runAnalysisBox"))
 
   .bfpackGetParameterEstimates(dataList, options, bfpackContainer, ready, type, jaspResults)
 
@@ -50,9 +52,8 @@ bfpackRegressionLinear <- function(jaspResults, dataset, options, ...) {
   .bfpackSpecificationTable(options, bfpackContainer, type, position = 5)
 
   # coefficients table
-  .bfpackCoefficientsTable(options, bfpackContainer, type)
+  .bfpackCoefficientsTable(options, bfpackContainer, type, position = 6)
 
   # Create the prior and posterior probability plots
   .bfpackPriorPosteriorPlot(options, bfpackContainer, type)
-
 }

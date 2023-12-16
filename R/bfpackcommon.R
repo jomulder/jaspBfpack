@@ -31,6 +31,42 @@ gettextf <- function(fmt, ..., domain = NULL)  {
   return(jaspResults[["bfpackContainer"]])
 }
 
+
+# give back the interactions to the qml interface
+.bfpackFeedbackInteractions <- function(jaspResults, options, type) {
+
+  # if (!is.null(jaspResults[["interactionTerms"]])) return()
+
+  deps <- switch(type,
+                 "regression" = "covariates",
+                 "anova" = c("fixedFactors", "covariates"))
+
+  if (type == "regression") {
+    nams <- decodeColNames(unlist(options[["covariates"]]))
+    if (length(nams) < 2) return()
+  } else if (type == "anova") {
+    nams <- decodeColNames(c(unlist(options[["fixedFactors"]]), unlist(options[["covariates"]])))
+    if (length(nams) < 2) return()
+  }
+
+  # allow more than two-way interactions
+  inters <- list()
+  for (i in 2:length(nams)) {
+    interTmp <- combn(nams, m = i)
+    interTmp <- as.data.frame(interTmp)
+    tmp <- lapply(interTmp, function(x) paste0(x, collapse = ":"))
+    # somehow this wont work wihtout this:
+    names(tmp) <- NULL
+    inters <- append(inters, tmp)
+  }
+
+  outSource <- createJaspQmlSource("interactionSource", inters)
+  outSource$dependOn(c(deps, "interactionTerms"))
+  jaspResults[["interactionTerms"]] <- outSource
+
+  return()
+}
+
 # Read the data set
 .bfpackReadDataset <- function(options, type, dataset) {
 
@@ -41,7 +77,8 @@ gettextf <- function(fmt, ..., domain = NULL)  {
     "anova" = c(options[["dependent"]], unlist(options[["covariates"]])),
     "ancova" = c(options[["dependent"]], unlist(options[["covariates"]])),
     "regression" = c(options[["dependent"]], unlist(options[["covariates"]])),
-    "correlation" = options[["variables"]]
+    "correlation" = options[["variables"]],
+    "variances" = options[["variables"]]
     )
   numerics <- numerics[numerics != ""]
   factors <- switch(type,
@@ -50,7 +87,8 @@ gettextf <- function(fmt, ..., domain = NULL)  {
     "independentTTest" = options[["groupingVariable"]],
     "anova" = options[["fixedFactors"]],
     "ancova" = options[["fixedFactors"]],
-    "regression" = NULL
+    "regression" = NULL,
+    "variances" = options[["groupingVariable"]]
     )
   factors <- factors[factors != ""]
   vars <- c(numerics, factors)
@@ -82,6 +120,24 @@ gettextf <- function(fmt, ..., domain = NULL)  {
 }
 
 
+.bfpackUnwrapInteractions <- function(options) {
+
+  iaTerms <- options[["interactionTerms"]]
+  iaTrue <- lapply(iaTerms, function(x) {
+    if (x[["includeInteractionEffect"]]) x[["value"]] else NULL
+  })
+
+  iaTrue <- unlist(iaTrue[which(!sapply(iaTrue, is.null))])
+  if (length(iaTrue) > 0) {
+    iaString <- paste0(iaTrue, collapse = "+")
+  } else {
+    iaString <- NULL
+  }
+  return(iaString)
+}
+
+
+
 ####### CHECKS #######
 
 
@@ -94,7 +150,8 @@ gettextf <- function(fmt, ..., domain = NULL)  {
     "anova" = length(options[["dependent"]]) > 0 && length(options[["fixedFactors"]]) > 0,
     "ancova" = options[["dependent"]] != "" && options[["fixedFactors"]] != "" && !is.null(unlist(options[["covariates"]])),
     "regression" = (options[["dependent"]] != "" && all(unlist(options[["covariates"]]) != "") && !is.null(unlist(options[["covariates"]]))),
-    "correlation" = length(options[["variables"]]) > 1)
+    "correlation" = length(options[["variables"]]) > 1,
+    "variances" = length(options[["variables"]] > 0) && options[["groupingVariable"]] != "")
 
   return(ready)
 }
@@ -120,7 +177,8 @@ gettextf <- function(fmt, ..., domain = NULL)  {
     "anova" = options[["dependent"]],
     "ancova" = c(options[["dependent"]], unlist(options[["covariates"]])),
     "regression" = c(options[["dependent"]], unlist(options[["covariates"]])),
-    "correlation" = options[["variables"]])
+    "correlation" = options[["variables"]],
+    "variances" = options[["variables"]])
 
   numerics <- numerics[numerics != ""]
 
@@ -172,6 +230,13 @@ gettextf <- function(fmt, ..., domain = NULL)  {
     covariates <- decodeColNames(options[["covariates"]])
     ncov <- length(covariates)
     covariateString <- paste0(covariates, collapse = "+")
+    # handle the interactions
+    iastring <- .bfpackUnwrapInteractions(options)
+    if (!is.null(iastring)) {
+      covariateString <- paste0(covariateString, "+", iastring)
+    }
+
+
     formula <- as.formula(paste0(dependent, "~", covariateString))
     result <- try(lm(formula, data = dataset))
   } else if (type == "independentTTest") {
@@ -190,28 +255,35 @@ gettextf <- function(fmt, ..., domain = NULL)  {
     }
 
   } else if (type == "anova") {
+
     dependent <- decodeColNames(options[["dependent"]])
     factorVar <- decodeColNames(options[["fixedFactors"]])
     covariates <- decodeColNames(options[["covariates"]])
 
     # treat the independent variables
-    istring <- paste0(factorVar, collapse = "*")
-
+    istring <- paste0(factorVar, collapse = " + ")
     if (length(covariates) > 0) {
-      covString <- paste0(covariates, collapse = "*")
-      istring <- paste0(istring, "*", covString)
+      covString <- paste0(covariates, collapse = " + ")
+      istring <- paste0(istring, " + ", covString)
+    }
+
+    # handle the interactions
+    iastring <- .bfpackUnwrapInteractions(options)
+    if (!is.null(iastring)) {
+      istring <- paste0(istring, "+", iastring)
     }
 
     if (length(dependent) == 1) {
+
       formula <- as.formula(paste0(dependent, "~", istring, "-1"))
       result <- try(aov(formula, data = dataset))
+
     } else { # manova
       formula <- as.formula(paste0("cbind(", paste0(dependent, collapse = ","), ") ~ ", istring, "-1"))
       result <- try(manova(formula, data = dataset))
     }
   }
 
-  # what if results becomes a list of results... TODO
   if (isTryError(result)) {
     bfpackContainer$setError(gettextf("The parameter estimation failed. Error message: %1$s", jaspBase::.extractErrorMessage(result)))
     return()
@@ -220,15 +292,16 @@ gettextf <- function(fmt, ..., domain = NULL)  {
   # save in jaspResults, which is where bfpackContainer is stored.
   # this way we do not have to estimate the parameters twice
   estimatesState <- createJaspState(result)
-  estimatesState$dependOn(c("seed", "ciLevel")) # are there any new dependencies not already covered in the container?
+  estimatesState$dependOn(c("ciLevel", "iterations", "interactionTerms")) # are there any new dependencies not already covered in the container?
   bfpackContainer[["estimatesState"]] <- estimatesState
 
   # the estimate names for the JASP GUI
   estimateNames <- eval(parse(text = callString))(result)
 
   estimateNames <- as.list(names(estimateNames$estimate))
-  # remove intercept name for regression
-  if (type %in% c("regression", "anova")) estimateNames[[1]] <- NULL
+
+  # # remove intercept name for regression, not necessary with means parametrization though
+  # if (type %in% c("regression", "anova")) estimateNames[[1]] <- NULL
 
   namesForQml <- createJaspQmlSource("estimateNamesForQml", estimateNames)
   namesForQml$dependOn("variables")
@@ -355,51 +428,82 @@ gettextf <- function(fmt, ..., domain = NULL)  {
   # filled with data
   bfpackContainer[["parameterTable"]] <- parameterTable
 
-  parPhp <- bfpackContainer[["resultsContainer"]][["resultsState"]]$object$PHP_exploratory
-  if (!is.null(parPhp) && !bfpackContainer$getError()) {
-    dtFill <- data.frame(coefficient = rownames(parPhp))
-    dtFill[, c("equal", "smaller", "larger")] <- parPhp
-    parameterTable$setData(dtFill)
+  if (!bfpackContainer$getError()) {
+    parPhp <- bfpackContainer[["resultsContainer"]][["resultsState"]]$object$PHP_exploratory
+    if (!is.null(parPhp)) {
+      dtFill <- data.frame(coefficient = rownames(parPhp))
+      dtFill[, c("equal", "smaller", "larger")] <- parPhp
+      parameterTable$setData(dtFill)
+    }
+
   }
 
-  if (type == "independentTTest") {
-    levels <- levels(dataset[[options[["groupingVariable"]]]])
-    if (length(levels) > 2) {
-      parameterTable$addFootnote(gettext("The number of factor levels in the grouping is greater than 2.
-                                         Only the first two levels were used."))
-    }
-  }
+  # if (type == "independentTTest") {
+  #   levels <- levels(dataset[[options[["groupingVariable"]]]])
+  #   if (length(levels) > 2) {
+  #     parameterTable$addFootnote(gettext("The number of factor levels in the grouping is greater than 2.
+  #                                        Only the first two levels were used."))
+  #   }
+  # }
 
   return()
 }
 
 
 # table for the posterior probabilities of the effects for anova models
-.bfpackEffectsTable <- function(options, bfpackContainer, type, position) {
+.bfpackMainEffectsTable <- function(options, bfpackContainer, type, position) {
 
-  # the effectsTable does go into the outer container given it does not depend on the options for the
+  # the mainEffectsTable does go into the outer container given it does not depend on the options for the
   # inner container
-  if (!is.null(bfpackContainer[["effectsTable"]])) return()
+  if (!is.null(bfpackContainer[["mainEffectsTable"]])) return()
 
-  effectsTable <- createJaspTable(gettext("Posterior probabilities for full model"))
-  effectsTable$dependOn("priorProb")
-  effectsTable$position <- position
+  mainEffectsTable <- createJaspTable(gettext("Posterior probabilities for main effects"))
+  mainEffectsTable$dependOn("priorProb")
+  mainEffectsTable$position <- position
 
-  effectsTable$addColumnInfo(name = "coefficient", type = "string", title = "")
-  effectsTable$addColumnInfo(name = "noEffect", type = "number", title = gettext("Pr(no effect)"))
-  effectsTable$addColumnInfo(name = "fullModel", type = "number", title = gettext("Pr(full model)"))
+  mainEffectsTable$addColumnInfo(name = "coefficient", type = "string", title = "")
+  mainEffectsTable$addColumnInfo(name = "noEffect", type = "number", title = gettext("Pr(no effect)"))
+  mainEffectsTable$addColumnInfo(name = "fullModel", type = "number", title = gettext("Pr(full model)"))
 
-  bfpackContainer[["effectsTable"]] <- effectsTable
+  bfpackContainer[["mainEffectsTable"]] <- mainEffectsTable
 
-  php <- bfpackContainer[["resultsContainer"]][["resultsState"]]$object$PHP_main
-  if (!is.null(php) && !bfpackContainer$getError()) {
-    if (!is.null(bfpackContainer[["resultsContainer"]][["resultsState"]]$object$PHP_interaction)) {
-      ia <- bfpackContainer[["resultsContainer"]][["resultsState"]]$object$PHP_interaction
-      php <- rbind(php, ia)
+  if (!bfpackContainer$getError()) {
+    php <- bfpackContainer[["resultsContainer"]][["resultsState"]]$object$PHP_main
+    if (!is.null(php)) {
+      dtFill <- data.frame(coefficient = rownames(php))
+      dtFill[, c("noEffect", "fullModel")] <- php
+      mainEffectsTable$setData(dtFill)
     }
-    dtFill <- data.frame(coefficient = rownames(php))
-    dtFill[, c("noEffect", "fullModel")] <- php
-    effectsTable$setData(dtFill)
+
+  }
+
+  return()
+}
+
+# table for the posterior probabilities of the effects for anova models
+.bfpackInteractionEffectsTable <- function(options, bfpackContainer, type, position) {
+
+  # the iaEffectsTable does go into the outer container given it does not depend on the options for the
+  # inner container
+  if (!is.null(bfpackContainer[["iaEffectsTable"]])) return()
+
+  iaEffectsTable <- createJaspTable(gettext("Posterior probabilities for interaction effects"))
+  iaEffectsTable$dependOn("priorProb")
+  iaEffectsTable$position <- position
+
+  iaEffectsTable$addColumnInfo(name = "coefficient", type = "string", title = "")
+  iaEffectsTable$addColumnInfo(name = "noEffect", type = "number", title = gettext("Pr(no effect)"))
+  iaEffectsTable$addColumnInfo(name = "fullModel", type = "number", title = gettext("Pr(full model)"))
+
+  if (!bfpackContainer$getError()) {
+    php <- bfpackContainer[["resultsContainer"]][["resultsState"]]$object$PHP_interaction
+    if (!is.null(php)) {
+      bfpackContainer[["iaEffectsTable"]] <- iaEffectsTable
+
+      dtFill <- data.frame(coefficient = rownames(php))
+      dtFill[, c("noEffect", "fullModel")] <- php
+      iaEffectsTable$setData(dtFill)
+    }
   }
 
   return()
@@ -418,15 +522,17 @@ gettextf <- function(fmt, ..., domain = NULL)  {
   legendTable$addColumnInfo(name = "number", type = "string", title = "")
   legendTable$addColumnInfo(name = "hypothesis", type = "string", title = gettext("Hypothesis"))
 
-  hypos <- bfpackContainer[["resultsContainer"]][["resultsState"]]$object$hypotheses
-
-  if (!is.null(hypos) && !bfpackContainer$getError()) {
-    for (i in seq_len(length(hypos))) {
-      row <- list(number = gettextf("H%i", i), hypothesis = hypos[i])
-      legendTable$addRows(row)
+  if (!bfpackContainer$getError()) {
+    hypos <- bfpackContainer[["resultsContainer"]][["resultsState"]]$object$hypotheses
+    if (!is.null(hypos)) {
+      for (i in seq_len(length(hypos))) {
+        row <- list(number = gettextf("H%i", i), hypothesis = hypos[i])
+        legendTable$addRows(row)
+      }
+      # putting the assignment to the container here means the table is only displayed if it is filled with data
+      bfpackContainer[["legendTable"]] <- legendTable
     }
-    # putting the assignment to the container here means the table is only displayed if it is filled with data
-    bfpackContainer[["legendTable"]] <- legendTable
+
   }
 
   return()
@@ -444,23 +550,25 @@ gettextf <- function(fmt, ..., domain = NULL)  {
   matrixTable$addColumnInfo(name = "hypothesis", title = "", type = "string")
   matrixTable$addColumnInfo(name = "H1", title = gettext("H1"), type = "number")
 
-  bfMatrix <- bfpackContainer[["resultsContainer"]][["resultsState"]]$object$BFmatrix_confirmatory
-  if (!is.null(bfMatrix) && !bfpackContainer$getError()) {
-    if (nrow(bfMatrix) > 1) {
-      for (i in 2:nrow(bfMatrix)) {
-        matrixTable$addColumnInfo(name = paste0("H", i), title = gettextf("H%i", i), type = "number")
+  if (!bfpackContainer$getError()) {
+    bfMatrix <- bfpackContainer[["resultsContainer"]][["resultsState"]]$object$BFmatrix_confirmatory
+    if (!is.null(bfMatrix)) {
+      if (nrow(bfMatrix) > 1) {
+        for (i in 2:nrow(bfMatrix)) {
+          matrixTable$addColumnInfo(name = paste0("H", i), title = gettextf("H%i", i), type = "number")
+        }
       }
-    }
-    for (i in seq_len(nrow(bfMatrix))) {
-      tmp <- list(hypothesis = gettextf("H%i", i))
-      for (j in seq_len(ncol(bfMatrix))) {
-        tmp[[paste0("H", j)]] <- bfMatrix[i, j]
+      for (i in seq_len(nrow(bfMatrix))) {
+        tmp <- list(hypothesis = gettextf("H%i", i))
+        for (j in seq_len(ncol(bfMatrix))) {
+          tmp[[paste0("H", j)]] <- bfMatrix[i, j]
+        }
+        row <- tmp
+        matrixTable$addRows(row)
       }
-      row <- tmp
-      matrixTable$addRows(row)
-    }
 
-    bfpackContainer[["resultsContainer"]][["matrixTable"]] <- matrixTable
+      bfpackContainer[["resultsContainer"]][["matrixTable"]] <- matrixTable
+    }
 
   }
 
@@ -480,14 +588,16 @@ gettextf <- function(fmt, ..., domain = NULL)  {
   postTable$addColumnInfo(name = "hypothesis", title = "", type = "string")
   postTable$addColumnInfo(name = "prob", title = gettext("P(H|D)"), type = "number")
 
-  php <- bfpackContainer[["resultsContainer"]][["resultsState"]]$object$PHP_confirmatory
-  if (!is.null(php) && !bfpackContainer$getError()) {
-    for (i in seq_len(length(php))) {
-      row <- list(hypothesis = gettextf("H%i", i), prob = php[i])
-      postTable$addRows(row)
-    }
+  if (!bfpackContainer$getError()) {
+    php <- bfpackContainer[["resultsContainer"]][["resultsState"]]$object$PHP_confirmatory
+    if (!is.null(php)) {
+      for (i in seq_len(length(php))) {
+        row <- list(hypothesis = gettextf("H%i", i), prob = php[i])
+        postTable$addRows(row)
+      }
 
-    bfpackContainer[["resultsContainer"]][["postTable"]] <- postTable
+      bfpackContainer[["resultsContainer"]][["postTable"]] <- postTable
+    }
 
   }
 
@@ -517,11 +627,13 @@ gettextf <- function(fmt, ..., domain = NULL)  {
 
   bfpackContainer[["resultsContainer"]][["specTable"]] <- specTable
 
-  spec <- bfpackContainer[["resultsContainer"]][["resultsState"]]$object$BFtable_confirmatory
-  if (!is.null(spec) && !bfpackContainer$getError()) {
-    dtFill <- data.frame(hypothesis = paste0(gettext("H"), seq(1:nrow(spec))))
-    dtFill[, c("complex=", "complex>", "fit=", "fit>", "BF=", "BF>", "BF")] <- spec[, 1:7]
-    specTable$setData(dtFill)
+  if (!bfpackContainer$getError()) {
+    spec <- bfpackContainer[["resultsContainer"]][["resultsState"]]$object$BFtable_confirmatory
+    if (!is.null(spec)) {
+      dtFill <- data.frame(hypothesis = paste0(gettext("H"), seq(1:nrow(spec))))
+      dtFill[, c("complex=", "complex>", "fit=", "fit>", "BF=", "BF>", "BF")] <- spec[, 1:7]
+      specTable$setData(dtFill)
+    }
 
   }
 
@@ -555,44 +667,44 @@ gettextf <- function(fmt, ..., domain = NULL)  {
 
   bfpackContainer[["coefContainer"]][["coefficientsTable"]] <- coefficientsTable
 
-  estimates <- bfpackContainer[["resultsContainer"]][["resultsState"]]$object$estimates
-  if (!is.null(estimates) && !bfpackContainer$getError()) {
+  if (!bfpackContainer$getError()) {
+    estimates <- bfpackContainer[["resultsContainer"]][["resultsState"]]$object$estimates
+    if (!is.null(estimates)) {
+      dtFill <- data.frame(coefficient = rownames(estimates))
+      # the regular bfpack output has the 95% interval bounds
+      dtFill[, c("mean", "median", "lower", "upper")] <- estimates
 
-    dtFill <- data.frame(coefficient = rownames(estimates))
-    # the regular bfpack output has the 95% interval bounds
-    dtFill[, c("mean", "median", "lower", "upper")] <- estimates
+      # we also let users choose the interval bounds
+      if (options[["ciLevel"]] != .95) {
+        # now lets get the fitted object for this:
+        fitObj <- bfpackContainer[["estimatesState"]]$object
 
-    # we also let users choose the interval bounds
-    if (options[["ciLevel"]] != .95) {
-      # now lets get the fitted object for this:
-      fitObj <- bfpackContainer[["estimatesState"]]$object
+        if (type == "correlation") {
+          draws <- fitObj$corrdraws[[1]]
+          bounds <- apply(draws, c(2, 3), function(x) {
+            coda::HPDinterval(coda::as.mcmc(x), prob = options[["ciLevel"]])
+          })
+          boundsLow <- bounds[1, , ]
+          boundsUp <- bounds[2, , ]
+          # kind of hope this structure never changes so the elements are always in the correct order
+          boundsLow <- boundsLow[lower.tri(boundsLow)]
+          boundsUp <- boundsUp[lower.tri(boundsUp)]
+        } else {
+          int <- confint(fitObj, level = options[["ciLevel"]])
+          boundsLow <- int[, 1]
+          boundsUp <- int[, 2]
+        }
 
-      if (type == "correlation") {
-        draws <- fitObj$corrdraws[[1]]
-        bounds <- apply(draws, c(2, 3), function(x) {
-          coda::HPDinterval(coda::as.mcmc(x), prob = options[["ciLevel"]])
-        })
-        boundsLow <- bounds[1, , ]
-        boundsUp <- bounds[2, , ]
-        # kind of hope this structure never changes so the elements are always in the correct order
-        boundsLow <- boundsLow[lower.tri(boundsLow)]
-        boundsUp <- boundsUp[lower.tri(boundsUp)]
-      } else {
-        int <- confint(fitObj, level = options[["ciLevel"]])
-        boundsLow <- int[, 1]
-        boundsUp <- int[, 2]
+        dtFill[, c("lower", "upper")] <- cbind(boundsLow, boundsUp)
+
       }
-
-      dtFill[, c("lower", "upper")] <- cbind(boundsLow, boundsUp)
-
+      coefficientsTable$setData(dtFill)
+      # footnt <- ifelse(type == "correlation",
+      #                  gettext("The uncertainty interval is a highest posterior density credible interval."),
+      #                  gettext("The uncertainty interval is a confidence interval."))
+      # coefficientsTable$addFootnote(footnt)
     }
-    coefficientsTable$setData(dtFill)
-    footnt <- ifelse(type == "correlation",
-                     gettext("The uncertainty interval is a highest posterior density credible interval."),
-                     gettext("The uncertainty interval is a confidence interval."))
-    coefficientsTable$addFootnote(footnt)
   }
-
 
   return()
 }
@@ -647,565 +759,565 @@ gettextf <- function(fmt, ..., domain = NULL)  {
 }
 
 
-# Create the posterior probability plots
-.bfpackPosteriorProbabilityPlot <- function(dataset, options, bfpackContainer, ready, type, position) {
-  if (!is.null(bfpackContainer[["posteriorProbabilityPlot"]]) || !options[["bayesFactorPlot"]]) {
-    return()
-  }
-
-  if (type %in% c("independentTTest", "pairedTTest", "onesampleTTest")) {
-    container <- createJaspContainer(gettext("Posterior Probabilities"))
-    container$dependOn(options = c("variables", "bayesFactorPlot", "hypothesis", "pairs"))
-    container$position <- position
-    bfpackContainer[["posteriorProbabilityPlot"]] <- container
-    if (!ready || bfpackContainer$getError()) {
-      return()
-    }
-    analysisType <- switch(options[["hypothesis"]],
-      "equalNotEqual" = 1,
-      "equalBigger" = 2,
-      "equalSmaller" = 3,
-      "biggerSmaller" = 4,
-      "equalBiggerSmaller" = 5
-    )
-    if (type == "onesampleTTest" || type == "independentTTest") {
-      for (variable in options[["variables"]]) {
-        if (is.null(container[[variable]])) {
-          bfpackResult <- .bfpackGetGeneralTestResults(dataset, options, bfpackContainer, ready, type, variable = variable)
-          plot <- createJaspPlot(plot = NULL, title = variable, height = 300, width = 400)
-          plot$dependOn(optionContainsValue = list("variables" = variable))
-          if (isTryError(bfpackResult) || any(is.nan(unlist(bfpackResult[["fit"]])))) {
-            plot$setError(gettext("Plotting not possible: the results for this variable were not computed."))
-          } else {
-            p <- try({
-              plot$plotObject <- .plotModelProbabilitiesTTests(bfpackResult, type = analysisType)
-            })
-            if (isTryError(p)) {
-              plot$setError(gettextf("Plotting not possible: %1$s", jaspBase::.extractErrorMessage(p)))
-            }
-          }
-          container[[variable]] <- plot
-        }
-      }
-    } else if (type == "pairedTTest") {
-      for (pair in options[["pairs"]]) {
-        currentPair <- paste(pair, collapse = " - ")
-        if (is.null(container[[currentPair]]) && pair[[2]] != "" && pair[[1]] != pair[[2]]) {
-          bfpackResult <- .bfpackGetGeneralTestResults(dataset, options, bfpackContainer, ready, type, pair = pair)
-          plot <- createJaspPlot(plot = NULL, title = currentPair, height = 300, width = 400)
-          plot$dependOn(optionContainsValue = list("pairs" = pair))
-          if (isTryError(bfpackResult) || any(is.nan(unlist(bfpackResult[["fit"]])))) {
-            plot$setError(gettext("Plotting not possible: the results for this variable were not computed."))
-          } else {
-            p <- try({
-              plot$plotObject <- .plotModelProbabilitiesTTests(bfpackResult, type = analysisType)
-            })
-            if (isTryError(p)) {
-              plot$setError(gettextf("Plotting not possible: %1$s", jaspBase::.extractErrorMessage(p)))
-            }
-          }
-          container[[currentPair]] <- plot
-        }
-      }
-    }
-  } else if (type %in% c("anova", "ancova", "regression", "sem")) {
-    if (options[["model"]] == "" || !grepl(pattern = "\n", x = options[["model"]], fixed = TRUE)) {
-      height <- 300
-      width <- 600
-    } else {
-      height <- 400
-      width <- 800
-    }
-    plot <- createJaspPlot(plot = NULL, title = gettext("Posterior Probabilities"), height = height, width = width)
-    plot$dependOn(options = c("bayesFactorPlot", "standardized"))
-    plot$position <- position
-    bfpackContainer[["posteriorProbabilityPlot"]] <- plot
-    if (!ready || bfpackContainer$getError() || (type == "sem" && options[["model"]] == "")) {
-      return()
-    }
-    bfpackResult <- .bfpackGetGeneralTestResults(dataset, options, bfpackContainer, ready, type)
-    if (is.null(bfpackResult) || any(is.nan(unlist(bfpackResult[["fit"]])))) {
-      plot$setError(gettext("Plotting not possible: the results could not be computed."))
-    } else {
-      p <- try({
-        plot$plotObject <- .suppressGrDevice(.plotModelProbabilitiesRegression(bfpackResult))
-      })
-      if (isTryError(p)) {
-        plot$setError(gettextf("Plotting not possible: %1$s", jaspBase::.extractErrorMessage(p)))
-      }
-    }
-  }
-}
-
-# Create the descriptive plot(s)
-.bfpackDescriptivePlots <- function(dataset, options, bfpackContainer, ready, type, position) {
-  if (!is.null(bfpackContainer[["descriptivesPlots"]]) || !options[["descriptivesPlot"]]) {
-    return()
-  }
-
-  if (type %in% c("independentTTest", "pairedTTest", "onesampleTTest")) {
-    container <- createJaspContainer(gettext("Descriptive Plots"))
-    container$dependOn(options = c("variables", "pairs", "descriptivesPlot", "credibleInterval"))
-    container$position <- position
-    bfpackContainer[["descriptivesPlots"]] <- container
-  } else {
-    plot <- createJaspPlot(plot = NULL, title = ifelse(type == "anova", yes = gettext("Descriptives Plot"), no = gettext("Adjusted Means")))
-    plot$dependOn(options = c("descriptivesPlot", "credibleInterval"))
-    plot$position <- position
-    bfpackContainer[["descriptivesPlots"]] <- plot
-  }
-
-  if (!ready || bfpackContainer$getError() || (type == "sem" && options[["model"]] == "")) {
-    return()
-  }
-
-  if (type %in% c("independentTTest", "onesampleTTest")) {
-    for (variable in options[["variables"]]) {
-      if (is.null(bfpackContainer[["descriptivesPlots"]][[variable]])) {
-        bfpackResult <- .bfpackGetGeneralTestResults(dataset, options, bfpackContainer, ready, type, variable = variable)
-        if (isTryError(bfpackResult)) {
-          container[[variable]] <- createJaspPlot(plot = NULL, title = variable)
-          container[[variable]]$dependOn(optionContainsValue = list("variables" = variable))
-          container[[variable]]$setError(gettext("Plotting not possible: the results for this variable were not computed."))
-        } else {
-          if (type == "onesampleTTest") {
-            bfpackSummary <- summary(bfpackResult, ci = options[["credibleInterval"]])
-            N <- bfpackSummary[["n"]]
-            mu <- bfpackSummary[["Estimate"]]
-            CiLower <- bfpackSummary[["lb"]]
-            CiUpper <- bfpackSummary[["ub"]]
-            yBreaks <- jaspGraphs::getPrettyAxisBreaks(c(options[["testValue"]], CiLower, CiUpper), min.n = 4)
-            plotData <- data.frame(v = variable, N = N, mean = mu, lowerCI = CiLower, upperCI = CiUpper, index = 1)
-            p <- ggplot2::ggplot(plotData, ggplot2::aes(x = index, y = mean)) +
-              ggplot2::geom_segment(mapping = ggplot2::aes(x = 0, xend = 2, y = options[["testValue"]], yend = options[["testValue"]]), linetype = "dashed", color = "darkgray") +
-              ggplot2::geom_errorbar(mapping = ggplot2::aes(ymin = lowerCI, ymax = upperCI), width = 0.2, color = "black") +
-              jaspGraphs::geom_point(size = 4) +
-              ggplot2::scale_y_continuous(name = NULL, breaks = yBreaks, limits = range(yBreaks)) +
-              ggplot2::scale_x_continuous(name = NULL, limits = c(0, 2)) +
-              jaspGraphs::geom_rangeframe(sides = "l") +
-              jaspGraphs::themeJaspRaw() +
-              ggplot2::theme(axis.ticks.x = ggplot2::element_blank(), axis.text.x = ggplot2::element_blank())
-          } else if (type == "independentTTest") {
-            bfpackSummary <- summary(bfpackResult, ci = options[["credibleInterval"]])
-            levels <- levels(dataset[[options[["groupingVariable"]]]])
-            N <- bfpackSummary[["n"]]
-            mu <- bfpackSummary[["Estimate"]]
-            CiLower <- bfpackSummary[["lb"]]
-            CiUpper <- bfpackSummary[["ub"]]
-            yBreaks <- jaspGraphs::getPrettyAxisBreaks(c(CiLower, CiUpper), min.n = 4)
-            plotData <- data.frame(v = levels, N = N, mean = mu, lowerCI = CiLower, upperCI = CiUpper, index = 1:length(levels))
-            p <- ggplot2::ggplot(plotData, ggplot2::aes(x = index, y = mean)) +
-              ggplot2::geom_errorbar(mapping = ggplot2::aes(ymin = lowerCI, ymax = upperCI), colour = "black", width = 0.2) +
-              jaspGraphs::geom_line() +
-              jaspGraphs::geom_point(size = 4) +
-              ggplot2::scale_x_continuous(name = options[["groupingVariable"]], breaks = 1:length(levels), labels = levels) +
-              ggplot2::scale_y_continuous(name = variable, breaks = yBreaks, limits = range(yBreaks)) +
-              jaspGraphs::geom_rangeframe() +
-              jaspGraphs::themeJaspRaw()
-          }
-          container[[variable]] <- createJaspPlot(plot = p, title = variable)
-          container[[variable]]$dependOn(optionContainsValue = list("variables" = variable))
-        }
-      }
-    }
-  } else if (type == "pairedTTest") {
-    for (pair in options[["pairs"]]) {
-      currentPair <- paste(pair, collapse = " - ")
-
-      if (is.null(bfpackContainer[["descriptivesPlots"]][[currentPair]]) && pair[[2]] != "" && pair[[1]] != pair[[2]]) {
-        bfpackResult <- .bfpackGetGeneralTestResults(dataset, options, bfpackContainer, ready, type, pair = pair)
-        if (isTryError(bfpackResult)) {
-          container[[currentPair]] <- createJaspPlot(plot = NULL, title = currentPair)
-          container[[currentPair]]$dependOn(optionContainsValue = list("variables" = currentPair))
-          container[[currentPair]]$setError(gettext("Plotting not possible: the results for this variable were not computed."))
-        } else {
-          bfpackSummary <- summary(bfpackResult, ci = options[["credibleInterval"]])
-          N <- bfpackSummary[["n"]]
-          mu <- bfpackSummary[["Estimate"]]
-          CiLower <- bfpackSummary[["lb"]]
-          CiUpper <- bfpackSummary[["ub"]]
-          yBreaks <- jaspGraphs::getPrettyAxisBreaks(c(0, CiLower, CiUpper), min.n = 4)
-          plotData <- data.frame(v = gettext("Difference"), N = N, mean = mu, lowerCI = CiLower, upperCI = CiUpper, index = 1)
-          p <- ggplot2::ggplot(plotData, ggplot2::aes(x = index, y = mean)) +
-            ggplot2::geom_segment(mapping = ggplot2::aes(x = 0, xend = 2, y = 0, yend = 0), linetype = "dashed", color = "darkgray") +
-            ggplot2::geom_errorbar(mapping = ggplot2::aes(ymin = lowerCI, ymax = upperCI), color = "black", width = 0.2) +
-            jaspGraphs::geom_point(size = 4) +
-            ggplot2::scale_y_continuous(name = NULL, breaks = yBreaks, labels = yBreaks, limits = range(yBreaks)) +
-            ggplot2::scale_x_continuous(name = NULL, breaks = 0:2) +
-            jaspGraphs::geom_rangeframe(sides = "l") +
-            jaspGraphs::themeJaspRaw() +
-            ggplot2::theme(axis.ticks.x = ggplot2::element_blank(), axis.text.x = ggplot2::element_blank())
-          container[[currentPair]] <- createJaspPlot(plot = p, title = currentPair)
-          container[[currentPair]]$dependOn(optionContainsValue = list("pairs" = pair))
-        }
-      }
-    }
-  } else if (type %in% c("anova", "ancova")) {
-    groupCol <- dataset[, options[["fixedFactors"]]]
-    varLevels <- levels(groupCol)
-    bfpackResult <- bfpackContainer[["bfpackResult"]]$object
-    bfpackSummary <- summary(bfpackResult, ci = options[["credibleInterval"]])
-
-    if (type == "ancova") {
-      bfpackSummary <- bfpackSummary[seq_along(varLevels), ]
-    }
-
-    variable <- bfpackSummary[["Parameter"]]
-    N <- bfpackSummary[["n"]]
-    mu <- bfpackSummary[["Estimate"]]
-    CiLower <- bfpackSummary[["lb"]]
-    CiUpper <- bfpackSummary[["ub"]]
-    yBreaks <- jaspGraphs::getPrettyAxisBreaks(pretty(c(CiLower, CiUpper)), min.n = 4)
-    plotData <- data.frame(v = variable, N = N, mean = mu, lowerCI = CiLower, upperCI = CiUpper, index = seq_along(variable))
-    p <- ggplot2::ggplot(plotData, ggplot2::aes(x = index, y = mean)) +
-      ggplot2::geom_errorbar(mapping = ggplot2::aes(ymin = lowerCI, ymax = upperCI), color = "black", width = 0.2) +
-      jaspGraphs::geom_line() +
-      jaspGraphs::geom_point(size = 4) +
-      ggplot2::scale_y_continuous(name = options[["dependent"]], breaks = yBreaks, limits = range(yBreaks)) +
-      ggplot2::scale_x_continuous(name = options[["fixedFactors"]], breaks = seq_along(varLevels), labels = varLevels) +
-      jaspGraphs::geom_rangeframe() +
-      jaspGraphs::themeJaspRaw()
-    plot$plotObject <- p
-  }
-}
-
-.plotModelProbabilitiesTTests <- function(x, type) {
-  if (type == 1 || type == 2 || type == 3) {
-    labels <- gettext(c("H0", "H1"))
-  } else if (type == 4) {
-    labels <- gettext(c("H1", "H2"))
-  } else if (type == 5) {
-    labels <- gettext(c("H0", "H1", "H2"))
-  }
-
-  if (type == 1) {
-    postProb <- na.omit(x$fit$PMPb)
-  } else {
-    postProb <- na.omit(x$fit$PMPa)
-  }
-
-  plotData <- data.frame(x = labels, y = postProb)
-  yBreaks <- cumsum(rev(postProb)) - rev(postProb) / 2
-  p <- ggplot2::ggplot(data = plotData, mapping = ggplot2::aes(x = "", y = y, fill = x)) +
-    ggplot2::geom_bar(stat = "identity", width = 1e10, color = "black", size = 1) +
-    ggplot2::coord_polar(theta = "y", direction = -1) +
-    ggplot2::scale_x_discrete(name = NULL) +
-    ggplot2::scale_y_continuous(name = NULL, breaks = yBreaks, labels = rev(plotData[["x"]])) +
-    ggplot2::scale_fill_brewer(palette = "Set1") +
-    jaspGraphs::themeJaspRaw(legend.position = "none") +
-    ggplot2::theme(axis.ticks.y = ggplot2::element_blank())
-
-  return(p)
-}
-
-.plotModelProbabilitiesRegression <- function(x) {
-  postProbA <- na.omit(x$fit$PMPa)
-  postProbB <- na.omit(x$fit$PMPb)
-  postProbC <- na.omit(x$fit$PMPc)
-  numH <- length(postProbB) - 1
-  labels <- paste(gettext("H"), 1:numH, sep = "")
-  plotDataA <- data.frame(x = labels, y = postProbA)
-  plotDataB <- data.frame(x = c(labels, gettext("Hu")), y = postProbB)
-  yBreaksA <- cumsum(rev(postProbA)) - rev(postProbA) / 2
-  yBreaksB <- cumsum(rev(postProbB)) - rev(postProbB) / 2
-  yBreaksC <- cumsum(rev(postProbC)) - rev(postProbC) / 2
-  yLabelsA <- rev(labels)
-  yLabelsB <- rev(c(labels, gettext("Hu")))
-  yLabelsC <- rev(c(labels, gettext("Hc")))
-  complexity <- x[["fit"]]$Com[length(x[["fit"]]$Com)]
-  plotMat <- list()
-
-  if (numH > 1) {
-    p1 <- ggplot2::ggplot(data = plotDataA, mapping = ggplot2::aes(x = "", y = y, fill = x)) +
-      ggplot2::geom_bar(stat = "identity", width = 1e10, color = "black", size = 1) +
-      ggplot2::coord_polar(theta = "y", direction = -1) +
-      ggplot2::labs(title = gettext("Excluding Hu and Hc"), size = 30) +
-      ggplot2::scale_x_discrete(name = NULL) +
-      ggplot2::scale_y_continuous(name = NULL, breaks = yBreaksA, labels = yLabelsA) +
-      ggplot2::scale_fill_brewer(palette = "Set1") +
-      jaspGraphs::themeJaspRaw(legend.position = "none") +
-      ggplot2::theme(axis.ticks.y = ggplot2::element_blank())
-    plotMat[["p1"]] <- p1
-  }
-
-  p2 <- ggplot2::ggplot(data = plotDataB, mapping = ggplot2::aes(x = "", y = y, fill = x)) +
-    ggplot2::geom_bar(stat = "identity", width = 1e10, color = "black", size = 1) +
-    ggplot2::coord_polar(theta = "y", direction = -1) +
-    ggplot2::scale_x_discrete(name = NULL) +
-    ggplot2::scale_y_continuous(name = NULL, breaks = yBreaksB, labels = yLabelsB) +
-    ggplot2::scale_fill_brewer(palette = "Set1") +
-    jaspGraphs::themeJaspRaw(legend.position = "none") +
-    ggplot2::theme(axis.ticks.y = ggplot2::element_blank())
-  plotMat[["p2"]] <- p2
-
-  if (!is.na(complexity) && complexity >= .05) {
-    plotDataC <- data.frame(x = c(labels, gettext("Hc")), y = postProbC)
-    p3 <- ggplot2::ggplot(data = plotDataC, mapping = ggplot2::aes(x = "", y = y, fill = x)) +
-      ggplot2::geom_bar(stat = "identity", width = 1e10, color = "black", size = 1) +
-      ggplot2::geom_col() +
-      ggplot2::coord_polar(theta = "y", direction = -1) +
-      ggplot2::labs(title = gettext("Including Hc"), size = 30) +
-      ggplot2::scale_x_discrete(name = NULL) +
-      ggplot2::scale_y_continuous(name = NULL, breaks = yBreaksC, labels = yLabelsC) +
-      ggplot2::scale_fill_brewer(palette = "Set1") +
-      jaspGraphs::themeJaspRaw(legend.position = "none") +
-      ggplot2::theme(axis.ticks.y = ggplot2::element_blank())
-    plotMat[["p3"]] <- p3
-  }
-
-  if (!is.null(plotMat[["p1"]]) || !is.null(plotMat[["p3"]])) {
-    plotMat[["p2"]] <- plotMat[["p2"]] + ggplot2::labs(title = gettext("Including Hu"), size = 30)
-  }
-
-  p <- jaspGraphs::ggMatrixPlot(plotList = plotMat, layout = matrix(c(seq_along(plotMat)), nrow = 1))
-  return(p)
-}
-
-
-
-#### MAYBE ####
-# Call to bain for 't_test' objects (Welch t-test, Paired t-test, One sample t-test)
-.bfpackTTestRaw <- function(options, x, y = NULL, nu = 0, type = 1, paired = FALSE) {
-
-  if (is.null(y) && !paired) {
-    x <- x[!is.na(x)] # Here we remove the missing values per dependent variable
-    test <- bain::t_test(x = x)
-    hypothesis <- switch(type,
-                         "1" = paste0("x=", nu),
-                         "2" = paste0("x=", nu, "; x>", nu),
-                         "3" = paste0("x=", nu, "; x<", nu),
-                         "4" = paste0("x>", nu, "; x<", nu),
-                         "5" = paste0("x=", nu, "; x>", nu, "; x<", nu)
-    )
-  }
-
-  if (!is.null(y) && !paired) {
-    test <- bain::t_test(x = x, y = y, paired = FALSE, var.equal = FALSE)
-    hypothesis <- switch(type,
-                         "1" = "difference=0",
-                         "2" = "difference=0; difference>0",
-                         "3" = "difference=0; difference<0",
-                         "4" = "difference>0; difference<0",
-                         "5" = "difference=0; difference>0; difference<0"
-    )
-  }
-
-  if (!is.null(y) && paired) {
-    test <- bain::t_test(x = x, y = y, paired = TRUE)
-    hypothesis <- switch(type,
-                         "1" = "difference=0",
-                         "2" = "difference=0;difference>0",
-                         "3" = "difference=0;difference<0",
-                         "4" = "difference>0;difference<0",
-                         "5" = "difference=0;difference>0;difference<0"
-    )
-  }
-
-  bfpackResult <- BFpack::BF(x = test, hypothesis = hypothesis)
-
-  return(bfpackResult)
-}
-
-# Call to bfpack for 'lm' objects (ANOVA, ANCOVA, Regression)
-.bfpackRegressionRaw <- function(dataset, options, type) {
-  dependent <- options[["dependent"]]
-  standardized <- options[["standardized"]]
-  hypothesis <- NULL
-  if (options[["model"]] != "") {
-    hypothesis <- encodeColNames(.bfpackCleanModelInput(options[["model"]]))
-  }
-
-  if (type == "regression") {
-    ncov <- length(options[["covariates"]])
-    covariates <- paste0(options[["covariates"]], collapse = "+")
-    formula <- as.formula(paste0(dependent, "~", covariates))
-  } else if (type == "anova" || type == "ancova") {
-    grouping <- options[["fixedFactors"]]
-    dataset[, options[["fixedFactors"]]] <- as.factor(dataset[, options[["fixedFactors"]]])
-
-    if (type == "anova") {
-      formula <- as.formula(paste0(dependent, "~", grouping, "-1"))
-    } else {
-      ncov <- length(options[["covariates"]])
-      covariates <- paste0(options[["covariates"]], collapse = "+")
-      formula <- as.formula(paste0(dependent, "~", grouping, "+", covariates, "-1"))
-    }
-  }
-
-  if (type == "regression") {
-    # I cannot find out why bfpack won't work in regression with stats::lm(formula = formula, data = dataset)
-    # Error: object of type 'closure' is not subsettable
-    args <- list(formula = as.formula(paste0(dependent, "~", covariates)), data = dataset)
-    fit <- do.call(stats::lm, args)
-  } else {
-    fit <- stats::lm(formula = formula, data = dataset)
-  }
-
-  if (is.null(hypothesis)) {
-    if (type == "regression") {
-      hypothesis <- paste0(paste0(names(stats::coef(fit))[-1], "=0"), collapse = " & ")
-    } else if (type == "anova") {
-      hypothesis <- paste0(names(stats::coef(fit)), collapse = "=")
-    } else if (type == "ancova") {
-      hypothesis <- names(stats::coef(fit))
-      hypothesis <- hypothesis[1:(length(hypothesis) - ncov)]
-      hypothesis <- paste0(hypothesis, collapse = "=")
-    }
-  }
-
-  bfpackResult <- BFpack::BF(x = fit, hypothesis = hypothesis, standardize = standardized)
-  return(bfpackResult)
-}
-
-.bfpackGetGeneralTestResults <- function(dataset, options, bfpackContainer, ready, type, variable = NULL, pair = NULL, testType = NULL) {
-  set.seed(options[["seed"]])
-
-  if (type %in% c("onesampleTTest", "independentTTest")) {
-    result <- .bfpackGetTTestResults(dataset, options, bfpackContainer, ready, type, variable, testType)
-  } else if (type == "pairedTTest") {
-    result <- .bfpackGetPairedTTestResults(dataset, options, bfpackContainer, ready, type, pair, testType)
-  } else if (type %in% c("anova", "ancova", "regression", "sem")) {
-    result <- .bfpackGetRegressionResults(dataset, options, bfpackContainer, ready, type)
-  }
-
-  return(result)
-}
-
-.bfpackGetTTestResults <- function(dataset, options, bfpackContainer, ready, type, variable, testType) {
-  if (!is.null(bfpackContainer[[variable]])) {
-    return(bfpackContainer[[variable]]$object)
-  }
-
-  variableData <- dataset[[variable]]
-  testValue <- format(options[["testValue"]], scientific = FALSE)
-
-  p <- try({
-    if (type == "onesampleTTest") {
-      bfpackResult <- .bfpackTTestRaw(options, x = variableData, nu = testValue, type = testType)
-    } else if (type == "independentTTest") {
-      levels <- levels(dataset[[options[["groupingVariable"]]]])
-      if (length(levels) != 2) {
-        g1 <- "1"
-        g2 <- "2"
-      } else {
-        g1 <- levels[1]
-        g2 <- levels[2]
-      }
-      subDataSet <- dataset[, c(variable, options[["groupingVariable"]])]
-      group1 <- subDataSet[subDataSet[[options[["groupingVariable"]]]] == g1, variable]
-      group2 <- subDataSet[subDataSet[[options[["groupingVariable"]]]] == g2, variable]
-      bfpackResult <- .bfpackTTestRaw(options, x = group1, y = group2, type = testType)
-    }
-  })
-
-  if (isTryError(p)) {
-    return(p)
-  }
-
-  bfpackContainer[[variable]] <- createJaspState(bfpackResult, dependencies = c("testValue", "hypothesis"))
-  bfpackContainer[[variable]]$dependOn(optionContainsValue = list("variables" = variable))
-  return(bfpackContainer[[variable]]$object)
-}
-
-.bfpackGetPairedTTestResults <- function(dataset, options, bfpackContainer, ready, type, pair, testType) {
-  currentPair <- paste(pair, collapse = " - ")
-
-  if (!is.null(bfpackContainer[[currentPair]])) {
-    return(bfpackContainer[[currentPair]]$object)
-  }
-
-  if (pair[[2]] != "" && pair[[1]] != pair[[2]] && pair[[1]] != "") {
-    subDataSet <- subset(dataset, select = c(pair[[1]], pair[[2]]))
-    c1 <- subDataSet[[pair[[1]]]]
-    c2 <- subDataSet[[pair[[2]]]]
-
-    p <- try({
-      bfpackResult <- .bfpackTTestRaw(options, x = c1, y = c2, type = testType, paired = TRUE)
-    })
-
-    if (isTryError(p)) {
-      return(p)
-    }
-
-    bfpackContainer[[currentPair]] <- createJaspState(bfpackResult, dependencies = "hypothesis")
-    bfpackContainer[[currentPair]]$dependOn(optionContainsValue = list("pairs" = pair))
-    return(bfpackContainer[[currentPair]]$object)
-  }
-}
-
-.bfpackGetRegressionResults <- function(dataset, options, bfpackContainer, ready, type) {
-
-  if (!is.null(bfpackContainer[["bfpackResult"]])) {
-    return(bfpackContainer[["bfpackResult"]]$object)
-  } else if (ready) {
-    if (type == "anova" || type == "ancova") {
-      groupCol <- dataset[, options[["fixedFactors"]]]
-      varLevels <- levels(groupCol)
-      if (length(varLevels) > 15) {
-        bfpackContainer$setError(gettext("The fixed factor has too many levels for a Bfpack analysis."))
-        return()
-      }
-    }
-
-    p <- try({
-      if (type == "sem") {
-        bfpackResult <- .bfpackSemRaw(dataset, options, bfpackContainer, ready)
-      } else {
-        bfpackResult <- .bfpackRegressionRaw(dataset, options, type)
-      }
-    })
-
-    if (isTryError(p)) {
-      bfpackContainer$setError(gettextf("An error occurred in the analysis:<br>%1$s<br><br>Please double check if the variables in the 'Model Contraints' section match the variables in your data set.", jaspBase::.extractErrorMessage(p)))
-      return()
-    }
-
-    bfpackContainer[["bfpackResult"]] <- createJaspState(bfpackResult)
-    return(bfpackContainer[["bfpackResult"]]$object)
-  }
-}
-
-.bfpackExtractTableValuesFromObject <- function(options, bfpackResult, testType) {
-  if (testType == 1) {
-    BF_0u <- bfpackResult$fit$BF[1]
-    PMP_u <- bfpackResult$fit$PMPb[2]
-    PMP_0 <- bfpackResult$fit$PMPb[1]
-    if (options$bayesFactorType == "BF10") {
-      BF_0u <- 1 / BF_0u
-    }
-    return(list(BF_0u = BF_0u, PMP_0 = PMP_0, PMP_u = PMP_u))
-  } else if (testType == 2) {
-    BF_01 <- bfpackResult$BFmatrix[1, 2]
-    PMP_1 <- bfpackResult$fit$PMPa[2]
-    PMP_0 <- bfpackResult$fit$PMPa[1]
-    if (options$bayesFactorType == "BF10") {
-      BF_01 <- 1 / BF_01
-    }
-    return(list(BF_01 = BF_01, PMP_0 = PMP_0, PMP_1 = PMP_1))
-  } else if (testType == 3 || testType == 4) {
-    BF_01 <- bfpackResult$BFmatrix[1, 2]
-    PMP_0 <- bfpackResult$fit$PMPa[1]
-    PMP_1 <- bfpackResult$fit$PMPa[2]
-    if (options$bayesFactorType == "BF10") {
-      BF_01 <- 1 / BF_01
-    }
-    return(list(BF_01 = BF_01, PMP_0 = PMP_0, PMP_1 = PMP_1))
-  } else if (testType == 5) {
-    BF_01 <- bfpackResult$BFmatrix[1, 2]
-    BF_02 <- bfpackResult$BFmatrix[1, 3]
-    BF_12 <- bfpackResult$BFmatrix[2, 3]
-    PMP_0 <- bfpackResult$fit$PMPa[1]
-    PMP_1 <- bfpackResult$fit$PMPa[2]
-    PMP_2 <- bfpackResult$fit$PMPa[3]
-    if (options$bayesFactorType == "BF10") {
-      BF_01 <- 1 / BF_01
-      BF_02 <- 1 / BF_02
-      BF_12 <- 1 / BF_12
-    }
-    return(list(BF_01 = BF_01, BF_02 = BF_02, BF_12 = BF_12, PMP_0 = PMP_0, PMP_1 = PMP_1, PMP_2 = PMP_2))
-  }
-}
-
+# # Create the posterior probability plots
+# .bfpackPosteriorProbabilityPlot <- function(dataset, options, bfpackContainer, ready, type, position) {
+#   if (!is.null(bfpackContainer[["posteriorProbabilityPlot"]]) || !options[["bayesFactorPlot"]]) {
+#     return()
+#   }
+#
+#   if (type %in% c("independentTTest", "pairedTTest", "onesampleTTest")) {
+#     container <- createJaspContainer(gettext("Posterior Probabilities"))
+#     container$dependOn(options = c("variables", "bayesFactorPlot", "hypothesis", "pairs"))
+#     container$position <- position
+#     bfpackContainer[["posteriorProbabilityPlot"]] <- container
+#     if (!ready || bfpackContainer$getError()) {
+#       return()
+#     }
+#     analysisType <- switch(options[["hypothesis"]],
+#       "equalNotEqual" = 1,
+#       "equalBigger" = 2,
+#       "equalSmaller" = 3,
+#       "biggerSmaller" = 4,
+#       "equalBiggerSmaller" = 5
+#     )
+#     if (type == "onesampleTTest" || type == "independentTTest") {
+#       for (variable in options[["variables"]]) {
+#         if (is.null(container[[variable]])) {
+#           bfpackResult <- .bfpackGetGeneralTestResults(dataset, options, bfpackContainer, ready, type, variable = variable)
+#           plot <- createJaspPlot(plot = NULL, title = variable, height = 300, width = 400)
+#           plot$dependOn(optionContainsValue = list("variables" = variable))
+#           if (isTryError(bfpackResult) || any(is.nan(unlist(bfpackResult[["fit"]])))) {
+#             plot$setError(gettext("Plotting not possible: the results for this variable were not computed."))
+#           } else {
+#             p <- try({
+#               plot$plotObject <- .plotModelProbabilitiesTTests(bfpackResult, type = analysisType)
+#             })
+#             if (isTryError(p)) {
+#               plot$setError(gettextf("Plotting not possible: %1$s", jaspBase::.extractErrorMessage(p)))
+#             }
+#           }
+#           container[[variable]] <- plot
+#         }
+#       }
+#     } else if (type == "pairedTTest") {
+#       for (pair in options[["pairs"]]) {
+#         currentPair <- paste(pair, collapse = " - ")
+#         if (is.null(container[[currentPair]]) && pair[[2]] != "" && pair[[1]] != pair[[2]]) {
+#           bfpackResult <- .bfpackGetGeneralTestResults(dataset, options, bfpackContainer, ready, type, pair = pair)
+#           plot <- createJaspPlot(plot = NULL, title = currentPair, height = 300, width = 400)
+#           plot$dependOn(optionContainsValue = list("pairs" = pair))
+#           if (isTryError(bfpackResult) || any(is.nan(unlist(bfpackResult[["fit"]])))) {
+#             plot$setError(gettext("Plotting not possible: the results for this variable were not computed."))
+#           } else {
+#             p <- try({
+#               plot$plotObject <- .plotModelProbabilitiesTTests(bfpackResult, type = analysisType)
+#             })
+#             if (isTryError(p)) {
+#               plot$setError(gettextf("Plotting not possible: %1$s", jaspBase::.extractErrorMessage(p)))
+#             }
+#           }
+#           container[[currentPair]] <- plot
+#         }
+#       }
+#     }
+#   } else if (type %in% c("anova", "ancova", "regression", "sem")) {
+#     if (options[["model"]] == "" || !grepl(pattern = "\n", x = options[["model"]], fixed = TRUE)) {
+#       height <- 300
+#       width <- 600
+#     } else {
+#       height <- 400
+#       width <- 800
+#     }
+#     plot <- createJaspPlot(plot = NULL, title = gettext("Posterior Probabilities"), height = height, width = width)
+#     plot$dependOn(options = c("bayesFactorPlot", "standardized"))
+#     plot$position <- position
+#     bfpackContainer[["posteriorProbabilityPlot"]] <- plot
+#     if (!ready || bfpackContainer$getError() || (type == "sem" && options[["model"]] == "")) {
+#       return()
+#     }
+#     bfpackResult <- .bfpackGetGeneralTestResults(dataset, options, bfpackContainer, ready, type)
+#     if (is.null(bfpackResult) || any(is.nan(unlist(bfpackResult[["fit"]])))) {
+#       plot$setError(gettext("Plotting not possible: the results could not be computed."))
+#     } else {
+#       p <- try({
+#         plot$plotObject <- .suppressGrDevice(.plotModelProbabilitiesRegression(bfpackResult))
+#       })
+#       if (isTryError(p)) {
+#         plot$setError(gettextf("Plotting not possible: %1$s", jaspBase::.extractErrorMessage(p)))
+#       }
+#     }
+#   }
+# }
+#
+# # Create the descriptive plot(s)
+# .bfpackDescriptivePlots <- function(dataset, options, bfpackContainer, ready, type, position) {
+#   if (!is.null(bfpackContainer[["descriptivesPlots"]]) || !options[["descriptivesPlot"]]) {
+#     return()
+#   }
+#
+#   if (type %in% c("independentTTest", "pairedTTest", "onesampleTTest")) {
+#     container <- createJaspContainer(gettext("Descriptive Plots"))
+#     container$dependOn(options = c("variables", "pairs", "descriptivesPlot", "credibleInterval"))
+#     container$position <- position
+#     bfpackContainer[["descriptivesPlots"]] <- container
+#   } else {
+#     plot <- createJaspPlot(plot = NULL, title = ifelse(type == "anova", yes = gettext("Descriptives Plot"), no = gettext("Adjusted Means")))
+#     plot$dependOn(options = c("descriptivesPlot", "credibleInterval"))
+#     plot$position <- position
+#     bfpackContainer[["descriptivesPlots"]] <- plot
+#   }
+#
+#   if (!ready || bfpackContainer$getError() || (type == "sem" && options[["model"]] == "")) {
+#     return()
+#   }
+#
+#   if (type %in% c("independentTTest", "onesampleTTest")) {
+#     for (variable in options[["variables"]]) {
+#       if (is.null(bfpackContainer[["descriptivesPlots"]][[variable]])) {
+#         bfpackResult <- .bfpackGetGeneralTestResults(dataset, options, bfpackContainer, ready, type, variable = variable)
+#         if (isTryError(bfpackResult)) {
+#           container[[variable]] <- createJaspPlot(plot = NULL, title = variable)
+#           container[[variable]]$dependOn(optionContainsValue = list("variables" = variable))
+#           container[[variable]]$setError(gettext("Plotting not possible: the results for this variable were not computed."))
+#         } else {
+#           if (type == "onesampleTTest") {
+#             bfpackSummary <- summary(bfpackResult, ci = options[["credibleInterval"]])
+#             N <- bfpackSummary[["n"]]
+#             mu <- bfpackSummary[["Estimate"]]
+#             CiLower <- bfpackSummary[["lb"]]
+#             CiUpper <- bfpackSummary[["ub"]]
+#             yBreaks <- jaspGraphs::getPrettyAxisBreaks(c(options[["testValue"]], CiLower, CiUpper), min.n = 4)
+#             plotData <- data.frame(v = variable, N = N, mean = mu, lowerCI = CiLower, upperCI = CiUpper, index = 1)
+#             p <- ggplot2::ggplot(plotData, ggplot2::aes(x = index, y = mean)) +
+#               ggplot2::geom_segment(mapping = ggplot2::aes(x = 0, xend = 2, y = options[["testValue"]], yend = options[["testValue"]]), linetype = "dashed", color = "darkgray") +
+#               ggplot2::geom_errorbar(mapping = ggplot2::aes(ymin = lowerCI, ymax = upperCI), width = 0.2, color = "black") +
+#               jaspGraphs::geom_point(size = 4) +
+#               ggplot2::scale_y_continuous(name = NULL, breaks = yBreaks, limits = range(yBreaks)) +
+#               ggplot2::scale_x_continuous(name = NULL, limits = c(0, 2)) +
+#               jaspGraphs::geom_rangeframe(sides = "l") +
+#               jaspGraphs::themeJaspRaw() +
+#               ggplot2::theme(axis.ticks.x = ggplot2::element_blank(), axis.text.x = ggplot2::element_blank())
+#           } else if (type == "independentTTest") {
+#             bfpackSummary <- summary(bfpackResult, ci = options[["credibleInterval"]])
+#             levels <- levels(dataset[[options[["groupingVariable"]]]])
+#             N <- bfpackSummary[["n"]]
+#             mu <- bfpackSummary[["Estimate"]]
+#             CiLower <- bfpackSummary[["lb"]]
+#             CiUpper <- bfpackSummary[["ub"]]
+#             yBreaks <- jaspGraphs::getPrettyAxisBreaks(c(CiLower, CiUpper), min.n = 4)
+#             plotData <- data.frame(v = levels, N = N, mean = mu, lowerCI = CiLower, upperCI = CiUpper, index = 1:length(levels))
+#             p <- ggplot2::ggplot(plotData, ggplot2::aes(x = index, y = mean)) +
+#               ggplot2::geom_errorbar(mapping = ggplot2::aes(ymin = lowerCI, ymax = upperCI), colour = "black", width = 0.2) +
+#               jaspGraphs::geom_line() +
+#               jaspGraphs::geom_point(size = 4) +
+#               ggplot2::scale_x_continuous(name = options[["groupingVariable"]], breaks = 1:length(levels), labels = levels) +
+#               ggplot2::scale_y_continuous(name = variable, breaks = yBreaks, limits = range(yBreaks)) +
+#               jaspGraphs::geom_rangeframe() +
+#               jaspGraphs::themeJaspRaw()
+#           }
+#           container[[variable]] <- createJaspPlot(plot = p, title = variable)
+#           container[[variable]]$dependOn(optionContainsValue = list("variables" = variable))
+#         }
+#       }
+#     }
+#   } else if (type == "pairedTTest") {
+#     for (pair in options[["pairs"]]) {
+#       currentPair <- paste(pair, collapse = " - ")
+#
+#       if (is.null(bfpackContainer[["descriptivesPlots"]][[currentPair]]) && pair[[2]] != "" && pair[[1]] != pair[[2]]) {
+#         bfpackResult <- .bfpackGetGeneralTestResults(dataset, options, bfpackContainer, ready, type, pair = pair)
+#         if (isTryError(bfpackResult)) {
+#           container[[currentPair]] <- createJaspPlot(plot = NULL, title = currentPair)
+#           container[[currentPair]]$dependOn(optionContainsValue = list("variables" = currentPair))
+#           container[[currentPair]]$setError(gettext("Plotting not possible: the results for this variable were not computed."))
+#         } else {
+#           bfpackSummary <- summary(bfpackResult, ci = options[["credibleInterval"]])
+#           N <- bfpackSummary[["n"]]
+#           mu <- bfpackSummary[["Estimate"]]
+#           CiLower <- bfpackSummary[["lb"]]
+#           CiUpper <- bfpackSummary[["ub"]]
+#           yBreaks <- jaspGraphs::getPrettyAxisBreaks(c(0, CiLower, CiUpper), min.n = 4)
+#           plotData <- data.frame(v = gettext("Difference"), N = N, mean = mu, lowerCI = CiLower, upperCI = CiUpper, index = 1)
+#           p <- ggplot2::ggplot(plotData, ggplot2::aes(x = index, y = mean)) +
+#             ggplot2::geom_segment(mapping = ggplot2::aes(x = 0, xend = 2, y = 0, yend = 0), linetype = "dashed", color = "darkgray") +
+#             ggplot2::geom_errorbar(mapping = ggplot2::aes(ymin = lowerCI, ymax = upperCI), color = "black", width = 0.2) +
+#             jaspGraphs::geom_point(size = 4) +
+#             ggplot2::scale_y_continuous(name = NULL, breaks = yBreaks, labels = yBreaks, limits = range(yBreaks)) +
+#             ggplot2::scale_x_continuous(name = NULL, breaks = 0:2) +
+#             jaspGraphs::geom_rangeframe(sides = "l") +
+#             jaspGraphs::themeJaspRaw() +
+#             ggplot2::theme(axis.ticks.x = ggplot2::element_blank(), axis.text.x = ggplot2::element_blank())
+#           container[[currentPair]] <- createJaspPlot(plot = p, title = currentPair)
+#           container[[currentPair]]$dependOn(optionContainsValue = list("pairs" = pair))
+#         }
+#       }
+#     }
+#   } else if (type %in% c("anova", "ancova")) {
+#     groupCol <- dataset[, options[["fixedFactors"]]]
+#     varLevels <- levels(groupCol)
+#     bfpackResult <- bfpackContainer[["bfpackResult"]]$object
+#     bfpackSummary <- summary(bfpackResult, ci = options[["credibleInterval"]])
+#
+#     if (type == "ancova") {
+#       bfpackSummary <- bfpackSummary[seq_along(varLevels), ]
+#     }
+#
+#     variable <- bfpackSummary[["Parameter"]]
+#     N <- bfpackSummary[["n"]]
+#     mu <- bfpackSummary[["Estimate"]]
+#     CiLower <- bfpackSummary[["lb"]]
+#     CiUpper <- bfpackSummary[["ub"]]
+#     yBreaks <- jaspGraphs::getPrettyAxisBreaks(pretty(c(CiLower, CiUpper)), min.n = 4)
+#     plotData <- data.frame(v = variable, N = N, mean = mu, lowerCI = CiLower, upperCI = CiUpper, index = seq_along(variable))
+#     p <- ggplot2::ggplot(plotData, ggplot2::aes(x = index, y = mean)) +
+#       ggplot2::geom_errorbar(mapping = ggplot2::aes(ymin = lowerCI, ymax = upperCI), color = "black", width = 0.2) +
+#       jaspGraphs::geom_line() +
+#       jaspGraphs::geom_point(size = 4) +
+#       ggplot2::scale_y_continuous(name = options[["dependent"]], breaks = yBreaks, limits = range(yBreaks)) +
+#       ggplot2::scale_x_continuous(name = options[["fixedFactors"]], breaks = seq_along(varLevels), labels = varLevels) +
+#       jaspGraphs::geom_rangeframe() +
+#       jaspGraphs::themeJaspRaw()
+#     plot$plotObject <- p
+#   }
+# }
+#
+# .plotModelProbabilitiesTTests <- function(x, type) {
+#   if (type == 1 || type == 2 || type == 3) {
+#     labels <- gettext(c("H0", "H1"))
+#   } else if (type == 4) {
+#     labels <- gettext(c("H1", "H2"))
+#   } else if (type == 5) {
+#     labels <- gettext(c("H0", "H1", "H2"))
+#   }
+#
+#   if (type == 1) {
+#     postProb <- na.omit(x$fit$PMPb)
+#   } else {
+#     postProb <- na.omit(x$fit$PMPa)
+#   }
+#
+#   plotData <- data.frame(x = labels, y = postProb)
+#   yBreaks <- cumsum(rev(postProb)) - rev(postProb) / 2
+#   p <- ggplot2::ggplot(data = plotData, mapping = ggplot2::aes(x = "", y = y, fill = x)) +
+#     ggplot2::geom_bar(stat = "identity", width = 1e10, color = "black", size = 1) +
+#     ggplot2::coord_polar(theta = "y", direction = -1) +
+#     ggplot2::scale_x_discrete(name = NULL) +
+#     ggplot2::scale_y_continuous(name = NULL, breaks = yBreaks, labels = rev(plotData[["x"]])) +
+#     ggplot2::scale_fill_brewer(palette = "Set1") +
+#     jaspGraphs::themeJaspRaw(legend.position = "none") +
+#     ggplot2::theme(axis.ticks.y = ggplot2::element_blank())
+#
+#   return(p)
+# }
+#
+# .plotModelProbabilitiesRegression <- function(x) {
+#   postProbA <- na.omit(x$fit$PMPa)
+#   postProbB <- na.omit(x$fit$PMPb)
+#   postProbC <- na.omit(x$fit$PMPc)
+#   numH <- length(postProbB) - 1
+#   labels <- paste(gettext("H"), 1:numH, sep = "")
+#   plotDataA <- data.frame(x = labels, y = postProbA)
+#   plotDataB <- data.frame(x = c(labels, gettext("Hu")), y = postProbB)
+#   yBreaksA <- cumsum(rev(postProbA)) - rev(postProbA) / 2
+#   yBreaksB <- cumsum(rev(postProbB)) - rev(postProbB) / 2
+#   yBreaksC <- cumsum(rev(postProbC)) - rev(postProbC) / 2
+#   yLabelsA <- rev(labels)
+#   yLabelsB <- rev(c(labels, gettext("Hu")))
+#   yLabelsC <- rev(c(labels, gettext("Hc")))
+#   complexity <- x[["fit"]]$Com[length(x[["fit"]]$Com)]
+#   plotMat <- list()
+#
+#   if (numH > 1) {
+#     p1 <- ggplot2::ggplot(data = plotDataA, mapping = ggplot2::aes(x = "", y = y, fill = x)) +
+#       ggplot2::geom_bar(stat = "identity", width = 1e10, color = "black", size = 1) +
+#       ggplot2::coord_polar(theta = "y", direction = -1) +
+#       ggplot2::labs(title = gettext("Excluding Hu and Hc"), size = 30) +
+#       ggplot2::scale_x_discrete(name = NULL) +
+#       ggplot2::scale_y_continuous(name = NULL, breaks = yBreaksA, labels = yLabelsA) +
+#       ggplot2::scale_fill_brewer(palette = "Set1") +
+#       jaspGraphs::themeJaspRaw(legend.position = "none") +
+#       ggplot2::theme(axis.ticks.y = ggplot2::element_blank())
+#     plotMat[["p1"]] <- p1
+#   }
+#
+#   p2 <- ggplot2::ggplot(data = plotDataB, mapping = ggplot2::aes(x = "", y = y, fill = x)) +
+#     ggplot2::geom_bar(stat = "identity", width = 1e10, color = "black", size = 1) +
+#     ggplot2::coord_polar(theta = "y", direction = -1) +
+#     ggplot2::scale_x_discrete(name = NULL) +
+#     ggplot2::scale_y_continuous(name = NULL, breaks = yBreaksB, labels = yLabelsB) +
+#     ggplot2::scale_fill_brewer(palette = "Set1") +
+#     jaspGraphs::themeJaspRaw(legend.position = "none") +
+#     ggplot2::theme(axis.ticks.y = ggplot2::element_blank())
+#   plotMat[["p2"]] <- p2
+#
+#   if (!is.na(complexity) && complexity >= .05) {
+#     plotDataC <- data.frame(x = c(labels, gettext("Hc")), y = postProbC)
+#     p3 <- ggplot2::ggplot(data = plotDataC, mapping = ggplot2::aes(x = "", y = y, fill = x)) +
+#       ggplot2::geom_bar(stat = "identity", width = 1e10, color = "black", size = 1) +
+#       ggplot2::geom_col() +
+#       ggplot2::coord_polar(theta = "y", direction = -1) +
+#       ggplot2::labs(title = gettext("Including Hc"), size = 30) +
+#       ggplot2::scale_x_discrete(name = NULL) +
+#       ggplot2::scale_y_continuous(name = NULL, breaks = yBreaksC, labels = yLabelsC) +
+#       ggplot2::scale_fill_brewer(palette = "Set1") +
+#       jaspGraphs::themeJaspRaw(legend.position = "none") +
+#       ggplot2::theme(axis.ticks.y = ggplot2::element_blank())
+#     plotMat[["p3"]] <- p3
+#   }
+#
+#   if (!is.null(plotMat[["p1"]]) || !is.null(plotMat[["p3"]])) {
+#     plotMat[["p2"]] <- plotMat[["p2"]] + ggplot2::labs(title = gettext("Including Hu"), size = 30)
+#   }
+#
+#   p <- jaspGraphs::ggMatrixPlot(plotList = plotMat, layout = matrix(c(seq_along(plotMat)), nrow = 1))
+#   return(p)
+# }
+#
+#
+#
+# #### MAYBE ####
+# # Call to bain for 't_test' objects (Welch t-test, Paired t-test, One sample t-test)
+# .bfpackTTestRaw <- function(options, x, y = NULL, nu = 0, type = 1, paired = FALSE) {
+#
+#   if (is.null(y) && !paired) {
+#     x <- x[!is.na(x)] # Here we remove the missing values per dependent variable
+#     test <- bain::t_test(x = x)
+#     hypothesis <- switch(type,
+#                          "1" = paste0("x=", nu),
+#                          "2" = paste0("x=", nu, "; x>", nu),
+#                          "3" = paste0("x=", nu, "; x<", nu),
+#                          "4" = paste0("x>", nu, "; x<", nu),
+#                          "5" = paste0("x=", nu, "; x>", nu, "; x<", nu)
+#     )
+#   }
+#
+#   if (!is.null(y) && !paired) {
+#     test <- bain::t_test(x = x, y = y, paired = FALSE, var.equal = FALSE)
+#     hypothesis <- switch(type,
+#                          "1" = "difference=0",
+#                          "2" = "difference=0; difference>0",
+#                          "3" = "difference=0; difference<0",
+#                          "4" = "difference>0; difference<0",
+#                          "5" = "difference=0; difference>0; difference<0"
+#     )
+#   }
+#
+#   if (!is.null(y) && paired) {
+#     test <- bain::t_test(x = x, y = y, paired = TRUE)
+#     hypothesis <- switch(type,
+#                          "1" = "difference=0",
+#                          "2" = "difference=0;difference>0",
+#                          "3" = "difference=0;difference<0",
+#                          "4" = "difference>0;difference<0",
+#                          "5" = "difference=0;difference>0;difference<0"
+#     )
+#   }
+#
+#   bfpackResult <- BFpack::BF(x = test, hypothesis = hypothesis)
+#
+#   return(bfpackResult)
+# }
+#
+# # Call to bfpack for 'lm' objects (ANOVA, ANCOVA, Regression)
+# .bfpackRegressionRaw <- function(dataset, options, type) {
+#   dependent <- options[["dependent"]]
+#   standardized <- options[["standardized"]]
+#   hypothesis <- NULL
+#   if (options[["model"]] != "") {
+#     hypothesis <- encodeColNames(.bfpackCleanModelInput(options[["model"]]))
+#   }
+#
+#   if (type == "regression") {
+#     ncov <- length(options[["covariates"]])
+#     covariates <- paste0(options[["covariates"]], collapse = "+")
+#     formula <- as.formula(paste0(dependent, "~", covariates))
+#   } else if (type == "anova" || type == "ancova") {
+#     grouping <- options[["fixedFactors"]]
+#     dataset[, options[["fixedFactors"]]] <- as.factor(dataset[, options[["fixedFactors"]]])
+#
+#     if (type == "anova") {
+#       formula <- as.formula(paste0(dependent, "~", grouping, "-1"))
+#     } else {
+#       ncov <- length(options[["covariates"]])
+#       covariates <- paste0(options[["covariates"]], collapse = "+")
+#       formula <- as.formula(paste0(dependent, "~", grouping, "+", covariates, "-1"))
+#     }
+#   }
+#
+#   if (type == "regression") {
+#     # I cannot find out why bfpack won't work in regression with stats::lm(formula = formula, data = dataset)
+#     # Error: object of type 'closure' is not subsettable
+#     args <- list(formula = as.formula(paste0(dependent, "~", covariates)), data = dataset)
+#     fit <- do.call(stats::lm, args)
+#   } else {
+#     fit <- stats::lm(formula = formula, data = dataset)
+#   }
+#
+#   if (is.null(hypothesis)) {
+#     if (type == "regression") {
+#       hypothesis <- paste0(paste0(names(stats::coef(fit))[-1], "=0"), collapse = " & ")
+#     } else if (type == "anova") {
+#       hypothesis <- paste0(names(stats::coef(fit)), collapse = "=")
+#     } else if (type == "ancova") {
+#       hypothesis <- names(stats::coef(fit))
+#       hypothesis <- hypothesis[1:(length(hypothesis) - ncov)]
+#       hypothesis <- paste0(hypothesis, collapse = "=")
+#     }
+#   }
+#
+#   bfpackResult <- BFpack::BF(x = fit, hypothesis = hypothesis, standardize = standardized)
+#   return(bfpackResult)
+# }
+#
+# .bfpackGetGeneralTestResults <- function(dataset, options, bfpackContainer, ready, type, variable = NULL, pair = NULL, testType = NULL) {
+#   set.seed(options[["seed"]])
+#
+#   if (type %in% c("onesampleTTest", "independentTTest")) {
+#     result <- .bfpackGetTTestResults(dataset, options, bfpackContainer, ready, type, variable, testType)
+#   } else if (type == "pairedTTest") {
+#     result <- .bfpackGetPairedTTestResults(dataset, options, bfpackContainer, ready, type, pair, testType)
+#   } else if (type %in% c("anova", "ancova", "regression", "sem")) {
+#     result <- .bfpackGetRegressionResults(dataset, options, bfpackContainer, ready, type)
+#   }
+#
+#   return(result)
+# }
+#
+# .bfpackGetTTestResults <- function(dataset, options, bfpackContainer, ready, type, variable, testType) {
+#   if (!is.null(bfpackContainer[[variable]])) {
+#     return(bfpackContainer[[variable]]$object)
+#   }
+#
+#   variableData <- dataset[[variable]]
+#   testValue <- format(options[["testValue"]], scientific = FALSE)
+#
+#   p <- try({
+#     if (type == "onesampleTTest") {
+#       bfpackResult <- .bfpackTTestRaw(options, x = variableData, nu = testValue, type = testType)
+#     } else if (type == "independentTTest") {
+#       levels <- levels(dataset[[options[["groupingVariable"]]]])
+#       if (length(levels) != 2) {
+#         g1 <- "1"
+#         g2 <- "2"
+#       } else {
+#         g1 <- levels[1]
+#         g2 <- levels[2]
+#       }
+#       subDataSet <- dataset[, c(variable, options[["groupingVariable"]])]
+#       group1 <- subDataSet[subDataSet[[options[["groupingVariable"]]]] == g1, variable]
+#       group2 <- subDataSet[subDataSet[[options[["groupingVariable"]]]] == g2, variable]
+#       bfpackResult <- .bfpackTTestRaw(options, x = group1, y = group2, type = testType)
+#     }
+#   })
+#
+#   if (isTryError(p)) {
+#     return(p)
+#   }
+#
+#   bfpackContainer[[variable]] <- createJaspState(bfpackResult, dependencies = c("testValue", "hypothesis"))
+#   bfpackContainer[[variable]]$dependOn(optionContainsValue = list("variables" = variable))
+#   return(bfpackContainer[[variable]]$object)
+# }
+#
+# .bfpackGetPairedTTestResults <- function(dataset, options, bfpackContainer, ready, type, pair, testType) {
+#   currentPair <- paste(pair, collapse = " - ")
+#
+#   if (!is.null(bfpackContainer[[currentPair]])) {
+#     return(bfpackContainer[[currentPair]]$object)
+#   }
+#
+#   if (pair[[2]] != "" && pair[[1]] != pair[[2]] && pair[[1]] != "") {
+#     subDataSet <- subset(dataset, select = c(pair[[1]], pair[[2]]))
+#     c1 <- subDataSet[[pair[[1]]]]
+#     c2 <- subDataSet[[pair[[2]]]]
+#
+#     p <- try({
+#       bfpackResult <- .bfpackTTestRaw(options, x = c1, y = c2, type = testType, paired = TRUE)
+#     })
+#
+#     if (isTryError(p)) {
+#       return(p)
+#     }
+#
+#     bfpackContainer[[currentPair]] <- createJaspState(bfpackResult, dependencies = "hypothesis")
+#     bfpackContainer[[currentPair]]$dependOn(optionContainsValue = list("pairs" = pair))
+#     return(bfpackContainer[[currentPair]]$object)
+#   }
+# }
+#
+# .bfpackGetRegressionResults <- function(dataset, options, bfpackContainer, ready, type) {
+#
+#   if (!is.null(bfpackContainer[["bfpackResult"]])) {
+#     return(bfpackContainer[["bfpackResult"]]$object)
+#   } else if (ready) {
+#     if (type == "anova" || type == "ancova") {
+#       groupCol <- dataset[, options[["fixedFactors"]]]
+#       varLevels <- levels(groupCol)
+#       if (length(varLevels) > 15) {
+#         bfpackContainer$setError(gettext("The fixed factor has too many levels for a Bfpack analysis."))
+#         return()
+#       }
+#     }
+#
+#     p <- try({
+#       if (type == "sem") {
+#         bfpackResult <- .bfpackSemRaw(dataset, options, bfpackContainer, ready)
+#       } else {
+#         bfpackResult <- .bfpackRegressionRaw(dataset, options, type)
+#       }
+#     })
+#
+#     if (isTryError(p)) {
+#       bfpackContainer$setError(gettextf("An error occurred in the analysis:<br>%1$s<br><br>Please double check if the variables in the 'Model Contraints' section match the variables in your data set.", jaspBase::.extractErrorMessage(p)))
+#       return()
+#     }
+#
+#     bfpackContainer[["bfpackResult"]] <- createJaspState(bfpackResult)
+#     return(bfpackContainer[["bfpackResult"]]$object)
+#   }
+# }
+#
+# .bfpackExtractTableValuesFromObject <- function(options, bfpackResult, testType) {
+#   if (testType == 1) {
+#     BF_0u <- bfpackResult$fit$BF[1]
+#     PMP_u <- bfpackResult$fit$PMPb[2]
+#     PMP_0 <- bfpackResult$fit$PMPb[1]
+#     if (options$bayesFactorType == "BF10") {
+#       BF_0u <- 1 / BF_0u
+#     }
+#     return(list(BF_0u = BF_0u, PMP_0 = PMP_0, PMP_u = PMP_u))
+#   } else if (testType == 2) {
+#     BF_01 <- bfpackResult$BFmatrix[1, 2]
+#     PMP_1 <- bfpackResult$fit$PMPa[2]
+#     PMP_0 <- bfpackResult$fit$PMPa[1]
+#     if (options$bayesFactorType == "BF10") {
+#       BF_01 <- 1 / BF_01
+#     }
+#     return(list(BF_01 = BF_01, PMP_0 = PMP_0, PMP_1 = PMP_1))
+#   } else if (testType == 3 || testType == 4) {
+#     BF_01 <- bfpackResult$BFmatrix[1, 2]
+#     PMP_0 <- bfpackResult$fit$PMPa[1]
+#     PMP_1 <- bfpackResult$fit$PMPa[2]
+#     if (options$bayesFactorType == "BF10") {
+#       BF_01 <- 1 / BF_01
+#     }
+#     return(list(BF_01 = BF_01, PMP_0 = PMP_0, PMP_1 = PMP_1))
+#   } else if (testType == 5) {
+#     BF_01 <- bfpackResult$BFmatrix[1, 2]
+#     BF_02 <- bfpackResult$BFmatrix[1, 3]
+#     BF_12 <- bfpackResult$BFmatrix[2, 3]
+#     PMP_0 <- bfpackResult$fit$PMPa[1]
+#     PMP_1 <- bfpackResult$fit$PMPa[2]
+#     PMP_2 <- bfpackResult$fit$PMPa[3]
+#     if (options$bayesFactorType == "BF10") {
+#       BF_01 <- 1 / BF_01
+#       BF_02 <- 1 / BF_02
+#       BF_12 <- 1 / BF_12
+#     }
+#     return(list(BF_01 = BF_01, BF_02 = BF_02, BF_12 = BF_12, PMP_0 = PMP_0, PMP_1 = PMP_1, PMP_2 = PMP_2))
+#   }
+# }
+#
 # # Create a table containing the main analysis results
 # .bfpackTestResultsTable <- function(dataList, options, bfpackContainer, ready, type, position) {
 #

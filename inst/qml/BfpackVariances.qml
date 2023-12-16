@@ -27,6 +27,8 @@ Form
 
 	VariablesForm
 	{
+		implicitHeight: 200 * preferencesModel.uiScale
+
 		AvailableVariablesList
 		{
 			name: 						"variablesList"
@@ -34,17 +36,16 @@ Form
 		
 		AssignedVariablesList
 		{
-			name: 						"dependent"
-			title: 						qsTr("Dependent Variable")
-			singleVariable: 			true
-			allowedColumns: 			["scale"]
+			name: 								"variables"
+			singleVariable: 			false
+			allowedColumns: 			["scale", "ordinal"]
 		}
-
 		AssignedVariablesList
 		{
-			name: 						"covariates"
-			title: 						qsTr("Covariates")
-			suggestedColumns: 			["scale"]
+			name: 						"groupingVariable"
+			title: 						qsTr("Grouping Variable")
+			singleVariable: 			true
+			allowedColumns: 			["nominal", "nominalText"]
 		}
 	}
 
@@ -62,12 +63,12 @@ Form
 	}
 
 	Common.HypothesesWindowStandard{
-		parName: qsTr("beta")
+		parName: qsTr("delta")
 	}
 
 	Common.HypothesesWindowManual{}
 
 	Common.Options{
-		bfTy: true
+		bfTy: false
 	}
 }

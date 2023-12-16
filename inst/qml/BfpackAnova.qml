@@ -72,78 +72,8 @@ Form
 
 	Common.HypothesesWindowManual{}
 
-	Section
-	{
-		title: 	qsTr("Options")
-		Group
-		{
-			title: qsTr("Bayes Factor")
-			Layout.rowSpan: 2
-
-			CheckBox
-			{
-				name: "logScale"
-				label: qsTr("On log scale")
-			}
-
-			RadioButtonGroup
-			{
-				// set visible to false to still get the option set in R
-				visible: true
-				name: "bfType"
-				title: qsTr("Type")
-				radioButtonsOnSameRow: false
-				RadioButton { value: "fractional"; label: qsTr("Fractional"); checked: true}
-				RadioButton { value: "adjusted"; label: qsTr("Adjusted fractional")}
-			}
-		}
-		Group
-		{
-			title: 							qsTr("Tables")
-
-			CheckBox 
-			{
-				name: "specificationTable"
-				text: qsTr("Specification")
-			}
-
-			CheckBox
-			{
-				name: 						"coefficientsTable"
-				text: 						qsTr("Coefficients")
-
-				CIField
-				{
-					name: 					"ciLevel"
-					text: 					qsTr("Credible interval")
-				}
-			}
-		}
-
-		Group
-		{
-			
-
-			CheckBox
-			{
-				name: 						"plots"
-				text: 						qsTr("Manual hypotheses plots")
-			}
-		}
-
-		Group
-		{
-			title: 							qsTr("Additional Options")
-
-			DoubleField
-			{
-				name: 						"seed"
-				text: 						qsTr("Seed")
-				defaultValue: 				100
-				min: 						-999999
-				max: 						999999
-				fieldWidth: 				60 * preferencesModel.uiScale
-			}
-		}
+	Common.Options{
+		bfTy: true
+		interactions: true
 	}
 }

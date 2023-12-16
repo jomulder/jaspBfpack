@@ -6,4 +6,5 @@ export(bfpackAnova)
 export(bfpackAncova)
 export(bfpackRegressionLinear)
 export(bfpackCorrelation)
+export(bfpackVariances)
 
