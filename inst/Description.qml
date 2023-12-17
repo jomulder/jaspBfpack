@@ -50,12 +50,6 @@ Description
 		title:		"BFpack ANOVA"
 		func:			"bfpackAnova"
 	}
-	Analysis
-	{
-		menu:   	"ANCOVA"
-		title:		"BFpack ANCOVA"
-		func:			"bfpackAncova"
-	}
 
 	GroupTitle
 	{
@@ -67,12 +61,6 @@ Description
 		menu:   	"Linear Regression"
 		title:		"Bfpack Regression"
 		func:			"bfpackRegressionLinear"
-	}
-
-	GroupTitle
-	{
-		title: 		"Correlation"
-		// icon: 		"analysis-bain-regression.svg"
 	}
 	Analysis
 	{

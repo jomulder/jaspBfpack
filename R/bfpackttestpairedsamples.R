@@ -30,17 +30,28 @@ bfpackTTestPairedSamples <- function(jaspResults, dataset, options, ...) {
   .bfpackDataReady(dataset, options, type)
 
   # Create a container for the results
-  bfpackContainer <- .bfpackCreateContainer(jaspResults, deps = c("seed"))
+  bfpackContainer <- .bfpackCreateContainer(jaspResults,
+                                            deps = c("pairs", "runAnalysisBox", "seed"))
 
-  # Create a table containing the main analysis results
-  .bfpackTestResultsTable(dataList[["dataset"]], options, bfpackContainer, dataList[["missing"]], ready, type, position = 1)
+  .bfpackGetParameterEstimates(dataList, options, bfpackContainer, ready, type, jaspResults)
 
-  # Create the descriptive statistics table
-  .bfpackCoefficientsTable(dataList[["dataset"]], options, bfpackContainer, ready, type, position = 2)
+  # compute the results, aka BFs
+  .bfpackComputeResults(dataList, options, bfpackContainer, ready, type)
 
-  # Create the posterior probability plots
-  .bfpackPosteriorProbabilityPlot(dataList[["dataset"]], options, bfpackContainer, ready, type, position = 3)
+  .bfpackParameterTable(options, bfpackContainer, type, dataList[["dataset"]], position = 1)
 
-  # Create the descriptive plot(s)
-  .bfpackDescriptivePlots(dataList[["dataset"]], options, bfpackContainer, ready, type, position = 4)
+  # Create a legend containing the order constrained hypotheses
+  .bfpackLegendTable(options, type, bfpackContainer, position = 2)
+
+  .bfpackMatrixTable(options, bfpackContainer, type, position = 3)
+
+  .bfpackPosteriorHypothesesTable(options, bfpackContainer, type, position = 4)
+
+  .bfpackSpecificationTable(options, bfpackContainer, type, position = 5)
+
+  # coefficients table
+  .bfpackCoefficientsTable(options, bfpackContainer, type)
+
+  # Create the prior and posterior probability plots
+  .bfpackPriorPosteriorPlot(options, bfpackContainer, type)
 }

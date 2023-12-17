@@ -35,9 +35,10 @@ Form
 		}
 		
 		AssignedVariablesList
-		{
+		{	
+			title: 						qsTr("Variable")
 			name: 								"variables"
-			singleVariable: 			false
+			singleVariable: 			true
 			allowedColumns: 			["scale", "ordinal"]
 		}
 		AssignedVariablesList
@@ -64,6 +65,7 @@ Form
 
 	Common.HypothesesWindowStandard{
 		parName: qsTr("delta")
+		bartlett: true
 	}
 
 	Common.HypothesesWindowManual{}

@@ -14,19 +14,20 @@
 // You should have received a copy of the GNU Affero General Public
 // License along with this program.  If not, see
 // <http://www.gnu.org/licenses/>.
-//
+
 
 import QtQuick
 import QtQuick.Layouts
 import JASP
 import JASP.Controls
+import "./common" as Common
 
 Form
 {
 	VariablesForm
 	{
 		preferredHeight: 				jaspTheme.smallDefaultVariablesFormHeight
-
+		
 		AvailableVariablesList
 		{
 			name: 						"variablesList"
@@ -36,137 +37,31 @@ Form
 		{
 			name: 						"variables"
 			title: 						qsTr("Variables")
+			singleVariable: 			true
 			allowedColumns: 			["scale"]
 		}
 	}
 
-	ColumnLayout
+	CheckBox
 	{
-		DoubleField
+		Layout.columnSpan: 2
+		id: 						runAnalysisBox
+		name: 					"runAnalysisBox"
+		label: 					qsTr("<b>Run Analysis</b>")
+		checked: 				false
+		Component.onCompleted:
 		{
-			name: 						"testValue"
-			text: 						qsTr("Test value")
-			defaultValue:	 			0
-			negativeValues: 			true
-			decimals: 					2
-		}
-
-		RadioButtonGroup
-		{
-			name: 						"hypothesis"
-			title: 						qsTr("Hypothesis Test")
-
-			RadioButton
-			{
-				name: 					"equalNotEqual"
-				text: 					qsTr("Equal vs. not equal")
-				checked: 				true
-			}
-
-			RadioButton
-			{
-				name: 					"equalBigger"
-				text: 					qsTr("Equal vs. bigger")
-			}
-
-			RadioButton
-			{
-				name: 					"equalSmaller"
-				text: 					qsTr("Equal vs. smaller")
-			}
-
-			RadioButton
-			{
-				name: 					"biggerSmaller"
-				text: 					qsTr("Bigger vs. smaller")
-			}
-
-			RadioButton
-			{
-				name: 					"equalBiggerSmaller"
-				text: 					qsTr("Equal vs. bigger vs. smaller")
-			}
-		}
-
-		RadioButtonGroup
-		{
-			title: 						qsTr("Bayes Factor")
-			name: 						"bayesFactorType"
-
-			RadioButton
-			{
-				name: 					"BF01"
-				text: 					qsTr("BF\u2080\u2081: Equal vs. other")
-				checked: 				true
-			}
-
-			RadioButton
-			{
-				name: 					"BF10"
-				text: 					qsTr("BF\u2081\u2080: Other vs. equal")
-			}
-		}
-
-		Group
-		{
-			title: 						qsTr("Additional Options")
-
-			DoubleField
-			{
-				name: 					"seed"
-				text: 					qsTr("Seed")
-				defaultValue: 			100
-				min: 					-999999
-				max: 					999999
-				fieldWidth: 			60 * preferencesModel.uiScale
-			}
-
-			DoubleField
-			{
-				name: 					"fraction"
-				text: 					qsTr("Fraction")
-				defaultValue: 			1
-				min: 					0.01
-				max: 					100
-				fieldWidth: 			60 * preferencesModel.uiScale
-			}
+			background.color = "#ff8600"
 		}
 	}
 
-	ColumnLayout
-	{
-		Group
-		{
-			title: 						qsTr("Tables")
+	Common.HypothesesWindowStandard{
+		parName: qsTr("mu")
+	}
 
-			CheckBox
-			{
-				name: 					"descriptives"
-				text:					qsTr("Descriptives")
+	Common.HypothesesWindowManual{}
 
-				CIField
-				{
-					name: 				"credibleInterval"
-					text: 				qsTr("Credible interval")
-				}
-			}
-		}
-
-		Group
-		{
-			title:						qsTr("Plots")
-
-			CheckBox
-			{
-				name: 					"bayesFactorPlot"
-				text: 					qsTr("Posterior probabilities")
-			}
-
-			CheckBox
-			{
-				name: 					"descriptivesPlot"
-				text: 					qsTr("Descriptives plots")
-			}
-		}
+	Common.Options{
+		bfTy: false
 	}
 }

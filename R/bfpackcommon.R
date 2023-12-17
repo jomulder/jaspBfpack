@@ -145,13 +145,12 @@ gettextf <- function(fmt, ..., domain = NULL)  {
 .bfpackOptionsReady <- function(options, type, dataset = NULL) {
   ready <- switch(type,
     "independentTTest" = length(options[["variables"]][options[["variables"]] != ""] > 0) && options[["groupingVariable"]] != "",
-    "pairedTTest" = !is.null(unlist(options[["pairs"]])),
+    "pairedTTest" = sum(unlist(options[["pairs"]]) != "") > 1,
     "onesampleTTest" = length(options[["variables"]][options[["variables"]] != ""] > 0),
     "anova" = length(options[["dependent"]]) > 0 && length(options[["fixedFactors"]]) > 0,
-    "ancova" = options[["dependent"]] != "" && options[["fixedFactors"]] != "" && !is.null(unlist(options[["covariates"]])),
     "regression" = (options[["dependent"]] != "" && all(unlist(options[["covariates"]]) != "") && !is.null(unlist(options[["covariates"]]))),
     "correlation" = length(options[["variables"]]) > 1,
-    "variances" = length(options[["variables"]] > 0) && options[["groupingVariable"]] != "")
+    "variances" = options[["variables"]] != "" && options[["groupingVariable"]] != "")
 
   return(ready)
 }
@@ -175,7 +174,6 @@ gettextf <- function(fmt, ..., domain = NULL)  {
     "pairedTTest" = unique(unlist(options[["pairs"]])),
     "independentTTest" = unlist(options[["variables"]]),
     "anova" = options[["dependent"]],
-    "ancova" = c(options[["dependent"]], unlist(options[["covariates"]])),
     "regression" = c(options[["dependent"]], unlist(options[["covariates"]])),
     "correlation" = options[["variables"]],
     "variances" = options[["variables"]])
@@ -215,9 +213,21 @@ gettextf <- function(fmt, ..., domain = NULL)  {
                        "pairedTTest" = "BFpack:::get_estimates.t_test",
                        "onesampleTTest" = "BFpack:::get_estimates.t_test",
                        "anova" = "bain::get_estimates",
-                       "ancova" = "bain::get_estimates",
                        "regression" = "BFpack:::get_estimates.lm",
-                       "correlation" = "BFpack:::get_estimates.cor_test")
+                       "correlation" = "BFpack:::get_estimates.cor_test",
+                       "variances" = "BFpack:::get_estimates.bartlett_htest"
+                       )
+  # special dependency ciLevel, because for some cor, reg, aov when the ciLevel is changed
+  # we can just use the fitted object and change the interval, but for t-test we need to change it
+  # in the t-test call (or at least it is easiest)
+  deps <- switch(type,
+                 "independentTTest" = "ciLevel",
+                 "pairedTTest" = "ciLevel",
+                 "onesampleTTest" = "ciLevel",
+                 "anova" = "interactionTerms",
+                 "regression" = "interactionTerms",
+                 "correlation" = NULL,
+                 "variances" = NULL)
 
   # estimate the correlation
   if (type == "correlation") {
@@ -239,20 +249,6 @@ gettextf <- function(fmt, ..., domain = NULL)  {
 
     formula <- as.formula(paste0(dependent, "~", covariateString))
     result <- try(lm(formula, data = dataset))
-  } else if (type == "independentTTest") {
-    variables <- decodeColNames(options[["variables"]])
-    grouping <- decodeColNames(options[["groupingVariable"]])
-    levels <- levels(dataset[[grouping]])
-    # take only the first two levels, give a table footnote if there are more than two levels
-    g1 <- levels[1]
-    g2 <- levels[2]
-    result <- list()
-    for (vv in variables) {
-      subDataSet <- dataset[, c(vv, grouping)]
-      group1 <- subDataSet[subDataSet[[grouping]] == g1, vv]
-      group2 <- subDataSet[subDataSet[[grouping]] == g2, vv]
-      result[[vv]] <- try(bain::t_test(x = group1, y = group2, paired = FALSE, var.equal = FALSE))
-    }
 
   } else if (type == "anova") {
 
@@ -282,7 +278,41 @@ gettextf <- function(fmt, ..., domain = NULL)  {
       formula <- as.formula(paste0("cbind(", paste0(dependent, collapse = ","), ") ~ ", istring, "-1"))
       result <- try(manova(formula, data = dataset))
     }
+
+  } else if (type == "variances") {
+
+    variable <- decodeColNames(options[["variables"]])
+    grouping <- decodeColNames(options[["groupingVariable"]])
+
+    result <- try(BFpack::bartlett_test(dataset[, variable], dataset[, grouping]))
+
+  } else if (type == "independentTTest") {
+
+    variable <- decodeColNames(options[["variables"]])
+    grouping <- decodeColNames(options[["groupingVariable"]])
+    levels <- levels(dataset[[grouping]])
+    # take only the first two levels, give a table footnote if there are more than two levels
+    g1 <- levels[1]
+    g2 <- levels[2]
+    group1 <- dataset[dataset[[grouping]] == g1, variable]
+    group2 <- dataset[dataset[[grouping]] == g2, variable]
+    result <- try(bain::t_test(x = group1, y = group2, paired = FALSE, var.equal = FALSE,
+                               conf.level = options[["ciLevel"]]))
+
+  } else if (type == "onesampleTTest") {
+
+    variable <- decodeColNames(options[["variables"]])
+    result <- try(bain::t_test(x = dataset[, variable], paired = FALSE, var.equal = FALSE,
+                               conf.level = options[["ciLevel"]]))
+
+  } else if (type == "pairedTTest") {
+    variables <- decodeColNames(unlist(unlist(options[["pairs"]])))
+    result <- try(bain::t_test(x = dataset[, variables[1]], y = dataset[, variables[2]],
+                               paired = TRUE, var.equal = FALSE,
+                               conf.level = options[["ciLevel"]]))
+
   }
+
 
   if (isTryError(result)) {
     bfpackContainer$setError(gettextf("The parameter estimation failed. Error message: %1$s", jaspBase::.extractErrorMessage(result)))
@@ -292,7 +322,7 @@ gettextf <- function(fmt, ..., domain = NULL)  {
   # save in jaspResults, which is where bfpackContainer is stored.
   # this way we do not have to estimate the parameters twice
   estimatesState <- createJaspState(result)
-  estimatesState$dependOn(c("ciLevel", "iterations", "interactionTerms")) # are there any new dependencies not already covered in the container?
+  estimatesState$dependOn(deps) # are there any new dependencies not already covered in the container?
   bfpackContainer[["estimatesState"]] <- estimatesState
 
   # the estimate names for the JASP GUI
@@ -303,8 +333,17 @@ gettextf <- function(fmt, ..., domain = NULL)  {
   # # remove intercept name for regression, not necessary with means parametrization though
   # if (type %in% c("regression", "anova")) estimateNames[[1]] <- NULL
 
+  deps2 <- switch(type,
+                 "independentTTest" = c("variables", "grouping"),
+                 "pairedTTest" = "pairs",
+                 "onesampleTTest" = "variables",
+                 "anova" = c("dependent", "fixedFactors", "covariates"),
+                 "regression" = c("dependent", "covariates"),
+                 "correlation" = "variables",
+                 "variances" = c("variables", "grouping"))
+
   namesForQml <- createJaspQmlSource("estimateNamesForQml", estimateNames)
-  namesForQml$dependOn("variables")
+  namesForQml$dependOn()
   # apparently the source only works directly with jaspResults
   jaspResults[["estimateNamesForQml"]] <- namesForQml
 
@@ -321,18 +360,10 @@ gettextf <- function(fmt, ..., domain = NULL)  {
   # create a container because both the results and the tables depending on them have the same dependencies
   # start with common deps, and then do the switch
   deps <- c("complement", "logScale", "manualHypotheses", "priorProbManual", "priorProb", "priorProbComplement", "seed",
-            "descriptivesTable")
-  depsAddOn <- switch(type,
-                      "independentTTest" = c("variables", "bayesFactorType", "hypothesis"),
-                      "pairedTTest" = c("pairs", "hypothesis", "bayesFactorType"),
-                      "onesampleTTest" = c("variables", "hypothesis", "bayesFactorType"),
-                      "anova" = "bfType",
-                      "ancova" = "bfType",
-                      "regression" = "bfType",
-                      "correlation" = "")
+            "coefficientsTable", "bfType")
 
   resultsContainer <- createJaspContainer()
-  resultsContainer$dependOn(c(deps, depsAddOn))
+  resultsContainer$dependOn(deps)
 
   if (!options[["runAnalysisBox"]]) {
     syncText <- createJaspHtml(text = gettext("<b>Check the 'Run Analysis' box to run the analysis</b>"))
@@ -419,10 +450,16 @@ gettextf <- function(fmt, ..., domain = NULL)  {
   parameterTable$dependOn("priorProb")
   parameterTable$position <- position
 
-  parameterTable$addColumnInfo(name = "coefficient", type = "string", title = "")
-  parameterTable$addColumnInfo(name = "equal", type = "number", title = gettext("Pr(=0)"))
-  parameterTable$addColumnInfo(name = "smaller", type = "number", title = gettext("Pr(<0)"))
-  parameterTable$addColumnInfo(name = "larger", type = "number", title = gettext("Pr(>0)"))
+  if (type == "variances") {
+    parameterTable$addColumnInfo(name = "equal", type = "number", title = gettext("Homogeneity of variances"))
+    parameterTable$addColumnInfo(name = "unequal", type = "number", title = gettext("No homogeneity of variances"))
+  } else {
+    parameterTable$addColumnInfo(name = "coefficient", type = "string", title = "")
+    parameterTable$addColumnInfo(name = "equal", type = "number", title = gettext("Pr(=0)"))
+    parameterTable$addColumnInfo(name = "smaller", type = "number", title = gettext("Pr(<0)"))
+    parameterTable$addColumnInfo(name = "larger", type = "number", title = gettext("Pr(>0)"))
+  }
+
 
   # assigning the table to the container here means we already display an empty table even if it is not yet
   # filled with data
@@ -431,20 +468,24 @@ gettextf <- function(fmt, ..., domain = NULL)  {
   if (!bfpackContainer$getError()) {
     parPhp <- bfpackContainer[["resultsContainer"]][["resultsState"]]$object$PHP_exploratory
     if (!is.null(parPhp)) {
-      dtFill <- data.frame(coefficient = rownames(parPhp))
-      dtFill[, c("equal", "smaller", "larger")] <- parPhp
+      if (type == "variances") {
+        dtFill <- data.frame(equal = parPhp[1], unequal = parPhp[2])
+      } else {
+        dtFill <- data.frame(coefficient = rownames(parPhp))
+        dtFill[, c("equal", "smaller", "larger")] <- parPhp
+      }
       parameterTable$setData(dtFill)
     }
 
   }
 
-  # if (type == "independentTTest") {
-  #   levels <- levels(dataset[[options[["groupingVariable"]]]])
-  #   if (length(levels) > 2) {
-  #     parameterTable$addFootnote(gettext("The number of factor levels in the grouping is greater than 2.
-  #                                        Only the first two levels were used."))
-  #   }
-  # }
+  if (type == "independentTTest") {
+    levels <- levels(dataset[[options[["groupingVariable"]]]])
+    if (length(levels) > 2) {
+      parameterTable$addFootnote(gettext("The number of factor levels in the grouping is greater than 2.
+                                         Only the first two levels were used."))
+    }
+  }
 
   return()
 }
@@ -658,46 +699,67 @@ gettextf <- function(fmt, ..., domain = NULL)  {
   intervalLow <- gettextf("%s lower bound", interval)
   intervalUp <- gettextf("%s upper bound", interval)
 
-  coefficientsTable$addColumnInfo(name = "coefficient", title = "", type = "string")
-  coefficientsTable$addColumnInfo(name = "mean", title = gettext("Mean"), type = "number")
-  coefficientsTable$addColumnInfo(name = "median", title = gettext("Median"), type = "number")
-  coefficientsTable$addColumnInfo(name = "lower", title = intervalLow, type = "number")
-  coefficientsTable$addColumnInfo(name = "upper", title = intervalUp, type = "number")
+  if (type == "variances") {
+    coefficientsTable$addColumnInfo(name = "coefficient", title = "", type = "string")
+    coefficientsTable$addColumnInfo(name = "mean", title = gettext("Mean"), type = "number")
+  } else {
+    coefficientsTable$addColumnInfo(name = "coefficient", title = "", type = "string")
+    coefficientsTable$addColumnInfo(name = "mean", title = gettext("Mean"), type = "number")
+    coefficientsTable$addColumnInfo(name = "median", title = gettext("Median"), type = "number")
+    coefficientsTable$addColumnInfo(name = "lower", title = intervalLow, type = "number")
+    coefficientsTable$addColumnInfo(name = "upper", title = intervalUp, type = "number")
+  }
+
 
 
   bfpackContainer[["coefContainer"]][["coefficientsTable"]] <- coefficientsTable
 
   if (!bfpackContainer$getError()) {
+
     estimates <- bfpackContainer[["resultsContainer"]][["resultsState"]]$object$estimates
+    #### TODO: estimates is NULL for independent TTest
     if (!is.null(estimates)) {
       dtFill <- data.frame(coefficient = rownames(estimates))
+
       # the regular bfpack output has the 95% interval bounds
-      dtFill[, c("mean", "median", "lower", "upper")] <- estimates
-
-      # we also let users choose the interval bounds
-      if (options[["ciLevel"]] != .95) {
-        # now lets get the fitted object for this:
-        fitObj <- bfpackContainer[["estimatesState"]]$object
-
-        if (type == "correlation") {
-          draws <- fitObj$corrdraws[[1]]
-          bounds <- apply(draws, c(2, 3), function(x) {
-            coda::HPDinterval(coda::as.mcmc(x), prob = options[["ciLevel"]])
-          })
-          boundsLow <- bounds[1, , ]
-          boundsUp <- bounds[2, , ]
-          # kind of hope this structure never changes so the elements are always in the correct order
-          boundsLow <- boundsLow[lower.tri(boundsLow)]
-          boundsUp <- boundsUp[lower.tri(boundsUp)]
-        } else {
-          int <- confint(fitObj, level = options[["ciLevel"]])
-          boundsLow <- int[, 1]
-          boundsUp <- int[, 2]
-        }
-
-        dtFill[, c("lower", "upper")] <- cbind(boundsLow, boundsUp)
-
+      if (type == "variances") {
+        dtFill[, "mean"] <- estimates
+      } else {
+        dtFill[, c("mean", "median", "lower", "upper")] <- estimates
       }
+
+      if (options[["ciLevel"]] != .95) {
+
+        fitObj <- bfpackContainer[["estimatesState"]]$object
+        if (type %in% c("regression", "anova", "correlation")) {
+
+          if (type == "correlation") {
+            draws <- fitObj$corrdraws[[1]]
+            bounds <- apply(draws, c(2, 3), function(x) {
+              coda::HPDinterval(coda::as.mcmc(x), prob = options[["ciLevel"]])
+            })
+            boundsLow <- bounds[1, , ]
+            boundsUp <- bounds[2, , ]
+            # kind of hope this structure never changes so the elements are always in the correct order
+            boundsLow <- boundsLow[lower.tri(boundsLow)]
+            boundsUp <- boundsUp[lower.tri(boundsUp)]
+
+          } else if (type %in% c("regression", "anova")) {
+
+            int <- confint(fitObj, level = options[["ciLevel"]])
+            boundsLow <- int[, 1]
+            boundsUp <- int[, 2]
+          }
+
+        } else if (type %in% c("onesampleTTest", "pairedTTest", "independentTTest")) {
+
+          int <- fitObj[["conf.int"]]
+          boundsLow <- int[1]
+          boundsUp <- int[2]
+        }
+        dtFill[, c("lower", "upper")] <- cbind(boundsLow, boundsUp)
+      }
+
       coefficientsTable$setData(dtFill)
       # footnt <- ifelse(type == "correlation",
       #                  gettext("The uncertainty interval is a highest posterior density credible interval."),
@@ -1725,7 +1787,7 @@ gettextf <- function(fmt, ..., domain = NULL)  {
 #
 # # Create the descriptive statistics table
 # .bfpackCoefficientsTable <- function(dataset, options, bfpackContainer, ready, type, position) {
-#   if (!is.null(bfpackContainer[["descriptivesTable"]]) || !options[["descriptives"]]) {
+#   if (!is.null(bfpackContainer[["coefficientsTable"]]) || !options[["descriptives"]]) {
 #     return()
 #   }
 #
@@ -1753,7 +1815,7 @@ gettextf <- function(fmt, ..., domain = NULL)  {
 #   table$addColumnInfo(name = "se", title = gettext("SE"), type = "number")
 #   table$addColumnInfo(name = "lowerCI", title = gettext("Lower"), type = "number", overtitle = overTitle)
 #   table$addColumnInfo(name = "upperCI", title = gettext("Upper"), type = "number", overtitle = overTitle)
-#   bfpackContainer[["descriptivesTable"]] <- table
+#   bfpackContainer[["coefficientsTable"]] <- table
 #   if (type == "regression" || type == "sem") {
 #     table$addFootnote(message = ifelse(options[["standardized"]], yes = gettext("The displayed coefficients are standardized."), no = gettext("The displayed coefficients are unstandardized.")))
 #   }

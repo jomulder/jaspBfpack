@@ -60,7 +60,7 @@ Group
 		optionKey			: "name"
 		defaultValues		: ["...", "..."]
 		placeHolder			: qsTr("New hypothesis")
-		minRows				: 2
+		minRows				: 1
 
 		// preferredWidth		: (2*form.width)/3
 		preferredHeight: 100 * preferencesModel.uiScale

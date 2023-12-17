@@ -24,6 +24,7 @@ import JASP.Controls
 Group
 {
 	property string parName: qsTr("mu")
+	property bool bartlett: false
 
 	columns: 1
 	// implicitHeight: 140 * preferencesModel.uiScale
@@ -34,9 +35,9 @@ Group
 	{
 		implicitHeight: 90 * preferencesModel.uiScale
 		implicitWidth: 200 * preferencesModel.uiScale
-		source: [{
-			values: [qsTr("H0: ") + parName + " = 0 ", qsTr("H1: ") + parName + " < 0 ", qsTr("H2: ") + parName + " > 0 "]
-		}]
+		source: bartlett ? 
+			[{values: [qsTr("H0: ") + parName + " = 0 ", qsTr("H1: ") + parName + " ≠ 0 "]}]:
+			[{values: [qsTr("H0: ") + parName + " = 0 ", qsTr("H1: ") + parName + " < 0 ", qsTr("H2: ") + parName + " > 0 "]}]
 		name: "standardHypotheses"
 		// titles: [qsTr("Hypotheses"), qsTr("Prior probabilities")]
 		rowComponent: RowLayout {
@@ -45,8 +46,8 @@ Group
 				implicitWidth: 100 * preferencesModel.uiScale
 				name: "priorProb"
 				fieldWidth: 50
-				defaultValue: "1/3"
-				}
+				defaultValue: bartlett ? "1/2" : "1/3"
+			}
 		}
 	}
 }
