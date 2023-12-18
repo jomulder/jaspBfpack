@@ -15,14 +15,13 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-bfpackRegressionLinear <- function(jaspResults, dataset, options, ...) {
+bfpackTTestMultiSample <- function(jaspResults, dataset, options, ...) {
 
+  # sink("~/Downloads/log.txt")
+  # on.exit(sink(NULL))
 
   # What type of Bfpack analysis is being conducted?
-  type <- "regression"
-
-  # feed back the interactions to qml
-  .bfpackFeedbackInteractions(jaspResults, options, type)
+  type <- "multiSampleTTest"
 
   # Check if current options allow for analysis
   ready <- .bfpackOptionsReady(options, type)
@@ -31,17 +30,18 @@ bfpackRegressionLinear <- function(jaspResults, dataset, options, ...) {
   dataList <- .bfpackReadDataset(options, type, dataset)
 
   # Check if current data allow for analysis
-  .bfpackDataReady(dataList[["dataset"]], options, type)
+  .bfpackDataReady(dataset, options, type)
 
   # Create a container for the results
-  bfpackContainer <- .bfpackCreateContainer(jaspResults, deps = c("dependent", "covariates", "runAnalysisBox", "seed"))
+  bfpackContainer <- .bfpackCreateContainer(jaspResults,
+                                            deps = c("variables", "runAnalysisBox", "seed"))
 
   .bfpackGetParameterEstimates(dataList, options, bfpackContainer, ready, type, jaspResults)
 
   # compute the results, aka BFs
   .bfpackComputeResults(dataList, options, bfpackContainer, ready, type)
 
-  .bfpackParameterTable(options, bfpackContainer, type, position = 1)
+  .bfpackParameterTable(options, bfpackContainer, type, dataList[["dataset"]], position = 1)
 
   # Create a legend containing the order constrained hypotheses
   .bfpackLegendTable(options, type, bfpackContainer, position = 2)

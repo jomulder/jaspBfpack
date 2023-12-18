@@ -21,7 +21,7 @@ bfpackTTestOneSample <- function(jaspResults, dataset, options, ...) {
   type <- "onesampleTTest"
 
   # Check if current options allow for analysis
-  ready <- .bfpackOptionsReady(options, type = "onesampleTTest")
+  ready <- .bfpackOptionsReady(options, type)
 
   # Read the data set
   dataList <- .bfpackReadDataset(options, type, dataset)

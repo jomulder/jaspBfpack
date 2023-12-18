@@ -33,8 +33,6 @@ bfpackAnova <- function(jaspResults, dataset, options, ...) {
   # Check if current data allow for analysis
   .bfpackDataReady(dataList[["dataset"]], options, type)
 
-
-
   # Create a container for the results
   bfpackContainer <- .bfpackCreateContainer(jaspResults,
                                             deps = c("dependent", "fixedFactors", "covariates", "runAnalysisBox", "seed"))

@@ -8,7 +8,7 @@ Description
 	description		: qsTr("A module for computing Bayes factors for equality, inequality, and order constrained hypotheses.")
 	icon			: "bain-module"
 	requiresData	: true
-	version			: "0.18.1"
+	version			: "0.18.2"
 	author			: "Mulder, J., Williams, D. R., Gu, X., Tomarken, A., Böing-Messing, F., Olsson-Collentine, A., Meijerink, M., Menke, J., Fox, J.-P., Hoijtink, H., Rosseel, Y., Wagenmakers, E.J., and van Lissa, C."
 	maintainer		: "Julius M. Pfadt <julius.pfadt@gmail.com>"
 	website			: "https://bfpack.info"
@@ -38,6 +38,12 @@ Description
 		title:		"BFpack One Sample T-Test"
 		func:			"bfpackTTestOneSample"
 	}
+	Analysis
+	{
+		menu:  		"Multivariate T-Test"
+		title:		"BFpack Multivariate T-Test"
+		func:			"bfpackTTestMultiSample"
+	}
 
 	GroupTitle
 	{
@@ -62,6 +68,13 @@ Description
 		title:		"Bfpack Regression"
 		func:			"bfpackRegressionLinear"
 	}
+	Analysis
+	{
+		menu:   	"Logistic Regression"
+		title:		"Bfpack Logistic Regression"
+		func:			"bfpackRegressionLogistic"
+	}
+
 	Analysis
 	{
 		menu: 		"Correlation"

@@ -15,11 +15,10 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-bfpackRegressionLinear <- function(jaspResults, dataset, options, ...) {
-
+bfpackRegressionLogistic <- function(jaspResults, dataset, options, ...) {
 
   # What type of Bfpack analysis is being conducted?
-  type <- "regression"
+  type <- "regressionLogistic"
 
   # feed back the interactions to qml
   .bfpackFeedbackInteractions(jaspResults, options, type)

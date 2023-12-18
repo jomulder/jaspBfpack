@@ -4,7 +4,7 @@ options <-
   list(
     bfType = "fractional",
     ciLevel = 0.95,
-    coefficientsTable = FALSE,
+    coefficientsTable = TRUE,
     complement = TRUE,
     groupingVariable = "test",
     interactionTerms = list(),
@@ -58,4 +58,13 @@ test_that("Posterior model probability table results match", {
   jaspTools::expect_equal_tables(table,
                                  list("H1", 0.274628490246529, "H2", 0.563980264423834, "H3", 0.161391245329637
                                  ))
+})
+
+test_that("Coefficients table results match", {
+  table <- results[["results"]][["bfpackContainer"]][["collection"]][["bfpackContainer_coefContainer"]][["collection"]][["bfpackContainer_coefContainer_coefficientsTable"]][["data"]]
+  jaspTools::expect_equal_tables(table,
+                                 list("female", 0.928946417051052, 2.975, 2.34406595810759, 8.80245652745594,
+                                      "male", 1.45744037811216, 4.25925925925926, 3.47972940855522,
+                                      11.7241799647805, "non", 2.30077046690569, 5.36923076923077,
+                                      4.73463680355297, 12.1922993366245))
 })

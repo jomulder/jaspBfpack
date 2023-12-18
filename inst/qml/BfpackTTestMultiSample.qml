@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU Affero General Public
 // License along with this program.  If not, see
 // <http://www.gnu.org/licenses/>.
-//
+
 
 import QtQuick
 import QtQuick.Layouts
@@ -24,27 +24,21 @@ import "./common" as Common
 
 Form
 {
-
 	VariablesForm
 	{
+		preferredHeight: 				jaspTheme.smallDefaultVariablesFormHeight
+		
 		AvailableVariablesList
 		{
 			name: 						"variablesList"
 		}
-		
-		AssignedVariablesList
-		{
-			name: 						"dependent"
-			title: 						qsTr("Dependent Variable")
-			singleVariable: 			true
-			allowedColumns: 			["scale"]
-		}
 
 		AssignedVariablesList
 		{
-			name: 						"covariates"
-			title: 						qsTr("Covariates")
-			suggestedColumns: 			["scale"]
+			name: 						"variables"
+			title: 						qsTr("Variables")
+			singleVariable: 			false
+			allowedColumns: 			["scale"]
 		}
 	}
 
@@ -62,13 +56,12 @@ Form
 	}
 
 	Common.HypothesesWindowStandard{
-		parName: qsTr("beta")
+		parName: qsTr("mu")
 	}
 
 	Common.HypothesesWindowManual{}
 
 	Common.Options{
 		bfTy: true
-		interactions: true
 	}
 }
