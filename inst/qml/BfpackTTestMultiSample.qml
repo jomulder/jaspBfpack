@@ -57,6 +57,9 @@ Form
 
 	Common.HypothesesWindowStandard{
 		parName: qsTr("mu")
+		multiTest: true
+		onlyUnequal: true
+		multiVars: "variables"
 	}
 
 	Common.HypothesesWindowManual{}

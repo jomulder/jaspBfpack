@@ -34,7 +34,8 @@ bfpackTTestIndependentSamples <- function(jaspResults, dataset, options, ...) {
 
   # Create a container for the results
   bfpackContainer <- .bfpackCreateContainer(jaspResults,
-                                            deps = c("groupingVariable", "variables", "runAnalysisBox", "seed"))
+                                            deps = c("groupingVariable", "variables", "runAnalysisBox", "seed",
+                                                     "muValue"))
 
   .bfpackGetParameterEstimates(dataList, options, bfpackContainer, ready, type, jaspResults)
 

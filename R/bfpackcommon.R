@@ -138,7 +138,7 @@ gettextf <- function(fmt, ..., domain = NULL)  {
   return(iaString)
 }
 
-# function from Joris (BFpack)
+# function from Joris (BFpack) to get variances interval bounds
 .bfpackBartlettHelper <- function(x, ciLevel) {
   # Step 1: Obtain parameter estimates
   get_est <- BFpack:::get_estimates.bartlett_htest(x)
@@ -179,6 +179,44 @@ gettextf <- function(fmt, ..., domain = NULL)  {
 
 }
 
+# another function from Joris to get the ciLevel bounds for the mv t-test
+.bfpackMultiTTestHelper <- function(x, ciLevel) {
+  x.lm <- x
+  class(x.lm) <- c("mlm","lm")
+  P <- ncol(x.lm$residuals)
+  N <- nrow(x.lm$residuals)
+  K <- length(x.lm$coefficients)/P
+  Xmat <- model.matrix(x.lm)
+  Ymat <- model.matrix(x.lm)%*%x.lm$coefficients + x.lm$residuals
+  tXXi <- solve(t(Xmat)%*%Xmat)
+  BetaHat <- tXXi%*%t(Xmat)%*%Ymat
+  S <- t(Ymat - Xmat%*%BetaHat)%*%(Ymat - Xmat%*%BetaHat)
+  dfN <- N-K-P+1
+  ScaleN <- kronecker(S,tXXi)/(N-K-P+1)
+  meanN <- as.matrix(c(BetaHat))
+  names_coef1 <- row.names(x$coefficients)
+  names_coef2 <- colnames(x$coefficients)
+  names_coef <- unlist(lapply(1:P,function(p){
+    lapply(1:K,function(k){
+      paste0(names_coef1[k],"_on_",names_coef2[p])
+    })
+  }))
+  row.names(meanN) <- names_coef
+  lower <- (1 - ciLevel) / 2
+  upper <- 1 - lower
+  postestimates <- cbind(meanN,meanN,
+                         t(matrix(unlist(lapply(1:length(meanN),function(coef){
+                           ub <- qt(p=upper,df=dfN)*sqrt(ScaleN[coef,coef])+meanN[coef,1]
+                           lb <- qt(p=lower,df=dfN)*sqrt(ScaleN[coef,coef])+meanN[coef,1]
+                           return(c(lb,ub))
+                         })),nrow=2))
+  )
+  row.names(postestimates) <- names_coef
+  colnames(postestimates) <- c("mean", "median", "lower", "upper")
+  postestimates <- postestimates[, c("lower", "upper")]
+  return(postestimates)
+}
+
 
 ####### CHECKS #######
 
@@ -203,6 +241,7 @@ gettextf <- function(fmt, ..., domain = NULL)  {
 # this function needs updating when there is a new analysis added
 # Check if current data allow for analysis
 .bfpackDataReady <- function(dataset, options, type) {
+
   if (type == "independentTTest" || type == "regressionLogistic") {
 
     if (type == "independentTTest") {
@@ -279,12 +318,13 @@ gettextf <- function(fmt, ..., domain = NULL)  {
   # we can just use the fitted object and change the interval, but for t-test we need to change it
   # in the t-test call (or at least it is easiest)
   deps <- switch(type,
-                 "independentTTest" = "ciLevel",
-                 "pairedTTest" = "ciLevel",
-                 "onesampleTTest" = "ciLevel",
+                 "independentTTest" = c("ciLevel", "muValue"),
+                 "pairedTTest" = c("ciLevel", "muValue"),
+                 "onesampleTTest" = c("ciLevel", "muValue"),
                  "anova" = "interactionTerms",
                  "regression" = "interactionTerms",
                  "regressionLogistic"= "interactionTerms",
+                 "multiSampleTTest" = "testValues",
                  NULL)
 
   # estimate the correlation
@@ -360,24 +400,28 @@ gettextf <- function(fmt, ..., domain = NULL)  {
     group1 <- dataset[dataset[[grouping]] == g1, variable]
     group2 <- dataset[dataset[[grouping]] == g2, variable]
     result <- try(bain::t_test(x = group1, y = group2, paired = FALSE, var.equal = FALSE,
-                               conf.level = options[["ciLevel"]]))
+                               conf.level = options[["ciLevel"]], mu = options[["muValue"]]))
 
   } else if (type == "onesampleTTest") {
 
     variable <- decodeColNames(options[["variables"]])
     result <- try(bain::t_test(x = dataset[, variable], paired = FALSE, var.equal = FALSE,
-                               conf.level = options[["ciLevel"]]))
+                               conf.level = options[["ciLevel"]],
+                               mu = options[["muValue"]]))
 
   } else if (type == "pairedTTest") {
     variables <- decodeColNames(unlist(unlist(options[["pairs"]])))
     result <- try(bain::t_test(x = dataset[, variables[1]], y = dataset[, variables[2]],
                                paired = TRUE, var.equal = FALSE,
-                               conf.level = options[["ciLevel"]]))
+                               conf.level = options[["ciLevel"]],
+                               mu = options[["muValue"]]))
 
   } else if (type == "multiSampleTTest") {
 
+    testValues <- sapply(options[["testValues"]], function(x) x[["testValue"]])
     variables <- decodeColNames(options[["variables"]])
-    result <- try(BFpack::mvt_test(Y = dataset[, variables], conf.level = options[["ciLevel"]]))
+    result <- try(BFpack::mvt_test(Y = dataset[, variables], conf.level = options[["ciLevel"]],
+                  null = testValues))
 
   }
 
@@ -519,14 +563,34 @@ gettextf <- function(fmt, ..., domain = NULL)  {
   parameterTable$dependOn("priorProb")
   parameterTable$position <- position
 
-  if (type == "variances") {
-    parameterTable$addColumnInfo(name = "equal", type = "number", title = gettext("Homogeneity of variances"))
-    parameterTable$addColumnInfo(name = "unequal", type = "number", title = gettext("No homogeneity of variances"))
+  if (type %in% c("variances", "multiSampleTTest")) {
+
+    if (type == "variances") {
+      title1 <- gettext("Homogeneity of variances")
+      title2 <- gettext("No homogeneity of variances")
+    } else if (type == "multiSampleTTest") {
+      # testValues <- sapply(options[["testValues"]] function(x) x[["testValue"]]))
+      title1 <- gettext("Pr(=test values)")
+      title2 <- gettext("Pr(≠test values)")
+    }
+    parameterTable$addColumnInfo(name = "equal", type = "number", title = title1)
+    parameterTable$addColumnInfo(name = "unequal", type = "number", title = title2)
+
   } else {
+    if (type %in% c("onesampleTTest", "pairedTTest", "independentTTest")) {
+      title1 <- gettextf("Pr(=%1$s)", options[["muValue"]])
+      title2 <- gettextf("Pr(<%1$s)", options[["muValue"]])
+      title3 <- gettextf("Pr(>%1$s)", options[["muValue"]])
+    } else {
+      title1 <- gettext("Pr(=0)")
+      titel2 <- gettext("Pr(<0)")
+      title3 <- gettext("Pr(>0)")
+    }
+
     parameterTable$addColumnInfo(name = "coefficient", type = "string", title = "")
-    parameterTable$addColumnInfo(name = "equal", type = "number", title = gettext("Pr(=0)"))
-    parameterTable$addColumnInfo(name = "smaller", type = "number", title = gettext("Pr(<0)"))
-    parameterTable$addColumnInfo(name = "larger", type = "number", title = gettext("Pr(>0)"))
+    parameterTable$addColumnInfo(name = "equal", type = "number", title = title1)
+    parameterTable$addColumnInfo(name = "smaller", type = "number", title = title2)
+    parameterTable$addColumnInfo(name = "larger", type = "number", title = title3)
   }
 
 
@@ -537,7 +601,7 @@ gettextf <- function(fmt, ..., domain = NULL)  {
   if (!bfpackContainer$getError()) {
     parPhp <- bfpackContainer[["resultsContainer"]][["resultsState"]]$object$PHP_exploratory
     if (!is.null(parPhp)) {
-      if (type == "variances") {
+      if (type %in% c("variances", "multiSampleTTest")) {
         dtFill <- data.frame(equal = parPhp[1], unequal = parPhp[2])
       } else {
         dtFill <- data.frame(coefficient = rownames(parPhp))
@@ -787,11 +851,6 @@ gettextf <- function(fmt, ..., domain = NULL)  {
     if (!is.null(estimates)) {
       dtFill <- data.frame(coefficient = rownames(estimates))
 
-      # the regular bfpack output has the 95% interval bounds
-      if (type == "variances") {
-        dtFill[, "mean"] <- estimates
-      }
-
       dtFill[, c("mean", "median", "lower", "upper")] <- estimates
 
 
@@ -828,7 +887,14 @@ gettextf <- function(fmt, ..., domain = NULL)  {
           int <- .bfpackBartlettHelper(fitObj, options[["ciLevel"]])
           boundsLow <- int[, 1]
           boundsUp <- int[, 2]
+
+        } else if (type == "multiSampleTTest") {
+          int <- .bfpackMultiTTestHelper(fitObj, options[["ciLevel"]])
+          boundsLow <- int[, 1]
+          boundsUp <- int[, 2]
         }
+
+
         dtFill[, c("lower", "upper")] <- cbind(boundsLow, boundsUp)
       }
 

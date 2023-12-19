@@ -56,6 +56,7 @@ Form
 
 	Common.HypothesesWindowStandard{
 		parName: qsTr("delta")
+		singleMu: true
 	}
 
 	Common.HypothesesWindowManual{}

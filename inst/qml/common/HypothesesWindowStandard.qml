@@ -24,8 +24,17 @@ import JASP.Controls
 Group
 {
 	property string parName: qsTr("mu")
-	property bool bartlett: false
-
+	property bool onlyUnequal: false
+	property bool singleMu: false
+	property bool multiTest: false
+	property var multiVars
+	
+	id: standGroup
+	// so for the tests where the standard hypo has only equal and unequal (bartlett and mvt-test), 
+	// we have zero in the table for the bartlett and a user specified value for the mvt-test
+	property var zeroOrNot: multiTest ? [qsTr("H0: ") + parName + " = " + "test value", qsTr("H1: ") + parName + " ≠ " + "test value"]:
+														[qsTr("H0: ") + parName + " = 0", qsTr("H1: ") + parName + " ≠ 0"]
+		
 	columns: 1
 	// implicitHeight: 140 * preferencesModel.uiScale
 	title: qsTr("Standard hypothesis test")
@@ -35,9 +44,11 @@ Group
 	{
 		implicitHeight: 90 * preferencesModel.uiScale
 		implicitWidth: 200 * preferencesModel.uiScale
-		source: bartlett ? 
-			[{values: [qsTr("H0: ") + parName + " = 0 ", qsTr("H1: ") + parName + " ≠ 0 "]}]:
-			[{values: [qsTr("H0: ") + parName + " = 0 ", qsTr("H1: ") + parName + " < 0 ", qsTr("H2: ") + parName + " > 0 "]}]
+		source: onlyUnequal ? 
+			[{values: standGroup.zeroOrNot }]:
+				singleMu ? [{values: [qsTr("H0: ") + parName +  " = " + muValue.value, qsTr("H1: ") + parName + " < " + muValue.value, qsTr("H2: ") + parName + " > " + muValue.value]}]:
+								[{values: [qsTr("H0: ") + parName +  " = 0 ", qsTr("H1: ") + parName + " < 0 ", qsTr("H2: ") + parName + " > 0 "]}]
+
 		name: "standardHypotheses"
 		// titles: [qsTr("Hypotheses"), qsTr("Prior probabilities")]
 		rowComponent: RowLayout {
@@ -46,8 +57,38 @@ Group
 				implicitWidth: 100 * preferencesModel.uiScale
 				name: "priorProb"
 				fieldWidth: 50
-				defaultValue: bartlett ? "1/2" : "1/3"
+				defaultValue: onlyUnequal ? "1/2" : "1/3"
 			}
 		}
 	}
+
+	DoubleField
+	{
+		visible: singleMu
+		id: muValue
+		name: "muValue"
+		label: qsTr("Test value")
+		defaultValue: 0
+	}
+
+	ComponentsList 
+	{
+		id: testValue
+		visible: multiTest
+		implicitHeight: 90 * preferencesModel.uiScale
+		implicitWidth: 200 * preferencesModel.uiScale
+		source:  multiVars
+		name: "testValues"
+		titles: [qsTr("Test value")]
+		rowComponent: RowLayout {
+			Text { text: rowValue }
+			DoubleField {
+				implicitWidth: 100 * preferencesModel.uiScale
+				name: "testValue"
+				fieldWidth: 50
+				defaultValue: 0
+			}
+		}
+	}
+
 }

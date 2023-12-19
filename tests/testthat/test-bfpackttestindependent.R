@@ -9,6 +9,7 @@ options <-
     groupingVariable = "facExperim",
     interactionTerms = list(),
     iterations = 5000,
+    muValue = 0,
     logScale = TRUE,
     manualHypotheses = list(
       list(name = "difference > 3", priorProbManual = "1/2"),

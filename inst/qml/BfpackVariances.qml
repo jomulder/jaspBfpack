@@ -65,7 +65,7 @@ Form
 
 	Common.HypothesesWindowStandard{
 		parName: qsTr("delta")
-		bartlett: true
+		onlyUnequal: true
 	}
 
 	Common.HypothesesWindowManual{}

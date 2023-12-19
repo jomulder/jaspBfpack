@@ -9,6 +9,7 @@ options <-
       interactionTerms = list(),
       iterations = 5000,
       logScale = FALSE,
+      muValue = 0,
       manualHypotheses = list(
         list(name = ".1<mu<2", priorProbManual = "1/2"),
         list(name = "mu=2", priorProbManual = "1/2")

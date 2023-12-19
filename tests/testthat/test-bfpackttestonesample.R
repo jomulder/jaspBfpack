@@ -8,6 +8,7 @@ options <-
     complement = TRUE,
     interactionTerms = list(),
     iterations = 5000,
+    muValue = 0,
     logScale = TRUE,
     manualHypotheses = list(list(name = "mu<.5", priorProbManual = "1/2")),
     plots = FALSE,
