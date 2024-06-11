@@ -79,7 +79,7 @@ Group
 		implicitWidth: 200 * preferencesModel.uiScale
 		source:  multiVars
 		name: "testValues"
-		titles: [qsTr("Test value")]
+		headerLabels: [qsTr("Test value")]
 		rowComponent: RowLayout {
 			Text { text: rowValue }
 			DoubleField {
