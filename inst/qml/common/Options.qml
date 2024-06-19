@@ -55,7 +55,8 @@ Section
 		ComponentsList 
 		{
 			implicitHeight: 120 * preferencesModel.uiScale
-			headerLabels: [qsTr("Include")]
+			// headerLabels: [qsTr("Include")]
+			titles: [qsTr("Include")]
 			name: "interactionTerms"
 			rSource: "interactionSource"
 			// source: "covariates"

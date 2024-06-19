@@ -583,7 +583,7 @@ gettextf <- function(fmt, ..., domain = NULL)  {
       title3 <- gettextf("Pr(>%1$s)", options[["muValue"]])
     } else {
       title1 <- gettext("Pr(=0)")
-      titel2 <- gettext("Pr(<0)")
+      title2 <- gettext("Pr(<0)")
       title3 <- gettext("Pr(>0)")
     }
 
