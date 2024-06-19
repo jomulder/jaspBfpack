@@ -81,7 +81,6 @@ Group
 		name: "testValues"
 		titles: [qsTr("Test value")]
 		// headerLabels: [qsTr("Test value")]
-
 		rowComponent: RowLayout {
 			Text { text: rowValue }
 			DoubleField {

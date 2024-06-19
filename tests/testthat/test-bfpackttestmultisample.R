@@ -11,7 +11,7 @@ options <-
       logScale = FALSE,
       manualHypotheses = list(
         list(
-          name = "intercept_on_contNormal>intercept_on_contGamma",
+          name = "contNormal>contGamma",
           priorProbManual = "1/2"
         )
       ),
@@ -41,20 +41,19 @@ results <- jaspTools::runAnalysis("bfpackTTestMultiSample", "debug.csv", options
 test_that("Manual hypotheses legend table results match", {
   table <- results[["results"]][["bfpackContainer"]][["collection"]][["bfpackContainer_legendTable"]][["data"]]
   jaspTools::expect_equal_tables(table,
-                                 list("intercept_on_contNormal&gt;intercept_on_contGamma", "H1", "complement",
-                                      "H2"))
+                                 list("contNormal&gt;contGamma", "H1", "complement", "H2"))
 })
 
 test_that("Posterior probabilities when testing individual parameters table results match", {
   table <- results[["results"]][["bfpackContainer"]][["collection"]][["bfpackContainer_parameterTable"]][["data"]]
   jaspTools::expect_equal_tables(table,
-                                 list(2.58215607191317e-27, 1))
+                                 list(2.58215607191321e-27, 1))
 })
 
 test_that("Evidence matrix (BFs) table results match", {
   table <- results[["results"]][["bfpackContainer"]][["collection"]][["bfpackContainer_resultsContainer"]][["collection"]][["bfpackContainer_resultsContainer_matrixTable"]][["data"]]
   jaspTools::expect_equal_tables(table,
-                                 list(1, 9.23271288425205e-20, "H1", 10831052720221253632, 1, "H2"
+                                 list(1, 9.23271288425205e-20, "H1", 10831052720221249536, 1, "H2"
                                  ))
 })
 

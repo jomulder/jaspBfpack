@@ -43,14 +43,14 @@ test_that("Manual hypotheses legend table results match", {
 test_that("Posterior probabilities when testing individual parameters table results match", {
   table <- results[["results"]][["bfpackContainer"]][["collection"]][["bfpackContainer_parameterTable"]][["data"]]
   jaspTools::expect_equal_tables(table,
-                                 list("sales_with_adverts", 6.95682073873284e-19, 1, 7.72749359788928e-21,
-                                      "airplay_with_adverts", 0.613708178203333, 0.350693123974362,
-                                      0.0355986978223052, "attract_with_adverts", 0.681886473207107,
-                                      0.274353007399127, 0.0437605193937661, "airplay_with_sales",
-                                      3.0843992202434e-19, 1, 3.52085617526518e-21, "attract_with_sales",
-                                      2.67708661201684e-05, 0.999972693491486, 5.35642394072382e-07,
-                                      "attract_with_airplay", 0.136679140709066, 0.858340106763328,
-                                      0.00498075252760626))
+                                 list("sales_with_adverts", 1.65201700207213e-17, 1, 2.00666312501266e-19,
+                                      "airplay_with_adverts", 0.574597617593414, 0.3915365627687,
+                                      0.033865819637886, "attract_with_adverts", 0.663207200920249,
+                                      0.292721148440096, 0.0440716506396544, "airplay_with_sales",
+                                      1.15442012027571e-19, 1, 1.31256936240155e-21, "attract_with_sales",
+                                      5.99050833635835e-05, 0.999938779265236, 1.31565140052065e-06,
+                                      "attract_with_airplay", 0.121545899945412, 0.873913703396449,
+                                      0.00454039665813929))
 })
 
 test_that("Posterior probabilities plot matches", {
@@ -68,24 +68,24 @@ test_that("Prior probabilities plot matches", {
 test_that("Evidence matrix (BFs) table results match", {
   table <- results[["results"]][["bfpackContainer"]][["collection"]][["bfpackContainer_resultsContainer"]][["collection"]][["bfpackContainer_resultsContainer_matrixTable"]][["data"]]
   jaspTools::expect_equal_tables(table,
-                                 list(0, -42.0424039108462, -40.1260354383868, "H1", 42.0424039108462,
-                                      0, 1.91636847245935, "H2", 40.1260354383868, -1.91636847245935,
+                                 list(0, -43.5185990619478, -41.5226811470543, "H1", 43.5185990619478,
+                                      0, 1.99591791489352, "H2", 41.5226811470543, -1.99591791489352,
                                       0, "H3"))
 })
 
 test_that("Posterior model probability table results match", {
   table <- results[["results"]][["bfpackContainer"]][["collection"]][["bfpackContainer_resultsContainer"]][["collection"]][["bfpackContainer_resultsContainer_postTable"]][["data"]]
   jaspTools::expect_equal_tables(table,
-                                 list("H1", 1.39768879890665e-19, "H2", 0.253626430277925, "H3", 0.746373569722075
+                                 list("H1", 3.38710922534774e-20, "H2", 0.268977922238213, "H3", 0.731022077761787
                                  ))
 })
 
 test_that("Specification table results match", {
   table <- results[["results"]][["bfpackContainer"]][["collection"]][["bfpackContainer_resultsContainer"]][["collection"]][["bfpackContainer_resultsContainer_specTable"]][["data"]]
   jaspTools::expect_equal_tables(table,
-                                 list(1.90498754505064e-18, 1.90498754505064e-18, 1, 0.334621459725668,
-                                      1, 6.37449713084063e-19, 1, "H1", 3.45681521632752, 1, 3.45681521632752,
-                                      1, 0.166666666666667, 1, 0.57613586938792, "H2", 0.508636956734496,
-                                      1, 0.508636956734496, 1, 0.833333333333333, 1, 0.42386413061208,
+                                 list(4.49881577874035e-19, 4.49881577874035e-19, 1, 0.334621459725668,
+                                      1, 1.50540030291896e-19, 1, "H1", 3.57261027085372, 1, 3.57261027085372,
+                                      1, 0.166666666666667, 1, 0.595435045142286, "H2", 0.485477945829257,
+                                      1, 0.485477945829257, 1, 0.833333333333333, 1, 0.404564954857714,
                                       "H3"))
 })

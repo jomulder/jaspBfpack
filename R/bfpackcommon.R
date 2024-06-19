@@ -420,7 +420,7 @@ gettextf <- function(fmt, ..., domain = NULL)  {
 
     testValues <- sapply(options[["testValues"]], function(x) x[["testValue"]])
     variables <- decodeColNames(options[["variables"]])
-    result <- try(BFpack::mvt_test(Y = dataset[, variables], conf.level = options[["ciLevel"]],
+    result <- try(BFpack::mvt_test(X = dataset[, variables], conf.level = options[["ciLevel"]],
                   null = testValues))
 
   }
