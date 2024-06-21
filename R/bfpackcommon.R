@@ -536,7 +536,13 @@ gettextf <- function(fmt, ..., domain = NULL)  {
                              BF.type = bftype))
 
     if (isTryError(results)) {
-      bfpackContainer$setError(gettextf("Bfpack failed with the following error message: %1$s", jaspBase::.extractErrorMessage(results)))
+
+      if (grepl("parse_hyp$hyp_mat", results, fixed = TRUE)) {
+        bfpackContainer$setError(gettext("Bfpack failed because of an issue with the specification of the manual hypotheses. Please check that you specified them correctly. You probably have to refresh the analysis."))
+      } else {
+        bfpackContainer$setError(gettextf("Bfpack failed with the following error message: %1$s", jaspBase::.extractErrorMessage(results)))
+      }
+
     }
 
     # now saving the results

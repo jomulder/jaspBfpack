@@ -35,7 +35,7 @@ bfpackTTestMultiSample <- function(jaspResults, dataset, options, ...) {
   # Create a container for the results
   bfpackContainer <- .bfpackCreateContainer(jaspResults,
                                             deps = c("variables", "runAnalysisBox", "seed",
-                                                     "testValues"))
+                                                     "testValues", "manualHypotheses"))
 
   .bfpackGetParameterEstimates(dataList, options, bfpackContainer, ready, type, jaspResults)
 

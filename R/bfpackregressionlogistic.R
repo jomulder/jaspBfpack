@@ -33,7 +33,9 @@ bfpackRegressionLogistic <- function(jaspResults, dataset, options, ...) {
   .bfpackDataReady(dataList[["dataset"]], options, type)
 
   # Create a container for the results
-  bfpackContainer <- .bfpackCreateContainer(jaspResults, deps = c("dependent", "covariates", "runAnalysisBox", "seed"))
+  bfpackContainer <- .bfpackCreateContainer(jaspResults,
+                                            deps = c("dependent", "covariates", "runAnalysisBox",
+                                                     "seed", "manualHypotheses"))
 
   .bfpackGetParameterEstimates(dataList, options, bfpackContainer, ready, type, jaspResults)
 

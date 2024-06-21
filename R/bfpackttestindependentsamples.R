@@ -17,8 +17,8 @@
 
 bfpackTTestIndependentSamples <- function(jaspResults, dataset, options, ...) {
 
-  sink("~/Downloads/log.txt")
-  on.exit(sink(NULL))
+  # sink("~/Downloads/log.txt")
+  # on.exit(sink(NULL))
 
   # What type of Bfpack analysis is being conducted?
   type <- "independentTTest"
@@ -35,7 +35,7 @@ bfpackTTestIndependentSamples <- function(jaspResults, dataset, options, ...) {
   # Create a container for the results
   bfpackContainer <- .bfpackCreateContainer(jaspResults,
                                             deps = c("groupingVariable", "variables", "runAnalysisBox", "seed",
-                                                     "muValue"))
+                                                     "muValue", "manualHypotheses"))
 
   .bfpackGetParameterEstimates(dataList, options, bfpackContainer, ready, type, jaspResults)
 
