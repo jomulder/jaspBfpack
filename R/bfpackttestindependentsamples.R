@@ -20,7 +20,7 @@ bfpackTTestIndependentSamples <- function(jaspResults, dataset, options, ...) {
   # sink("~/Downloads/log.txt")
   # on.exit(sink(NULL))
 
-  # What type of Bfpack analysis is being conducted?
+  # What type of BFpack analysis is being conducted?
   type <- "independentTTest"
 
   # Check if current options allow for analysis

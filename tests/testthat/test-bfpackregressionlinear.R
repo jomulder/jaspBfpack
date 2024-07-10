@@ -1,4 +1,4 @@
-context("Bfpack Regression")
+context("BFpack Regression")
 
 options <- list(
   bfType = "adjusted",

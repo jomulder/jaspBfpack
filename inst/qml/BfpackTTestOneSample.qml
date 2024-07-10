@@ -57,13 +57,13 @@ Form
 
 	Common.HypothesesWindowStandard{
 		parName: qsTr("mu")
-		singleMu: true
+		specificMu: true
 
 	}
 
 	Common.HypothesesWindowManual{}
 
 	Common.Options{
-		bfTy: false
+		bfTy: true
 	}
 }

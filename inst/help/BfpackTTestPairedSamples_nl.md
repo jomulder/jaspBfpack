@@ -1,4 +1,4 @@
-Bfpack Gepaarde T-Toets
+BFpack Gepaarde T-Toets
 ==============================
 
 Met de bfpack (Bayesian informative hypothese evaluation) gepaarde t-toets kan de gebruiker de nulhypothese dat de gemiddelden van twee herhaalde metingen gelijk zijn testen tegenover eenzijdige en tweezijdige alternatieve hypotheses. 

@@ -11,7 +11,7 @@ gettextf <- function(fmt, ..., domain = NULL)  {
   return(gsub("\n+", ";", input))
 }
 
-# Add the Bfpack citations
+# Add the BFpack citations
 .bfpackGetCitations <- function() {
   citations <- c(
     "Mulder, J., Williams, D. R., Gu, X., Tomarken, A., Böing-Messing, F., Olsson-Collentine, A., Meijerink, M., Menke, J., Fox, J.-P., Hoijtink, H., Rosseel, Y., Wagenmakers, E.J., and van Lissa, C. (2021). BFpack: Flexible Bayes Factor Testing of Scientific Theories in R. Journal of Statistical Software.",
@@ -108,7 +108,7 @@ gettextf <- function(fmt, ..., domain = NULL)  {
     }
     if ((type == "anova") && length(options[["fixedFactors"]]) > 0) {
       if (any(grepl(pattern = " ", x = levels(dataset[, options[["fixedFactors"]]])))) {
-        jaspBase:::.quitAnalysis(gettext("Bfpack does not accept factor levels that contain spaces. Please remove the spaces from your factor levels to continue."))
+        jaspBase:::.quitAnalysis(gettext("BFpack does not accept factor levels that contain spaces. Please remove the spaces from your factor levels to continue."))
       }
     }
   } else {
@@ -490,9 +490,8 @@ gettextf <- function(fmt, ..., domain = NULL)  {
     estimates <- bfpackContainer[["estimatesState"]]$object
 
     # standard hypotheses priors
-    standHypos <- options[["standardHypotheses"]]
-    # those standard priors should not be allowed to be empty
-    standPrior <- sapply(standHypos, function(x) eval(parse(text = x[["priorProb"]])))
+    standPrior <- sapply(parse(text = c(options[["priorProbStandard"]], options[["priorProbStandard2"]],
+                                        options[["priorProbStandard3"]])), eval)
 
     # check if there are manual hypotheses
     manualHyp <- sapply(options[["manualHypotheses"]], function(x) x[["name"]])
@@ -538,9 +537,9 @@ gettextf <- function(fmt, ..., domain = NULL)  {
     if (isTryError(results)) {
 
       if (grepl("parse_hyp$hyp_mat", results, fixed = TRUE)) {
-        bfpackContainer$setError(gettext("Bfpack failed because of an issue with the specification of the manual hypotheses. Please check that you specified them correctly. You probably have to refresh the analysis."))
+        bfpackContainer$setError(gettext("BFpack failed because of an issue with the specification of the manual hypotheses. Please check that you specified them correctly. You probably have to refresh the analysis."))
       } else {
-        bfpackContainer$setError(gettextf("Bfpack failed with the following error message: %1$s", jaspBase::.extractErrorMessage(results)))
+        bfpackContainer$setError(gettextf("BFpack failed with the following error message: %1$s", jaspBase::.extractErrorMessage(results)))
       }
 
     }
@@ -724,7 +723,8 @@ gettextf <- function(fmt, ..., domain = NULL)  {
 
   if (!is.null(bfpackContainer[["resultsContainer"]][["matrixTable"]])) return()
 
-  matrixTable <- createJaspTable(gettext("Evidence matrix (BFs)"))
+  tbTitle <- ifelse(options[["logScale"]], gettext("Evidence matrix (log BFs)"), gettext("Evidence matrix (BFs)"))
+  matrixTable <- createJaspTable(tbTitle)
   matrixTable$position <- position
 
   matrixTable$addColumnInfo(name = "hypothesis", title = "", type = "string")

@@ -20,7 +20,7 @@ bfpackCorrelation <- function(jaspResults, dataset, options, ...) {
   # sink(file = "~/Downloads/logBf.txt")
   # on.exit(sink(NULL))
 
-  # What type of Bfpack analysis is being conducted?
+  # What type of BFpack analysis is being conducted?
   type <- "correlation"
 
   # apparently JASP can otherwise not find Fcor:

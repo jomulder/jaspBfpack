@@ -1,7 +1,7 @@
-Bfpack Welch test
+BFpack Welch test
 ==========================
 
-The bfpack (Bayesian informative hypotheses evaluation) Welch test allows you test the nul-hypothesis that two means are equal versus one-sided and two-sided alternative hypotheses. An important characteristic of the Bayesian Welch test is that it does NOT assume that the variance of the dependent variable is the same in both groups. Read Hoijtink, Mulder, van Lissa, and Gu (2019) for an introduction to bfpack. Bfpack has been thoroughly debugged, if nevertheless problems are detected they will be posted at https://informative-hypotheses.sites.uu.nl/software/.bfpack/ 
+The bfpack (Bayesian informative hypotheses evaluation) Welch test allows you test the nul-hypothesis that two means are equal versus one-sided and two-sided alternative hypotheses. An important characteristic of the Bayesian Welch test is that it does NOT assume that the variance of the dependent variable is the same in both groups. Read Hoijtink, Mulder, van Lissa, and Gu (2019) for an introduction to bfpack. BFpack has been thoroughly debugged, if nevertheless problems are detected they will be posted at https://informative-hypotheses.sites.uu.nl/software/.bfpack/ 
 
 ### Specification of the bfpack Welch test
 

@@ -1,7 +1,7 @@
-Bfpack Paired Samples t-test
+BFpack Paired Samples t-test
 ==============================
 
-The bfpack (Bayesian informative hypotheses evaluation) Paired Samples t-test allows you test the nulthypothesis that means of two repeated measures are equal versus one-sided and two-sided alternative hypotheses. Read Hoijtink, Mulder, van Lissa, and Gu (2019) for an introduction to bfpack. Bfpack has been thoroughly debugged, if nevertheless problems are detected they will be posted at https://informative-hypotheses.sites.uu.nl/software/bfpack/.
+The bfpack (Bayesian informative hypotheses evaluation) Paired Samples t-test allows you test the nulthypothesis that means of two repeated measures are equal versus one-sided and two-sided alternative hypotheses. Read Hoijtink, Mulder, van Lissa, and Gu (2019) for an introduction to bfpack. BFpack has been thoroughly debugged, if nevertheless problems are detected they will be posted at https://informative-hypotheses.sites.uu.nl/software/bfpack/.
 
 ### Specification of the bfpack Paired Samples t-test
 

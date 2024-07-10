@@ -20,11 +20,15 @@ import QtQuick
 import QtQuick.Layouts
 import JASP
 import JASP.Controls
+import JASP.Widgets
+import QtQuick.Controls  as QTCONTROLS
+
+
 
 Group
 {
 	columns: 1
-	title: qsTr("Manual hypothesis test")
+	title: qsTr("<b>Manual hypothesis test</b>")
 
 	ComponentsList {
 		name: "hiddenNames"
@@ -33,10 +37,31 @@ Group
 		rSource: "estimateNamesForQml"
 		visible: false
 	}
-	Text { text: qsTr("Once you drag variables to the analysis window the names \nof the estimates that you may use to specify manual \nhypotheses will display here:") }
+
+	RowLayout {
+		Text {
+			text: qsTr("<b>Parameters:</b>")
+			MouseArea
+			{
+					id: mouseAreaA
+					anchors.fill: parent
+					cursorShape: Qt.IBeamCursor
+					hoverEnabled: true
+			}
+			QTCONTROLS.ToolTip.visible: mouseAreaA.containsMouse
+			//QTCONTROLS.ToolTip.delay: 300
+			QTCONTROLS.ToolTip.text: qsTr("The parameters that can be tested will appear here once you have entered variables into the analysis")	
+		}
+		HelpButton
+		{
+			toolTip: 					qsTr("Click for more information")
+			helpPage:					"forQml/tooltip"
+		}
+	}
+
 	Flow
 	{
-		width: parent.width
+		// width: parent.width
 		// anchors.margins: 1
 		spacing: 5
 		Repeater
@@ -51,7 +76,6 @@ Group
 		}
 	}
 
-	Text { text: qsTr("<b>An example may be</b>: ")}
 
 	InputListView
 	{
@@ -62,27 +86,27 @@ Group
 		placeHolder			: qsTr("New hypothesis")
 		minRows				: 1
 
-		// preferredWidth		: (2*form.width)/3
+		// preferredWidth: 100 * preferencesModel.uiScale
 		preferredHeight: 100 * preferencesModel.uiScale
-		rowComponentTitle	: qsTr("Prior probabilities")
+		rowComponentTitle	: qsTr("Prior weights")
 		rowComponent: FormulaField
 		{
-			fieldWidth: 60
+			fieldWidth: 40
 			name: "priorProbManual"
-			defaultValue: "1/2"
+			defaultValue: "1"
 		}
 	}
 
 	CheckBox {
 		name: "complement"
-		label: qsTr("Complement:")
+		label: qsTr("Complement:		                       ")
 		checked: true
 		childrenOnSameRow: true
 		FormulaField {
-			fieldWidth: 60
+			fieldWidth: 40
 			name: "priorProbComplement"
-			label: qsTr("Prior Probability")
-			defaultValue: "1/2"
+			// label: qsTr("Prior weight")
+			defaultValue: "1"
 		}
 	}
 }

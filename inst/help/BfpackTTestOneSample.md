@@ -1,7 +1,7 @@
-Bfpack One Sample t-test
+BFpack One Sample t-test
 ==========================
 
-The bfpack (Bayesian informative hypotheses evaluation) One Sample t-test allows you test the null-hypothesis that the mean of a variable is equal to a reference value versus one-sided and two-sided alternative hypotheses. Read Hoijtink, Mulder, van Lissa, and Gu (2019) for an introduction to bfpack. Bfpack has been thoroughly debugged, if nevertheless problems are detected they will be posted at https://informative-hypotheses.sites.uu.nl/software/bfpack/.
+The bfpack (Bayesian informative hypotheses evaluation) One Sample t-test allows you test the null-hypothesis that the mean of a variable is equal to a reference value versus one-sided and two-sided alternative hypotheses. Read Hoijtink, Mulder, van Lissa, and Gu (2019) for an introduction to bfpack. BFpack has been thoroughly debugged, if nevertheless problems are detected they will be posted at https://informative-hypotheses.sites.uu.nl/software/bfpack/.
 
 ### Specification of the bfpack One Sample t-test
 

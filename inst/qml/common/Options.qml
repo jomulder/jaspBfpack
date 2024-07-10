@@ -29,6 +29,88 @@ Section
 
 	title: 	qsTr("Options")
 
+	Group
+	{
+		title: qsTr("Bayes Factor")
+		// Layout.rowSpan: 2
+
+		CheckBox
+		{
+			name: "logScale"
+			label: qsTr("Log scale")
+		}
+
+		RadioButtonGroup
+		{
+			visible: bfTy
+			name: "bfType"
+			title: qsTr("Bayes factor type")
+			radioButtonsOnSameRow: false
+			RadioButton { value: "fractional"; label: qsTr("Fractional Bayes factor"); checked: true}
+			RadioButton { value: "adjusted"; label: qsTr("Adjusted fractional Bayes factor")}
+		}
+	}
+	Group
+	{
+		title: 							qsTr("Tables")
+
+		CheckBox 
+		{
+			name: "specificationTable"
+			text: qsTr("Specification")
+		}
+
+		CheckBox
+		{
+			name: 						"coefficientsTable"
+			text: 						qsTr("Estimates with uncertainty interval")
+			childrenOnSameRow: true
+
+			CIField
+			{
+				name: 					"ciLevel"
+			}
+		}
+	}
+
+	Group
+	{
+		
+		title: qsTr("Plots")
+		CheckBox
+		{
+			name: 						"plots"
+			text: 						qsTr("Manual hypotheses plots")
+		}
+	}
+
+
+	Group
+	{
+		title: 							qsTr("Additional Options")
+
+		IntegerField
+		{
+			visible: iterations
+			name: "iterations"
+			text: qsTr("No. iterations for parameter estimation")
+			defaultValue: 5000
+			min: 2000
+			fieldWidth: 60 * preferencesModel.uiScale
+
+		}
+
+		DoubleField
+		{
+			name: 						"seed"
+			text: 						qsTr("Seed")
+			defaultValue: 				100
+			min: 						-999999
+			max: 						999999
+			fieldWidth: 				60 * preferencesModel.uiScale
+		}
+	}
+
 	Group 
 	{
 		title: qsTr("Interaction terms")
@@ -55,8 +137,8 @@ Section
 		ComponentsList 
 		{
 			implicitHeight: 120 * preferencesModel.uiScale
-			// headerLabels: [qsTr("Include")]
-			titles: [qsTr("Include")]
+			headerLabels: [qsTr("Include")]
+			// titles: [qsTr("Include")]
 			name: "interactionTerms"
 			rSource: "interactionSource"
 			// source: "covariates"
@@ -64,87 +146,6 @@ Section
 				Text {Layout.preferredWidth: 200; text: rowValue; visible: true}
 				CheckBox {Layout.preferredWidth: 100; name: "includeInteractionEffect"; checked:true}
 			}
-		}
-	}
-
-	Group
-	{
-		title: qsTr("Bayes Factor")
-		// Layout.rowSpan: 2
-
-		CheckBox
-		{
-			name: "logScale"
-			label: qsTr("On log scale")
-		}
-
-		RadioButtonGroup
-		{
-			visible: bfTy
-			name: "bfType"
-			title: qsTr("Type")
-			radioButtonsOnSameRow: false
-			RadioButton { value: "fractional"; label: qsTr("Fractional"); checked: true}
-			RadioButton { value: "adjusted"; label: qsTr("Adjusted fractional")}
-		}
-	}
-	Group
-	{
-		title: 							qsTr("Tables")
-
-		CheckBox 
-		{
-			name: "specificationTable"
-			text: qsTr("Specification")
-		}
-
-		CheckBox
-		{
-			name: 						"coefficientsTable"
-			text: 						qsTr("Coefficients")
-
-			CIField
-			{
-				name: 					"ciLevel"
-				text: 					qsTr("Uncertainty interval")
-			}
-		}
-	}
-
-	Group
-	{
-		
-		title: qsTr("Plots")
-		CheckBox
-		{
-			name: 						"plots"
-			text: 						qsTr("Manual hypotheses plots")
-		}
-	}
-
-	Group
-	{
-		title: 							qsTr("Additional Options")
-
-		IntegerField
-		{
-			visible: iterations
-			name: "iterations"
-			text: qsTr("No. iterations for parameter estimation")
-			defaultValue: 5000
-			min: 2000
-			fieldWidth: 60 * preferencesModel.uiScale
-
-		}
-
-		DoubleField
-		{
-			name: 						"seed"
-			text: 						qsTr("Seed")
-			defaultValue: 				100
-			min: 						-999999
-			max: 						999999
-			fieldWidth: 				60 * preferencesModel.uiScale
 		}
 	}
 }

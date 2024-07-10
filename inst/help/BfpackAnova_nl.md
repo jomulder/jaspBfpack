@@ -1,4 +1,4 @@
-Bfpack ANOVA
+BFpack ANOVA
 ==========================
 
 Met de bfpack (Bayesian informative hypotheses evaluation) ANOVA kan de gebruiker (informatieve) hypotheses evalueren met de Bayes factor. Een eenvoudig voorbeeld hiervan is de Bayesiaanse evaluatie van H0: m1 = m2 = m3 versus H1: m1 > m2 > m3 versus Hu: geen beperkingen rondom de drie gemiddeldes.
@@ -33,7 +33,7 @@ Hypotheses moeten compatibel, niet-overbodig en mogelijk zijn. Wat dit precies i
 - Vervang in elke hypothese de < en > met =. Bijvoorbeeld: `agey = agem > ageo` wordt `agey = agem = ageo`.
 - De hypotheses zijn compatibel wanneer er op zijn minst een oplossing is op de resulterende set vergelijkingen. Voor de twee hypotheses genoemd hierboven, de oplossing is `agey = agem = ageo = 2`. Een voorbeeld van niet compatibele hypotheses is `agey = 0` en `agey > 2`, omdat er geen oplossing is voor de vergelijkingen `agey=0` en `agey=2`.
 
-*Elke hypothese in een set van hypotheses moet niet-overbodig zijn.* Een hypothese is overbodig wanneer hij ook kan worden gespecificeerd met minder beperkingen. Bijvoorbeeld: `agey = agem & agey > 0 & agem > 0` is overbodig, omdat deze ook gespecificeerd kan worden als `agey = agem & agey > 0`. Bfpack werkt correct wanneer alleen hypotheses met < en > overbodig zijn. Bfpack geeft een foutmelding wanneer een hypothese gespecificeerd met op zijn minst een = overbodig is. 
+*Elke hypothese in een set van hypotheses moet niet-overbodig zijn.* Een hypothese is overbodig wanneer hij ook kan worden gespecificeerd met minder beperkingen. Bijvoorbeeld: `agey = agem & agey > 0 & agem > 0` is overbodig, omdat deze ook gespecificeerd kan worden als `agey = agem & agey > 0`. BFpack werkt correct wanneer alleen hypotheses met < en > overbodig zijn. BFpack geeft een foutmelding wanneer een hypothese gespecificeerd met op zijn minst een = overbodig is. 
 
 *Elke hypothese in een hypothese set moet mogelijk zijn.* Een hypothese is onmogelijk wanneer schattingen die overeenkomen met de hypothese niet bestaan. Bijvoorbeeld: waarden voor `agey` die overeenkomen met `agey = 0 & agey > 2` bestaan niet. Het is de verantwoordelijkheid van de gebruiker dat de gespecificeerde hypotheses mogelijk zijn. Zo niet, dan geeft bfpack een foutmelding, of een uitvoer tabel met `inf`'s. 
 

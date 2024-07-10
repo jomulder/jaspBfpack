@@ -1,4 +1,4 @@
-context("Bfpack Logistic Regression")
+context("BFpack Logistic Regression")
 
 options <-
   list(

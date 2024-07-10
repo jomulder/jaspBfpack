@@ -1,4 +1,4 @@
-context("Bfpack Variances")
+context("BFpack Variances")
 
 options <-
   list(

@@ -1,4 +1,4 @@
-context("Bfpack ANOVA")
+context("BFpack ANOVA")
 
 options <- list(
   coefficientsTable = FALSE,

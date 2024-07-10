@@ -1,4 +1,4 @@
-context("Bfpack Independent T-Test")
+context("BFpack Independent T-Test")
 
 options <-
   list(

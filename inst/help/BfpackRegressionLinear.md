@@ -1,7 +1,7 @@
-Bfpack Linear Regression
+BFpack Linear Regression
 ==========================
 
-Bfpack (Bayesian informative hypotheses evaluation)  linear regression allows you to evaluate (informative) hypotheses using the Bayes factor. A simple example would be the Bayesian evaluation of H0: b1 = b2 = b3 versus H1: b1 > b2 > b3 versus Hu: no restrictions on the three regression coefficients. Read Hoijtink, Mulder, van Lissa, and Gu (2019) for an introduction to bfpack. Bfpack has been thoroughly debugged, if nevertheless problems are detected they will be posted at https://informative-hypotheses.sites.uu.nl/software/bfpack/.
+BFpack (Bayesian informative hypotheses evaluation)  linear regression allows you to evaluate (informative) hypotheses using the Bayes factor. A simple example would be the Bayesian evaluation of H0: b1 = b2 = b3 versus H1: b1 > b2 > b3 versus Hu: no restrictions on the three regression coefficients. Read Hoijtink, Mulder, van Lissa, and Gu (2019) for an introduction to bfpack. BFpack has been thoroughly debugged, if nevertheless problems are detected they will be posted at https://informative-hypotheses.sites.uu.nl/software/bfpack/.
 
 ### Specification of the bfpack Linear Regression
 

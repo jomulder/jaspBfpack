@@ -1,4 +1,4 @@
-context("Bfpack Correlation")
+context("BFpack Correlation")
 
 options <- list(
     bfType = "fractional",

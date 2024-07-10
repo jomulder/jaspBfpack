@@ -18,7 +18,7 @@
 bfpackAnova <- function(jaspResults, dataset, options, ...) {
 
 
-  # What type of Bfpack analysis is being conducted?
+  # What type of BFpack analysis is being conducted?
   type <- "anova"
 
   # feed back the interactions to qml

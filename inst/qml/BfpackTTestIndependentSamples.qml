@@ -20,6 +20,7 @@ import QtQuick
 import QtQuick.Layouts
 import JASP
 import JASP.Controls
+import JASP.Widgets
 import "./common" as Common
 
 Form
@@ -46,7 +47,7 @@ Form
 			name: 						"groupingVariable"
 			title: 						qsTr("Grouping Variable")
 			singleVariable: 			true
-			allowedColumns: 			["nominal", "nominalText"]
+			allowedColumns: 			["nominal"]
 		}
 	}
 
@@ -57,20 +58,33 @@ Form
 		name: 					"runAnalysisBox"
 		label: 					qsTr("<b>Run Analysis</b>")
 		checked: 				false
+		visible: 				true
 		Component.onCompleted:
 		{
 			background.color = "#ff8600"
 		}
 	}
+	// Button
+	// {
+	// 	Layout.columnSpan: 2
+	// 	// anchors.right:						toSampling.left
+	// 	anchors.rightMargin:	jaspTheme.generalAnchorMargin
+	// 	text:				qsTr("<b>Run Analysis</b>")
+	// 	onClicked:	runAnalysisBox.checked = true
+	// }
+
 
 	Common.HypothesesWindowStandard{
 		parName: qsTr("delta")
-		singleMu: true
+		specificMu: true
 	}
 
 	Common.HypothesesWindowManual{}
+	
+
 
 	Common.Options{
-		bfTy: false
+		bfTy: true
 	}
+	
 }

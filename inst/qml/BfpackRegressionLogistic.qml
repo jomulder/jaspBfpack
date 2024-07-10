@@ -68,7 +68,7 @@ Form
 	Common.HypothesesWindowManual{}
 
 	Common.Options{
-		bfTy: true
+		bfTy: false
 		interactions: true
 	}
 }

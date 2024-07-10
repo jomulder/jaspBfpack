@@ -55,12 +55,36 @@ Form
 		}
 	}
 
-	Common.HypothesesWindowStandard{
-		parName: qsTr("mu")
-		multiTest: true
-		onlyUnequal: true
-		multiVars: "variables"
+
+
+	ColumnLayout 
+	{
+		Common.HypothesesWindowStandard{
+			parName: qsTr("mu")
+			multiTest: true
+			onlyUnequal: true
+		}
+		ComponentsList 
+		{
+			title: qsTr("Specify test value")
+			id: testValues
+			visible: multiTest
+			implicitHeight: 90 * preferencesModel.uiScale
+			// implicitWidth: 200 * preferencesModel.uiScale
+			source:  "variables"
+			name: "testValues"
+			rowComponent: RowLayout {
+				Text { text: rowValue }
+				DoubleField {
+					// implicitWidth: 100 * preferencesModel.uiScale
+					name: "testValue"
+					fieldWidth: 50
+					defaultValue: 0
+				}
+			}
+		}
 	}
+	
 
 	Common.HypothesesWindowManual{}
 

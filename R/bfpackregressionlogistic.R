@@ -17,7 +17,7 @@
 
 bfpackRegressionLogistic <- function(jaspResults, dataset, options, ...) {
 
-  # What type of Bfpack analysis is being conducted?
+  # What type of BFpack analysis is being conducted?
   type <- "regressionLogistic"
 
   # feed back the interactions to qml

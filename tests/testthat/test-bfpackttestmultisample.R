@@ -1,4 +1,4 @@
-context("Bfpack Multivariate One Sample T-Test")
+context("BFpack Multivariate One Sample T-Test")
 
 options <-
     list(
