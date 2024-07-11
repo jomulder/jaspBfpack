@@ -33,7 +33,7 @@ Group
     title: qsTr("<b>Standard hypothesis test</b>")
     columns: specificMu ? 3 : 2
     // implicitHeight: 100 * preferencesModel.uiScale
-    implicitWidth: 250 * preferencesModel.uiScale
+    // implicitWidth: 250 * preferencesModel.uiScale
 
     /* so we check if we need three rows or two rows, using the onlyUnequal property which denotes the two row case
      if that is the case, we check if we are doing a multivariate test, in which case we use the palceholder "test value" which can be
