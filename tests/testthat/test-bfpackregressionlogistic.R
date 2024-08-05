@@ -4,7 +4,7 @@ options <-
   list(
     bfType = "adjusted",
     ciLevel = 0.95,
-    coefficientsTable = TRUE,
+    estimatesTable = TRUE,
     complement = TRUE,
     covariates = c("contNormal", "contcor1"),
     dependent = "contBinom",
@@ -40,7 +40,7 @@ results <- jaspTools::runAnalysis("bfpackRegressionLogistic", "debug.csv", optio
 
 
 test_that("Coefficients table results match", {
-  table <- results[["results"]][["bfpackContainer"]][["collection"]][["bfpackContainer_coefContainer"]][["collection"]][["bfpackContainer_coefContainer_coefficientsTable"]][["data"]]
+  table <- results[["results"]][["bfpackContainer"]][["collection"]][["bfpackContainer_coefContainer"]][["collection"]][["bfpackContainer_coefContainer_estimatesTable"]][["data"]]
   jaspTools::expect_equal_tables(table,
                                  list("(Intercept)", -0.727543388672256, -0.298554865863755, -0.298554865863755,
                                       0.130433656944746, "contNormal", -0.497926596040128, -0.0668697011221928,

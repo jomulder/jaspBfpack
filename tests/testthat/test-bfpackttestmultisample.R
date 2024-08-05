@@ -4,7 +4,7 @@ options <-
     list(
       bfType = "fractional",
       ciLevel = 0.95,
-      coefficientsTable = FALSE,
+      estimatesTable = FALSE,
       complement = TRUE,
       interactionTerms = list(),
       iterations = 5000,

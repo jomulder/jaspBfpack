@@ -4,7 +4,7 @@ options <-
     list(
       bfType = "fractional",
       ciLevel = 0.95,
-      coefficientsTable = TRUE,
+      estimatesTable = TRUE,
       complement = TRUE,
       interactionTerms = list(),
       iterations = 5000,
@@ -34,7 +34,7 @@ results <- jaspTools::runAnalysis("bfpackTTestPairedSamples", "debug.csv", optio
 
 
 test_that("Coefficients table results match", {
-  table <- results[["results"]][["bfpackContainer"]][["collection"]][["bfpackContainer_coefContainer"]][["collection"]][["bfpackContainer_coefContainer_coefficientsTable"]][["data"]]
+  table <- results[["results"]][["bfpackContainer"]][["collection"]][["bfpackContainer_coefContainer"]][["collection"]][["bfpackContainer_coefContainer_estimatesTable"]][["data"]]
   jaspTools::expect_equal_tables(table,
                                  list("mu", -1.84207727029991, -2.22170938375, -2.22170938375, -2.60134149720009
                                  ))

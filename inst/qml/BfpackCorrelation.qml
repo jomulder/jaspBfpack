@@ -64,5 +64,29 @@ Form
 	Common.Options{
 		bfTy: false
 		iterations: true
+		multigroup: true
+	}
+
+	Section 
+	{
+		title: qsTr("Covariates")
+		VariablesForm
+		{
+			implicitHeight: 150 * preferencesModel.uiScale
+
+			AvailableVariablesList
+			{
+				name: 						"covariatesList"
+				source: 					"variablesList"
+			}
+			
+			AssignedVariablesList
+			{
+				name: 								"covariates"
+				singleVariable: 			false
+				allowedColumns: 			["scale", "ordinal"]
+			}
+		}
+	
 	}
 }

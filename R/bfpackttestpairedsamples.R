@@ -51,7 +51,7 @@ bfpackTTestPairedSamples <- function(jaspResults, dataset, options, ...) {
   .bfpackSpecificationTable(options, bfpackContainer, type, position = 5)
 
   # coefficients table
-  .bfpackCoefficientsTable(options, bfpackContainer, type)
+  .bfpackEstimatesTable(options, bfpackContainer, type)
 
   # Create the prior and posterior probability plots
   .bfpackPriorPosteriorPlot(options, bfpackContainer, type)

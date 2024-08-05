@@ -17,8 +17,8 @@
 
 bfpackCorrelation <- function(jaspResults, dataset, options, ...) {
 
-  # sink(file = "~/Downloads/logBf.txt")
-  # on.exit(sink(NULL))
+  sink(file = "~/Downloads/log.txt")
+  on.exit(sink(NULL))
 
   # What type of BFpack analysis is being conducted?
   type <- "correlation"
@@ -37,14 +37,14 @@ bfpackCorrelation <- function(jaspResults, dataset, options, ...) {
 
   # Create a container for the results
   bfpackContainer <- .bfpackCreateContainer(jaspResults, deps = c("variables", "seed", "runAnalysisBox", "iterations",
-                                                                  "manualHypotheses"))
+                                                                  "manualHypotheses", "group", "covariates"))
 
   .bfpackGetParameterEstimates(dataList, options, bfpackContainer, ready, type, jaspResults)
 
   # compute the results, aka BFs
   .bfpackComputeResults(dataList, options, bfpackContainer, ready, type)
 
-  .bfpackParameterTable(options, bfpackContainer, type, position = 1)
+  .bfpackParameterTable(options, bfpackContainer, type, dataset = dataList[["dataset"]], position = 1)
 
   # Create a legend containing the order constrained hypotheses
   .bfpackLegendTable(options, type, bfpackContainer, position = 2)
@@ -56,7 +56,7 @@ bfpackCorrelation <- function(jaspResults, dataset, options, ...) {
   .bfpackSpecificationTable(options, bfpackContainer, type, position = 5)
 
   # coefficients table
-  .bfpackCoefficientsTable(options, bfpackContainer, type, position = 6)
+  .bfpackEstimatesTable(options, bfpackContainer, type, position = 6)
 
   # Create the prior and posterior probability plots
   .bfpackPriorPosteriorPlot(options, bfpackContainer, type)

@@ -17,6 +17,8 @@
 
 bfpackRegressionLinear <- function(jaspResults, dataset, options, ...) {
 
+  sink("~/Downloads/log.txt")
+  on.exit(sink(NULL))
 
   # What type of BFpack analysis is being conducted?
   type <- "regression"
@@ -55,7 +57,7 @@ bfpackRegressionLinear <- function(jaspResults, dataset, options, ...) {
   .bfpackSpecificationTable(options, bfpackContainer, type, position = 5)
 
   # coefficients table
-  .bfpackCoefficientsTable(options, bfpackContainer, type)
+  .bfpackEstimatesTable(options, bfpackContainer, type)
 
   # Create the prior and posterior probability plots
   .bfpackPriorPosteriorPlot(options, bfpackContainer, type)

@@ -3,7 +3,7 @@ context("BFpack Regression")
 options <- list(
   bfType = "adjusted",
   ciLevel = 0.95,
-  coefficientsTable = TRUE,
+  estimatesTable = TRUE,
   complement = TRUE,
   covariates = c("adverts", "airplay", "attract"),
   dependent = "sales",
@@ -29,7 +29,7 @@ results <- jaspTools::runAnalysis("bfpackRegressionLinear", "sales.csv", options
 
 
 test_that("Coefficients table results match", {
-  table <- results[["results"]][["bfpackContainer"]][["collection"]][["bfpackContainer_coefContainer"]][["collection"]][["bfpackContainer_coefContainer_coefficientsTable"]][["data"]]
+  table <- results[["results"]][["bfpackContainer"]][["collection"]][["bfpackContainer_coefContainer"]][["collection"]][["bfpackContainer_coefContainer_estimatesTable"]][["data"]]
   jaspTools::expect_equal_tables(table,
                                  list("(Intercept)", 7.60369294828812, -26.6129583616794, -26.6129583616794,
                                       -60.8296096716469, "adverts", 0.098537992105009, 0.0848848251534776,

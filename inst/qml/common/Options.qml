@@ -26,6 +26,7 @@ Section
 	property bool bfTy: true
 	property bool iterations: false
 	property bool interactions: false
+	property bool multigroup: false
 
 	title: 	qsTr("Options")
 
@@ -46,8 +47,9 @@ Section
 			name: "bfType"
 			title: qsTr("Bayes factor type")
 			radioButtonsOnSameRow: false
-			RadioButton { value: "fractional"; label: qsTr("Fractional Bayes factor"); checked: true}
-			RadioButton { value: "adjusted"; label: qsTr("Adjusted fractional Bayes factor")}
+			RadioButton { value: "adjusted"; label: qsTr("Adjusted fractional Bayes factor"); checked: true}
+			RadioButton { value: "fractional"; label: qsTr("Fractional Bayes factor")}
+
 		}
 	}
 	Group
@@ -62,7 +64,7 @@ Section
 
 		CheckBox
 		{
-			name: 						"coefficientsTable"
+			name: 						"estimatesTable"
 			text: 						qsTr("Estimates with uncertainty interval")
 			childrenOnSameRow: true
 
@@ -148,4 +150,17 @@ Section
 			}
 		}
 	}
+
+	Group {
+		visible: multigroup
+		title: qsTr("Multigroup")
+		DropDown
+		{
+			label: qsTr("Grouping variable");
+			name: "group";
+			showVariableTypeIcon: true;
+			addEmptyValue: true;
+		} // No model: it takes all variables per default
+	}
+
 }

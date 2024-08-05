@@ -1,7 +1,7 @@
 context("BFpack ANOVA")
 
 options <- list(
-  coefficientsTable = FALSE,
+  estimatesTable = FALSE,
   complement = TRUE,
   logScale = FALSE,
   covariates = "facFive",
@@ -91,7 +91,7 @@ test_that("Posterior model probability table results match", {
 options <- list(
   bfType = "fractional",
   ciLevel = 0.95,
-  coefficientsTable = FALSE,
+  estimatesTable = FALSE,
   complement = TRUE,
   covariates = list(),
   dependent = c("contNormal", "contGamma"),

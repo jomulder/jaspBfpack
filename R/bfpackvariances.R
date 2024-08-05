@@ -17,8 +17,8 @@
 
 bfpackVariances <- function(jaspResults, dataset, options, ...) {
 
-  # sink(file = "~/Downloads/logBf.txt")
-  # on.exit(sink(NULL))
+  sink(file = "~/Downloads/logBf.txt")
+  on.exit(sink(NULL))
 
   # What type of BFpack analysis is being conducted?
   type <- "variances"
@@ -34,7 +34,7 @@ bfpackVariances <- function(jaspResults, dataset, options, ...) {
 
   # Create a container for the results
   bfpackContainer <- .bfpackCreateContainer(jaspResults, deps = c("variables", "seed", "runAnalysisBox",
-                                                                  "manualHypotheses"))
+                                                                  "manualHypotheses", "groupingVariable"))
 
   .bfpackGetParameterEstimates(dataList, options, bfpackContainer, ready, type, jaspResults)
 
@@ -53,7 +53,7 @@ bfpackVariances <- function(jaspResults, dataset, options, ...) {
   .bfpackSpecificationTable(options, bfpackContainer, type, position = 5)
 
   # coefficients table
-  .bfpackCoefficientsTable(options, bfpackContainer, type, position = 6)
+  .bfpackEstimatesTable(options, bfpackContainer, type, position = 6)
 
   # Create the prior and posterior probability plots
   .bfpackPriorPosteriorPlot(options, bfpackContainer, type)

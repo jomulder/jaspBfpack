@@ -3,7 +3,7 @@ context("BFpack Correlation")
 options <- list(
     bfType = "fractional",
     ciLevel = 0.95,
-    coefficientsTable = FALSE,
+    estimatesTable = FALSE,
     complement = TRUE,
     logScale = TRUE,
     manualHypotheses = list(

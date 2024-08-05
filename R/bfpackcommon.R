@@ -1,11 +1,5 @@
 ############ HELPERS ##########
 
-# This is a temporary fix
-# TODO: remove it when R will solve this problem!
-gettextf <- function(fmt, ..., domain = NULL)  {
-  return(sprintf(gettext(fmt, domain = domain), ...))
-}
-
 # Clean the input for the order constraints
 .bfpackCleanModelInput <- function(input) {
   return(gsub("\n+", ";", input))
@@ -78,7 +72,7 @@ gettextf <- function(fmt, ..., domain = NULL)  {
     "independentTTest" = unlist(options[["variables"]]),
     "anova" = c(unlist(options[["dependent"]]), unlist(options[["covariates"]])),
     "regression" = c(options[["dependent"]], unlist(options[["covariates"]])),
-    "correlation" = unlist(options[["variables"]]),
+    "correlation" = c(unlist(options[["variables"]]), unlist(options[["covariates"]])),
     "variances" = options[["variables"]],
     "regressionLogistic" = unlist(options[["covariates"]]),
     "multiSampleTTest" = unlist(options[["variables"]])
@@ -91,7 +85,8 @@ gettextf <- function(fmt, ..., domain = NULL)  {
     "anova" = unlist(options[["fixedFactors"]]),
     "regression" = NULL,
     "variances" = options[["groupingVariable"]],
-    "regressionLogistic" = options[["dependent"]]
+    "regressionLogistic" = options[["dependent"]],
+    "correlation" = options[["group"]]
     )
   factors <- factors[factors != ""]
   vars <- c(numerics, factors)
@@ -120,7 +115,6 @@ gettextf <- function(fmt, ..., domain = NULL)  {
   readList[["missing"]] <- missing
   return(readList)
 }
-
 
 .bfpackUnwrapInteractions <- function(options) {
 
@@ -248,13 +242,15 @@ gettextf <- function(fmt, ..., domain = NULL)  {
       factors <- options[["groupingVariable"]]
     } else if (type == "regressionLogistic") {
       factors <- options[["dependent"]]
+    } else if (type == "correlation") {
+      factors <- options[["group"]]
     }
 
     factors <- factors[factors != ""]
     if (length(factors) > 0) {
       .hasErrors(dataset,
         type = "factorLevels",
-        factorLevels.target = factors, factorLevels.amount = "!= 2",
+        factorLevels.target = factors, factorLevels.amount = '< 2',
         exitAnalysisIfErrors = TRUE
       )
     }
@@ -266,7 +262,7 @@ gettextf <- function(fmt, ..., domain = NULL)  {
     "independentTTest" = options[["variables"]],
     "anova" = options[["dependent"]],
     "regression" = c(options[["dependent"]], unlist(options[["covariates"]])),
-    "correlation" = unlist(options[["variables"]]),
+    "correlation" = c(unlist(options[["variables"]]), unlist(options[["covariates"]])),
     "variances" = unlist(options[["variables"]]),
     "regressionLogisitic" = unlist(options[["covariates"]]),
     "multiSampleTTest" = unlist(options[["variables"]]))
@@ -329,7 +325,43 @@ gettextf <- function(fmt, ..., domain = NULL)  {
 
   # estimate the correlation
   if (type == "correlation") {
-    result <- try(BFpack::cor_test(dataset))
+
+    covariates <- unlist(options[["covariates"]])
+    covariates <- decodeColNames(covariates)
+
+    if (length(covariates) > 0) {
+      form <- eval(parse(text = paste0("~", paste0(covariates, collapse = "+"))))
+    } else {
+      form <- NULL
+    }
+
+    if (options[["group"]] == "") {
+      result <- try(BFpack::cor_test(dataset, formula = form))
+
+    } else {
+      groupName <- decodeColNames(options[["group"]])
+      levs <- levels(dataset[[groupName]])
+      dataNames <- vector("character", 0L)
+      for (i in 1:length(levs)) {
+        if (length(covariates) > 0) {
+          select <- c(decodeColNames(options[["variables"]]), covariates)
+        } else {
+          select <- c(decodeColNames(options[["variables"]]))
+        }
+        dtmp <- subset(dataset,
+                       subset = eval(parse(text = groupName)) == levs[i],
+                       select = select)
+        # create the data frames in the environment
+        assign(paste0("dtGroup", i), dtmp)
+        dataNames <- c(dataNames, paste0("dtGroup", i))
+      }
+      dataString <- paste0(dataNames, collapse = ",")
+      # this is a bit hacky, because cor_test takes multiple data frames names separated by commas,
+      # but we do not know how many...
+      cor_test_call <- paste("try(BFpack::cor_test(", dataString, ", formula = ", paste0(form, collapse = ""), "))", sep = "")
+
+      result <- eval(parse(text = cor_test_call))
+    }
 
   # regression
   } else if (type %in%  c("regression", "regressionLogistic")) {
@@ -361,7 +393,7 @@ gettextf <- function(fmt, ..., domain = NULL)  {
 
     # treat the independent variables
     istring <- paste0(factorVar, collapse = " + ")
-    if (length(covariates) > 0) {
+    if (length(covariates) > 0) { # ANCOVA
       covString <- paste0(covariates, collapse = " + ")
       istring <- paste0(istring, " + ", covString)
     }
@@ -372,7 +404,7 @@ gettextf <- function(fmt, ..., domain = NULL)  {
       istring <- paste0(istring, "+", iastring)
     }
 
-    if (length(dependent) == 1) {
+    if (length(dependent) == 1) { # ANOVA
 
       formula <- as.formula(paste0(dependent, "~", istring, "-1"))
       result <- try(aov(formula, data = dataset))
@@ -473,7 +505,7 @@ gettextf <- function(fmt, ..., domain = NULL)  {
   # create a container because both the results and the tables depending on them have the same dependencies
   # start with common deps, and then do the switch
   deps <- c("complement", "logScale", "manualHypotheses", "priorProbManual", "priorProb", "priorProbComplement", "seed",
-            "coefficientsTable", "bfType")
+            "estimatesTable", "bfType")
 
   resultsContainer <- createJaspContainer()
   resultsContainer$dependOn(deps)
@@ -490,8 +522,12 @@ gettextf <- function(fmt, ..., domain = NULL)  {
     estimates <- bfpackContainer[["estimatesState"]]$object
 
     # standard hypotheses priors
-    standPrior <- sapply(parse(text = c(options[["priorProbStandard"]], options[["priorProbStandard2"]],
-                                        options[["priorProbStandard3"]])), eval)
+    if (type %in% c("variances", "multiSampleTTest")) {
+      standPrior <- sapply(parse(text = c(options[["priorProbStandard"]], options[["priorProbStandard2"]])), eval)
+    } else {
+      standPrior <- sapply(parse(text = c(options[["priorProbStandard"]], options[["priorProbStandard2"]],
+                                          options[["priorProbStandard3"]])), eval)
+    }
 
     # check if there are manual hypotheses
     manualHyp <- sapply(options[["manualHypotheses"]], function(x) x[["name"]])
@@ -526,6 +562,7 @@ gettextf <- function(fmt, ..., domain = NULL)  {
         bftype <- 1
       }
     }
+
 
     results <- try(BFpack::BF(estimates, hypothesis = manualHyp,
                              complement = options[["complement"]],
@@ -590,6 +627,16 @@ gettextf <- function(fmt, ..., domain = NULL)  {
       title1 <- gettext("Pr(=0)")
       title2 <- gettext("Pr(<0)")
       title3 <- gettext("Pr(>0)")
+
+      if (type == "correlation" && options[["group"]] != "") {
+        groupName <- options[["group"]]
+        levs <- levels(dataset[[groupName]])
+        footnote <- ""
+        for (i in 1:length(levs)) {
+          footnote <- gettextf("%1$sGroup %2$s corresponds to level %3$s. ", footnote, paste0("g", i), levs[i])
+        }
+        parameterTable$addFootnote(footnote)
+      }
     }
 
     parameterTable$addColumnInfo(name = "coefficient", type = "string", title = "")
@@ -822,33 +869,31 @@ gettextf <- function(fmt, ..., domain = NULL)  {
 }
 
 
-.bfpackCoefficientsTable <- function(options, bfpackContainer, type, position = 1) {
-  if (!is.null(bfpackContainer[["coefContainer"]][["coefficientsTable"]]) ||
-      !options[["coefficientsTable"]]) return()
+.bfpackEstimatesTable <- function(options, bfpackContainer, type, position = 1) {
+  if (!is.null(bfpackContainer[["coefContainer"]][["estimatesTable"]]) ||
+      !options[["estimatesTable"]]) return()
 
-  # create a container so the coefficientsTable is added at the end of the output
+  # create a container so the estimatesTable is added at the end of the output
   coefContainer <- createJaspContainer()
-  coefContainer$dependOn(c("coefficientsTable", "ciLevel"))
+  coefContainer$dependOn(c("estimatesTable", "ciLevel"))
   bfpackContainer[["coefContainer"]] <- coefContainer
 
-  coefficientsTable <- createJaspTable(gettext("Coefficients table"))
-  coefficientsTable$position <- position
+  estimatesTable <- createJaspTable(gettext("Estimates table"))
+  estimatesTable$position <- position
 
   interval <- gettextf("%s%% CI", format(100 * options[["ciLevel"]], digits = 3, drop0trailing = TRUE))
   intervalLow <- gettextf("%s lower bound", interval)
   intervalUp <- gettextf("%s upper bound", interval)
 
 
-  coefficientsTable$addColumnInfo(name = "coefficient", title = "", type = "string")
-  coefficientsTable$addColumnInfo(name = "mean", title = gettext("Mean"), type = "number")
-  coefficientsTable$addColumnInfo(name = "median", title = gettext("Median"), type = "number")
-  coefficientsTable$addColumnInfo(name = "lower", title = intervalLow, type = "number")
-  coefficientsTable$addColumnInfo(name = "upper", title = intervalUp, type = "number")
+  estimatesTable$addColumnInfo(name = "coefficient", title = "", type = "string")
+  estimatesTable$addColumnInfo(name = "mean", title = gettext("Mean"), type = "number")
+  estimatesTable$addColumnInfo(name = "median", title = gettext("Median"), type = "number")
+  estimatesTable$addColumnInfo(name = "lower", title = intervalLow, type = "number")
+  estimatesTable$addColumnInfo(name = "upper", title = intervalUp, type = "number")
 
 
-
-
-  bfpackContainer[["coefContainer"]][["coefficientsTable"]] <- coefficientsTable
+  bfpackContainer[["coefContainer"]][["estimatesTable"]] <- estimatesTable
 
   if (!bfpackContainer$getError()) {
 
@@ -863,7 +908,7 @@ gettextf <- function(fmt, ..., domain = NULL)  {
       if (options[["ciLevel"]] != .95) {
 
         fitObj <- bfpackContainer[["estimatesState"]]$object
-        if (type %in% c("regression", "anova", "correlation")) {
+        if (type %in% c("regression", "anova", "correlation", "regressionLogistic")) {
 
           if (type == "correlation") {
             draws <- fitObj$corrdraws[[1]]
@@ -876,7 +921,7 @@ gettextf <- function(fmt, ..., domain = NULL)  {
             boundsLow <- boundsLow[lower.tri(boundsLow)]
             boundsUp <- boundsUp[lower.tri(boundsUp)]
 
-          } else if (type %in% c("regression", "anova")) {
+          } else if (type %in% c("regression", "regressionLogistic", "anova")) {
 
             int <- confint(fitObj, level = options[["ciLevel"]])
             boundsLow <- int[, 1]
@@ -904,11 +949,11 @@ gettextf <- function(fmt, ..., domain = NULL)  {
         dtFill[, c("lower", "upper")] <- cbind(boundsLow, boundsUp)
       }
 
-      coefficientsTable$setData(dtFill)
+      estimatesTable$setData(dtFill)
       # footnt <- ifelse(type == "correlation",
       #                  gettext("The uncertainty interval is a highest posterior density credible interval."),
       #                  gettext("The uncertainty interval is a confidence interval."))
-      # coefficientsTable$addFootnote(footnt)
+      # estimatesTable$addFootnote(footnt)
     }
   }
 
