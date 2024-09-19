@@ -4,7 +4,7 @@ import JASP.Module 	1.0
 Description
 {
 	name			: "jaspBfpack"
-	title			: qsTr("BFpack")
+	title			: qsTr("BFpack (beta)")
 	description		: qsTr("A module for computing Bayes factors for equality, inequality, and order constrained hypotheses.")
 	icon			: "bain-module"
 	requiresData	: true
