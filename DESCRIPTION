@@ -1,19 +1,23 @@
-Package: jaspModule
+Package: jaspBfpack
 Type: Package
-Title: A module for JASP
-Version: 0.1.0
-Date: 2020-10-15
-Author: JASP Team
-Website: jasp-stats.org
-Maintainer: JASP Team <info@jasp-stats.org>
-Description: This module offers analyses.
-License: GPL (>= 2)
+Title: BFpack Module for JASP
+Version: 0.19.0
+Date: 2024-06-11
+Author: Mulder, J., Williams, D. R., Gu, X., Tomarken, A., Böing-Messing, F., Olsson-Collentine, A., Meijerink, M., Menke, J., Fox, J.-P., Hoijtink, H., Rosseel, Y., Wagenmakers, E.J., and van Lissa, C.
+Website: https://bfpack.info
+Maintainer: Julius M. Pfadt <julius.pfadt@gmail.com>
+Description: A module for computing Bayes factors for equality, inequality, and order constrained hypotheses.
+License: GPL (>= 3)
 Encoding: UTF-8
 Imports:
+  BFpack,
+  bain (>= 0.2.10),
+  stats,
+  ggplot2,
+  stringr,
+  coda,
   jaspBase,
   jaspGraphs
-Suggests:
-  testthat
 Remotes:
   jasp-stats/jaspBase,
   jasp-stats/jaspGraphs
