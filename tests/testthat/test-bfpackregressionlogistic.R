@@ -18,20 +18,19 @@ options <-
     logScale = FALSE,
     manualHypotheses = list(
       list(
-        name = "contNormal:contcor1>-.5",
-        priorProbManual = "1/2"
+        hypothesisText = "contNormal:contcor1>-.5",
+        priorProbManual = "1/2",
+        includeHypothesis = TRUE,
+        value = "#"
       )
     ),
     plots = FALSE,
     priorProbComplement = "1/2",
-    runAnalysisBox = TRUE,
     seed = 100,
     specificationTable = FALSE,
-    standardHypotheses = list(
-      list(priorProb = "1/3", value = "H0: beta = 0 "),
-      list(priorProb = "1/3", value = "H1: beta < 0 "),
-      list(priorProb = "1/3", value = "H2: beta > 0 ")
-    )
+    priorProbStandard = "1",
+    priorProbStandard2 = "1",
+    priorProbStandard3 = "1"
   )
 
 

@@ -31,7 +31,7 @@ bfpackTTestPairedSamples <- function(jaspResults, dataset, options, ...) {
 
   # Create a container for the results
   bfpackContainer <- .bfpackCreateContainer(jaspResults,
-                                            deps = c("pairs", "runAnalysisBox", "seed",
+                                            deps = c("pairs", "seed",
                                                      "muValue","manualHypotheses"))
 
   .bfpackGetParameterEstimates(dataList, options, bfpackContainer, ready, type, jaspResults)

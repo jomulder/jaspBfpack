@@ -17,9 +17,6 @@
 
 bfpackCorrelation <- function(jaspResults, dataset, options, ...) {
 
-  sink(file = "~/Downloads/log.txt")
-  on.exit(sink(NULL))
-
   # What type of BFpack analysis is being conducted?
   type <- "correlation"
 
@@ -36,7 +33,7 @@ bfpackCorrelation <- function(jaspResults, dataset, options, ...) {
   .bfpackDataReady(dataList[["dataset"]], options, type)
 
   # Create a container for the results
-  bfpackContainer <- .bfpackCreateContainer(jaspResults, deps = c("variables", "seed", "runAnalysisBox", "iterations",
+  bfpackContainer <- .bfpackCreateContainer(jaspResults, deps = c("variables", "seed", "iterations",
                                                                   "manualHypotheses", "group", "covariates"))
 
   .bfpackGetParameterEstimates(dataList, options, bfpackContainer, ready, type, jaspResults)

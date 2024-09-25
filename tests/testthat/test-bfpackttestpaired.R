@@ -11,20 +11,17 @@ options <-
       logScale = FALSE,
       muValue = 0,
       manualHypotheses = list(
-        list(name = ".1<mu<2", priorProbManual = "1/2"),
-        list(name = "mu=2", priorProbManual = "1/2")
+        list(hypothesisText = ".1<mu<2", priorProbManual = "1/2", includeHypothesis = TRUE, value = "#"),
+        list(hypothesisText = "mu=2", priorProbManual = "1/2", includeHypothesis = TRUE, value = "#2")
       ),
       pairs = list(c("contNormal", "contGamma")),
       plots = TRUE,
       priorProbComplement = "1/2",
-      runAnalysisBox = TRUE,
       seed = 100,
       specificationTable = FALSE,
-      standardHypotheses = list(
-        list(priorProb = "1", value = "H0: delta = 0 "),
-        list(priorProb = ".5", value = "H1: delta < 0 "),
-        list(priorProb = "1", value = "H2: delta > 0 ")
-      )
+      priorProbStandard = "1",
+      priorProbStandard2 = ".5",
+      priorProbStandard3 = "1"
     )
 
 

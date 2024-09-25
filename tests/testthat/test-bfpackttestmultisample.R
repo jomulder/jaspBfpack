@@ -11,26 +11,25 @@ options <-
       logScale = FALSE,
       manualHypotheses = list(
         list(
-          name = "contNormal>contGamma",
-          priorProbManual = "1/2"
+          hypothesisText = "contNormal>contGamma",
+          priorProbManual = "1/2",
+          includeHypothesis = TRUE,
+          value = "#"
         )
       ),
       muValue = 0,
       plots = FALSE,
       priorProbComplement = "1/2",
-      runAnalysisBox = TRUE,
       seed = 100,
       specificationTable = FALSE,
-      standardHypotheses = list(
-        list(priorProb = "1/2", value = "H0: mu = test value"),
-        list(priorProb = "1/2", value = "H1: mu ≠ test value")
-      ),
+      priorProbStandard = "1",
+      priorProbStandard2 = "1",
       testValues = list(
         list(testValue = 1, value = "contNormal"),
         list(testValue = 0, value = "contGamma")
       ),
       variables = c("contNormal", "contGamma")
-    )
+)
 
 
 

@@ -11,25 +11,21 @@ options <-
     iterations = 5000,
     logScale = FALSE,
     manualHypotheses = list(
-      list(name = "female = male > non", priorProbManual = "1/2"),
-      list(name = "female < male < non", priorProbManual = "1/2")
+      list(hypothesisText = "female = male > non", priorProbManual = "1/2", includeHypothesis = TRUE, value = "#"),
+      list(hypothesisText = "female < male < non", priorProbManual = "1/2", includeHypothesis = TRUE, value = "#2")
     ),
     plots = FALSE,
     priorProbComplement = "1/2",
-    runAnalysisBox = TRUE,
     seed = 100,
     specificationTable = FALSE,
-    standardHypotheses = list(
-      list(priorProb = "1/2", value = "H0: delta = 0 "),
-      list(priorProb = "1/2", value = "H1: delta ≠ 0 ")
-    ),
+    priorProbStandard = "1",
+    priorProbStandard2 = "1",
     variables = "libido"
   )
 
 
 set.seed(1)
-
-results <- jaspTools::runAnalysis("bfpackVariances", "viagra.csv", options)
+results <- jaspTools::runAnalysis("bfpackVariances", testthat::test_path("viagra.csv"), options)
 
 
 test_that("Manual hypotheses legend table results match", {

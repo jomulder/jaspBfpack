@@ -54,7 +54,7 @@ Group
 
         Text { text: qsTr("Hypotheses") }
         Text { text: qsTr("Test value") ; visible: specificMu}
-        Text { text: qsTr("Prior probabilities") }
+        Text { text: qsTr("Prior weights") }
 
         Text { text: standGroup.hypoString[0] }
         DoubleField
@@ -69,7 +69,7 @@ Group
         FormulaField {
             fieldWidth: 50
             name: "priorProbStandard"
-            defaultValue: "1/2"
+            defaultValue: onlyUnequal ? "1" : "2"
         }
 
         Text { text: standGroup.hypoString[1] }
@@ -78,7 +78,7 @@ Group
         FormulaField {
             fieldWidth: 50
             name: "priorProbStandard2"
-            defaultValue: onlyUnequal ? "1/2" : "1/4"
+            defaultValue: onlyUnequal ? "1" : "1"
         }
 
         Text { text: standGroup.hypoString[2] ; visible: !onlyUnequal}
@@ -87,7 +87,7 @@ Group
         FormulaField {
             fieldWidth: 50
             name: "priorProbStandard3"
-            defaultValue: "1/4"
+            defaultValue: "1"
             visible: !onlyUnequal
         }
     }

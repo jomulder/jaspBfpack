@@ -10,17 +10,14 @@ options <-
     iterations = 5000,
     muValue = 0,
     logScale = TRUE,
-    manualHypotheses = list(list(name = "mu<.5", priorProbManual = "1/2")),
+    manualHypotheses = list(list(hypothesisText = "mu<.5", priorProbManual = "1/2", includeHypothesis = TRUE, value = "#")),
     plots = FALSE,
     priorProbComplement = "1/2",
-    runAnalysisBox = TRUE,
     seed = 100,
     specificationTable = TRUE,
-    standardHypotheses = list(
-      list(priorProb = "1/3", value = "H0: mu = 0 "),
-      list(priorProb = "1/3", value = "H1: mu < 0 "),
-      list(priorProb = "1/3", value = "H2: mu > 0 ")
-    ),
+    priorProbStandard = "1",
+    priorProbStandard2 = "1",
+    priorProbStandard3 = "1",
     variables = "contNormal"
   )
 

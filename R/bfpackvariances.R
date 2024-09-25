@@ -17,8 +17,8 @@
 
 bfpackVariances <- function(jaspResults, dataset, options, ...) {
 
-  sink(file = "~/Downloads/logBf.txt")
-  on.exit(sink(NULL))
+  # sink(file = "~/Downloads/logBf.txt")
+  # on.exit(sink(NULL))
 
   # What type of BFpack analysis is being conducted?
   type <- "variances"
@@ -33,7 +33,7 @@ bfpackVariances <- function(jaspResults, dataset, options, ...) {
   .bfpackDataReady(dataList[["dataset"]], options, type)
 
   # Create a container for the results
-  bfpackContainer <- .bfpackCreateContainer(jaspResults, deps = c("variables", "seed", "runAnalysisBox",
+  bfpackContainer <- .bfpackCreateContainer(jaspResults, deps = c("variables", "seed",
                                                                   "manualHypotheses", "groupingVariable"))
 
   .bfpackGetParameterEstimates(dataList, options, bfpackContainer, ready, type, jaspResults)

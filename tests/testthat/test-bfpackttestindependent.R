@@ -12,21 +12,18 @@ options <-
     muValue = 0,
     logScale = TRUE,
     manualHypotheses = list(
-      list(name = "difference > 3", priorProbManual = "1/2"),
-      list(name = "difference < 0", priorProbManual = "1/2"),
-      list(name = "difference < 3", priorProbManual = "1/2")
+      list(hypothesisText = "difference > 3", priorProbManual = "1/2", includeHypothesis = TRUE, value = "#"),
+      list(hypothesisText = "difference < 0", priorProbManual = "1/2", includeHypothesis = TRUE, value = "#2"),
+      list(hypothesisText = "difference < 3", priorProbManual = "1/2", includeHypothesis = TRUE, value = "#3")
     ),
 
     plots = TRUE,
     priorProbComplement = "1/2",
-    runAnalysisBox = TRUE,
     seed = 100,
     specificationTable = TRUE,
-    standardHypotheses = list(
-      list(priorProb = "1/3", value = "H0: delta = 0 "),
-      list(priorProb = "1/3", value = "H1: delta < 0 "),
-      list(priorProb = "1/3", value = "H2: delta > 0 ")
-    ),
+    priorProbStandard = "1",
+    priorProbStandard2 = "1",
+    priorProbStandard3 = "1",
     variables = "contNormal"
   )
 

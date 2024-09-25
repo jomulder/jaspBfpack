@@ -510,13 +510,6 @@
   resultsContainer <- createJaspContainer()
   resultsContainer$dependOn(deps)
 
-  if (!options[["runAnalysisBox"]]) {
-    syncText <- createJaspHtml(text = gettext("<b>Check the 'Run Analysis' box to run the analysis</b>"))
-    bfpackContainer[["syncText"]] <- syncText
-    syncText$dependOn("runAnalysisBox")
-    syncText$position <- 0.01
-    return()
-  }
 
   if (!is.null(bfpackContainer[["estimatesState"]])) {
     estimates <- bfpackContainer[["estimatesState"]]$object
@@ -556,7 +549,6 @@
         bftype <- 1
       }
     }
-
 
     results <- try(BFpack::BF(estimates, hypothesis = manualHyp,
                              complement = options[["complement"]],

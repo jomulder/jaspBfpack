@@ -8,29 +8,32 @@ options <- list(
     logScale = TRUE,
     manualHypotheses = list(
       list(
-        name = "sales_with_adverts = airplay_with_adverts = attract_with_adverts",
-        priorProbManual = "1/2"
+        hypothesisText = "sales_with_adverts = airplay_with_adverts = attract_with_adverts",
+        priorProbManual = ".5",
+        includeHypothesis = TRUE,
+        value = "#"
       ),
       list(
-        name = "sales_with_adverts > airplay_with_adverts > attract_with_adverts",
-        priorProbManual = "1/2"
+        hypothesisText = "sales_with_adverts > airplay_with_adverts > attract_with_adverts",
+        priorProbManual = ".5",
+        includeHypothesis = TRUE,
+        value = "#2"
       )
     ),
     plots = TRUE,
     priorProbComplement = "10",
-    runAnalysisBox = TRUE,
     seed = 100,
     specificationTable = TRUE,
-    standardHypotheses = list(
-      list(priorProb = "1/3", value = "H0: rho = 0 "),
-      list(priorProb = "1/3", value = "H1: rho < 0 "),
-      list(priorProb = "1/3", value = "H2: rho > 0 ")
-    ),
-    variables = c("adverts", "sales", "airplay", "attract")
+    priorProbStandard = "1",
+    priorProbStandard2 = "1",
+    priorProbStandard3 = "1",
+    variables = c("adverts", "sales", "airplay", "attract"),
+    variables.types = c("scale", "scale", "scale", "ordinal"),
+    group = ""
 )
 
 set.seed(1)
-results <- jaspTools::runAnalysis("bfpackCorrelation", "sales.csv", options)
+results <- jaspTools::runAnalysis("bfpackCorrelation", testthat::test_path("sales.csv"), options)
 
 test_that("Manual hypotheses legend table results match", {
   table <- results[["results"]][["bfpackContainer"]][["collection"]][["bfpackContainer_legendTable"]][["data"]]

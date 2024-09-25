@@ -9,23 +9,20 @@ options <- list(
   dependent = "sales",
   logScale = FALSE,
   manualHypotheses = list(
-    list(name = "adverts = airplay = attract", priorProbManual = "2"),
-    list(name = "adverts < airplay < attract", priorProbManual = "1")
+    list(hypothesisText = "adverts = airplay = attract", priorProbManual = "2", includeHypothesis = TRUE, value = "#"),
+    list(hypothesisText = "adverts < airplay < attract", priorProbManual = "1", includeHypothesis = TRUE, value = "#2")
   ),
   plots = TRUE,
   priorProbComplement = "1",
-  runAnalysisBox = TRUE,
   seed = 100,
   specificationTable = TRUE,
-  standardHypotheses = list(
-    list(priorProb = "1/3", value = "H0: beta = 0 "),
-    list(priorProb = "0", value = "H1: beta < 0 "),
-    list(priorProb = "1/3", value = "H2: beta > 0 ")
-  )
+  priorProbStandard = "1",
+  priorProbStandard2 = "0",
+  priorProbStandard3 = "1"
 )
 
 set.seed(1)
-results <- jaspTools::runAnalysis("bfpackRegressionLinear", "sales.csv", options)
+results <- jaspTools::runAnalysis("bfpackRegressionLinear", testthat::test_path("sales.csv"), options)
 
 
 test_that("Coefficients table results match", {

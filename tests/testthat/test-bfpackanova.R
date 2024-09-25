@@ -13,20 +13,19 @@ options <- list(
   ),
   manualHypotheses = list(
     list(
-      name = "facFive = facGenderf = facGenderm:facFive",
-      priorProbManual = "1/2"
+      hypothesisText = "facFive = facGenderf = facGenderm:facFive",
+      priorProbManual = "1/2",
+      includeHypothesis = TRUE,
+      value = "#"
     )
   ),
   plots = TRUE,
   priorProbComplement = "1/2",
-  runAnalysisBox = TRUE,
   seed = 100,
   specificationTable = FALSE,
-  standardHypotheses = list(
-    list(priorProb = "1/3", value = "H0: mu = 0 "),
-    list(priorProb = "1/3", value = "H1: mu < 0 "),
-    list(priorProb = "1/3", value = "H2: mu > 0 ")
-  )
+  priorProbStandard = "1",
+  priorProbStandard2 = "1",
+  priorProbStandard3 = "1"
 )
 
 set.seed(1)
@@ -100,20 +99,17 @@ options <- list(
   iterations = 5000,
   logScale = FALSE,
   manualHypotheses = list(
-    list(name = "...", priorProbManual = "1/2")
+    list(hypothesisText = "", priorProbManual = "1", includeHypothesis = FALSE, value = "#")
   ),
   plotHeight = 320,
   plotWidth = 480,
   plots = TRUE,
   priorProbComplement = "1/2",
-  runAnalysisBox = TRUE,
   seed = 100,
   specificationTable = FALSE,
-  standardHypotheses = list(
-    list(priorProb = "1/3", value = "H0: mu = 0 "),
-    list(priorProb = "1/3", value = "H1: mu < 0 "),
-    list(priorProb = "1/3", value = "H2: mu > 0 ")
-  )
+  priorProbStandard = "1",
+  priorProbStandard2 = "1",
+  priorProbStandard3 = "1"
 )
 
 set.seed(1)
