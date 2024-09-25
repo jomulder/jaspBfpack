@@ -85,6 +85,7 @@ Form
 		}
 	}
 	
+	Common.ParametersWindow{}
 
 	Common.HypothesesWindowManual{}
 

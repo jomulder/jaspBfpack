@@ -64,11 +64,12 @@ Form
 	Common.HypothesesWindowStandard{
 		parName: qsTr("beta")
 	}
+	Common.ParametersWindow{}
 
 	Common.HypothesesWindowManual{}
 
 	Common.Options{
 		bfTy: true
-		interactions: true
+		interactions: true 
 	}
 }

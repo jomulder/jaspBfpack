@@ -79,6 +79,8 @@ Form
 		specificMu: true
 	}
 
+	Common.ParametersWindow{}
+
 	Common.HypothesesWindowManual{}
 	
 

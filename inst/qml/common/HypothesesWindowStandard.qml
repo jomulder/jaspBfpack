@@ -29,6 +29,7 @@ Group
 	property bool specificMu: false
 	property bool multiTest: false
 	
+    // Layout.columnSpan: 2
 	id: standGroup
     title: qsTr("<b>Standard hypothesis test</b>")
     columns: specificMu ? 3 : 2

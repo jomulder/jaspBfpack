@@ -25,9 +25,10 @@ import "./common" as Common
 Form
 {
 
+
 	VariablesForm
 	{
-		implicitHeight: 200 * preferencesModel.uiScale
+		preferredHeight: 200 * preferencesModel.uiScale
 
 		AvailableVariablesList
 		{
@@ -44,7 +45,7 @@ Form
 
 	CheckBox
 	{
-		Layout.columnSpan: 2
+ 		Layout.columnSpan: 2
 		id: 						runAnalysisBox
 		name: 					"runAnalysisBox"
 		label: 					qsTr("<b>Run Analysis</b>")
@@ -52,13 +53,15 @@ Form
 		Component.onCompleted:
 		{
 			background.color = "#ff8600"
-		}
-	}
+		} 
+	} 
 
 	Common.HypothesesWindowStandard{
 		parName: qsTr("rho")
 	}
 
+	Common.ParametersWindow{}
+	
 	Common.HypothesesWindowManual{}
 
 	Common.Options{
@@ -67,12 +70,12 @@ Form
 		multigroup: true
 	}
 
-	Section 
+	Section
 	{
 		title: qsTr("Covariates")
 		VariablesForm
 		{
-			implicitHeight: 150 * preferencesModel.uiScale
+			preferredHeight: 150 * preferencesModel.uiScale
 
 			AvailableVariablesList
 			{

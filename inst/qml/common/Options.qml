@@ -115,38 +115,21 @@ Section
 
 	Group 
 	{
+		Layout.columnSpan: 2
 		title: qsTr("Interaction terms")
+		preferredWidth: 300 * jaspTheme.uiScale
 		visible: interactions
-
-		// VariablesForm {
-		// 	preferredHeight: 300 * preferencesModel.uiScale
-
-		// 	AvailableVariablesList
-		// 	{
-		// 		name: "new"
-		// 		visible:false
-		// 		source: "covariates"
-		// 		implicitWidth: 0
-		// 	}
-		// 	AssignedVariablesList
-		// 	{ 
-		// 		name: "interactionTerms"
-		// 		source: "new"
-		// 		listViewType: JASP.Interaction
-		// 	}
-		// }
-
 		ComponentsList 
 		{
-			implicitHeight: 120 * preferencesModel.uiScale
+			height: 120 * preferencesModel.uiScale
 			headerLabels: [qsTr("Include")]
 			// titles: [qsTr("Include")]
 			name: "interactionTerms"
 			rSource: "interactionSource"
 			// source: "covariates"
 			rowComponent: RowLayout { 
-				Text {Layout.preferredWidth: 200; text: rowValue; visible: true}
-				CheckBox {Layout.preferredWidth: 100; name: "includeInteractionEffect"; checked:true}
+				Text {Layout.preferredWidth: 210*jaspTheme.uiScale; text: rowValue; visible: true}
+				CheckBox {Layout.preferredWidth: 50*jaspTheme.uiScale; name: "includeInteractionEffect"; checked:true}
 			}
 		}
 	}

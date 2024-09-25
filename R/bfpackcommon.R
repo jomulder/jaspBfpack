@@ -505,7 +505,7 @@
   # create a container because both the results and the tables depending on them have the same dependencies
   # start with common deps, and then do the switch
   deps <- c("complement", "logScale", "manualHypotheses", "priorProbManual", "priorProb", "priorProbComplement", "seed",
-            "estimatesTable", "bfType")
+            "estimatesTable", "bfType", "includeHypothesis")
 
   resultsContainer <- createJaspContainer()
   resultsContainer$dependOn(deps)
@@ -530,27 +530,21 @@
     }
 
     # check if there are manual hypotheses
-    manualHyp <- sapply(options[["manualHypotheses"]], function(x) x[["name"]])
+    manualHypInclude <- sapply(options[["manualHypotheses"]], function(x) x[["includeHypothesis"]])
+    manualHyp <- sapply(options[["manualHypotheses"]], function(x) x[["hypothesisText"]])
     manualPrior <- sapply(options[["manualHypotheses"]], function(x) x[["priorProbManual"]])
 
-    # strip down the hypos
-    # replace with numbers because that is also what qml does if a hypothesis string is deleted...
-    # might be the following is analysis-specific
-    manualHyp <- gsub("...", "1", manualHyp, fixed = TRUE)
-
-    # keep the hypotheses that are specified
-    strs <- which(is.na(as.numeric(manualHyp)))
-    manualHyp <- manualHyp[strs]
-    manualPrior <- manualPrior[strs]
-    # at least one manual hypo specified?
-    if (length(manualHyp) > 0) {
+    # keep the hypotheses that are included
+    manualHyp <- manualHyp[manualHypInclude]
+    if (length(manualHyp) == 0) {
+      manualHyp <- NULL
+      manualPrior <- NULL
+    } else {
+      manualPrior <- manualPrior[manualHypInclude]
       manualHyp <- paste(manualHyp, collapse = ";")
       if (options[["complement"]]) manualPrior <- c(manualPrior, options[["priorProbComplement"]])
       # convert the prior character values to numeric:
       manualPrior <- sapply(manualPrior, function(x) eval(parse(text=x)))
-    } else {
-      manualHyp <- NULL
-      manualPrior <- NULL
     }
 
     # BF.type depends in the analysis as well

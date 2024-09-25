@@ -67,6 +67,7 @@ Form
 		parName: qsTr("delta")
 		onlyUnequal: true
 	}
+	Common.ParametersWindow{}
 
 	Common.HypothesesWindowManual{}
 

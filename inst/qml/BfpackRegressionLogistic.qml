@@ -64,6 +64,7 @@ Form
 	Common.HypothesesWindowStandard{
 		parName: qsTr("beta")
 	}
+	Common.ParametersWindow{}
 
 	Common.HypothesesWindowManual{}
 

@@ -21,92 +21,77 @@ import QtQuick.Layouts
 import JASP
 import JASP.Controls
 import JASP.Widgets
-import QtQuick.Controls  as QTCONTROLS
-
-
+import QtQuick.Controls as QTCONTROLS
 
 Group
 {
+
+	Layout.columnSpan: 2
+
+	Layout.fillWidth: true
+
+	preferredWidth: 590 * jaspTheme.uiScale 
+
 	columns: 1
-	title: qsTr("<b>Manual hypothesis test</b>")
-
-	ComponentsList {
-		name: "hiddenNames"
-		id: hiddenNames
-		// source: [{values: ["est1", "est2", "est3"]}]
-		rSource: "estimateNamesForQml"
-		visible: false
-	}
-
 	RowLayout {
-		Text {
-			text: qsTr("<b>Parameters:</b>")
-			MouseArea
-			{
-					id: mouseAreaA
-					anchors.fill: parent
-					cursorShape: Qt.IBeamCursor
-					hoverEnabled: true
-			}
-			QTCONTROLS.ToolTip.visible: mouseAreaA.containsMouse
-			//QTCONTROLS.ToolTip.delay: 300
-			QTCONTROLS.ToolTip.text: qsTr("The parameters that can be tested will appear here once you have entered variables into the analysis")	
-		}
+		Label { text: qsTr("<b>Manual hypothesis test</b>") }
 		HelpButton
 		{
 			toolTip: 					qsTr("Click for more information")
 			helpPage:					"forQml/tooltip"
 		}
 	}
-
-	Flow
+	ComponentsList
 	{
-		// width: parent.width
-		// anchors.margins: 1
-		spacing: 5
-		Repeater
-		{
-			model: hiddenNames.model // estimates must be the id of the hidden ComponentList
-			TextEdit {
-				text: model.name
-				readOnly: true
-				wrapMode: Text.WordWrap
-				selectByMouse: true
+		
+		name: "manualHypotheses"
+		title: ""
+		minimumItems: 1
+		headerLabels: [qsTr("Hypotheses"), qsTr("Prior weight"), qsTr("Include")]
+		rowComponent: 
+			RowLayout {
+				TextField
+				{ 
+					name: "hypothesisText"
+					placeholderText: "..."
+					fieldWidth: 400 * jaspTheme.uiScale
+				}
+				FormulaField
+				{
+					fieldWidth: 60
+					name: "priorProbManual"
+					defaultValue: "1"
+				}
+				Item {}
+				CheckBox
+				{
+					name: "includeHypothesis"
+				}
 			}
-		}
+		// addBorder: false
 	}
 
-
-	InputListView
+	Item
 	{
-		name				: "manualHypotheses"
-		title				: qsTr("Hypotheses")
-		optionKey			: "name"
-		defaultValues		: ["...", "..."]
-		placeHolder			: qsTr("New hypothesis")
-		minRows				: 1
-
-		// preferredWidth: 100 * preferencesModel.uiScale
-		preferredHeight: 100 * preferencesModel.uiScale
-		rowComponentTitle	: qsTr("Prior weights")
-		rowComponent: FormulaField
-		{
-			fieldWidth: 40
-			name: "priorProbManual"
+		width: 536 * jaspTheme.uiScale
+		height: complement.height
+		Label { text: qsTr("Complement hypothesis:") }
+		FormulaField {
+			anchors.right: spacer.left
+			fieldWidth: 60
+			name: "priorProbComplement"
 			defaultValue: "1"
 		}
-	}
-
-	CheckBox {
-		name: "complement"
-		label: qsTr("Complement:		                       ")
-		checked: true
-		childrenOnSameRow: true
-		FormulaField {
-			fieldWidth: 40
-			name: "priorProbComplement"
-			// label: qsTr("Prior weight")
-			defaultValue: "1"
+		Item {
+        id: spacer
+        width: 30 // Adjust the width as needed for the desired space
+        anchors.right: complement.left
+    }
+		CheckBox {
+			anchors.right: parent.right
+			id: complement
+			name: "complement"
+			checked: true
 		}
 	}
 }
