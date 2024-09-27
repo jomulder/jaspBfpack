@@ -504,8 +504,9 @@
 
   # create a container because both the results and the tables depending on them have the same dependencies
   # start with common deps, and then do the switch
-  deps <- c("complement", "logScale", "manualHypotheses", "priorProbManual", "priorProb", "priorProbComplement", "seed",
-            "estimatesTable", "bfType", "includeHypothesis")
+  deps <- c("complement", "logScale", "manualHypotheses", "priorProbManual",
+            "priorProbStandard", "priorProbStandard2", "priorProbStandard3",
+            "priorProbComplement", "seed", "bfType", "includeHypothesis")
 
   resultsContainer <- createJaspContainer()
   resultsContainer$dependOn(optionsFromObject = bfpackContainer[["estimatesState"]], options = deps)
@@ -588,7 +589,7 @@
   if (!is.null(bfpackContainer[["parameterTable"]])) return()
 
   parameterTable <- createJaspTable(gettext("Posterior probabilities when testing individual parameters"))
-  parameterTable$dependOn(optionsFromObject = bfpackContainer[["estimatesState"]], options = "priorProb")
+  parameterTable$dependOn(optionsFromObject = bfpackContainer[["resultsContainer"]], options = "priorProb")
   parameterTable$position <- position
 
   if (type %in% c("variances", "multiSampleTTest")) {
@@ -670,7 +671,7 @@
   if (!is.null(bfpackContainer[["mainEffectsTable"]])) return()
 
   mainEffectsTable <- createJaspTable(gettext("Posterior probabilities for main effects"))
-  mainEffectsTable$dependOn("priorProb")
+  mainEffectsTable$dependOn(optionsFromObject = bfpackContainer[["resultsContainer"]])
   mainEffectsTable$position <- position
 
   mainEffectsTable$addColumnInfo(name = "coefficient", type = "string", title = "")
@@ -700,7 +701,7 @@
   if (!is.null(bfpackContainer[["iaEffectsTable"]])) return()
 
   iaEffectsTable <- createJaspTable(gettext("Posterior probabilities for interaction effects"))
-  iaEffectsTable$dependOn("priorProb")
+  iaEffectsTable$dependOn(optionsFromObject = bfpackContainer[["resultsContainer"]])
   iaEffectsTable$position <- position
 
   iaEffectsTable$addColumnInfo(name = "coefficient", type = "string", title = "")
@@ -759,6 +760,7 @@
   tbTitle <- ifelse(options[["logScale"]], gettext("Evidence matrix (log BFs)"), gettext("Evidence matrix (BFs)"))
   matrixTable <- createJaspTable(tbTitle)
   matrixTable$position <- position
+  # matrixTable$dependOn()
 
   matrixTable$addColumnInfo(name = "hypothesis", title = "", type = "string")
   matrixTable$addColumnInfo(name = "H1", title = gettext("H1"), type = "number")
@@ -861,7 +863,7 @@
 
   # create a container so the estimatesTable is added at the end of the output
   coefContainer <- createJaspContainer()
-  coefContainer$dependOn(c("estimatesTable", "ciLevel"))
+  coefContainer$dependOn(optionsFromObject = bfpackContainer[["estimatesState"]], options = c("estimatesTable", "ciLevel"))
   bfpackContainer[["coefContainer"]] <- coefContainer
 
   estimatesTable <- createJaspTable(gettext("Estimates table"))
