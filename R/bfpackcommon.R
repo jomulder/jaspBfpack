@@ -29,7 +29,7 @@
 # give back the interactions to the qml interface
 .bfpackFeedbackInteractions <- function(jaspResults, options, type) {
 
-  # if (!is.null(jaspResults[["interactionTerms"]])) return()
+  if (!is.null(jaspResults[["interactionTerms"]])) return()
 
   deps <- switch(type,
                  "regression" = "covariates",
@@ -317,9 +317,9 @@
                  "independentTTest" = c("ciLevel", "muValue"),
                  "pairedTTest" = c("ciLevel", "muValue"),
                  "onesampleTTest" = c("ciLevel", "muValue"),
-                 "anova" = "interactionTerms",
-                 "regression" = "interactionTerms",
-                 "regressionLogistic"= "interactionTerms",
+                 "anova" = c("interactionTerms", "includeInteractionEffect"),
+                 "regression" = c("interactionTerms", "includeInteractionEffect"),
+                 "regressionLogistic"= c("interactionTerms", "includeInteractionEffect"),
                  "multiSampleTTest" = "testValues",
                  NULL)
 
@@ -508,7 +508,7 @@
             "estimatesTable", "bfType", "includeHypothesis")
 
   resultsContainer <- createJaspContainer()
-  resultsContainer$dependOn(deps)
+  resultsContainer$dependOn(optionsFromObject = bfpackContainer[["estimatesState"]], options = deps)
 
 
   if (!is.null(bfpackContainer[["estimatesState"]])) {
@@ -588,7 +588,7 @@
   if (!is.null(bfpackContainer[["parameterTable"]])) return()
 
   parameterTable <- createJaspTable(gettext("Posterior probabilities when testing individual parameters"))
-  parameterTable$dependOn("priorProb")
+  parameterTable$dependOn(optionsFromObject = bfpackContainer[["estimatesState"]], options = "priorProb")
   parameterTable$position <- position
 
   if (type %in% c("variances", "multiSampleTTest")) {

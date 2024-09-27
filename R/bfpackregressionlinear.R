@@ -17,8 +17,8 @@
 
 bfpackRegressionLinear <- function(jaspResults, dataset, options, ...) {
 
-  # sink("~/Downloads/log.txt")
-  # on.exit(sink(NULL))
+  sink("~/Downloads/log.txt")
+  on.exit(sink(NULL))
 
   # What type of BFpack analysis is being conducted?
   type <- "regression"

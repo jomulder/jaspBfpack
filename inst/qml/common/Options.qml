@@ -129,7 +129,7 @@ Section
 			// source: "covariates"
 			rowComponent: RowLayout { 
 				Text {Layout.preferredWidth: 210*jaspTheme.uiScale; text: rowValue; visible: true}
-				CheckBox {Layout.preferredWidth: 50*jaspTheme.uiScale; name: "includeInteractionEffect"; checked:true}
+				CheckBox {Layout.preferredWidth: 50*jaspTheme.uiScale; name: "includeInteractionEffect"; checked:false}
 			}
 		}
 	}
