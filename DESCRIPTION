@@ -20,4 +20,7 @@ Imports:
   jaspGraphs
 Remotes:
   jasp-stats/jaspBase,
-  jasp-stats/jaspGraphs
+  jasp-stats/jaspGraphs,
+  jomulder/BFpack
+  
+

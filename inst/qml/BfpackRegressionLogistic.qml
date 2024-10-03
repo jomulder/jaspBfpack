@@ -48,18 +48,6 @@ Form
 		}
 	}
 
-	CheckBox
-	{
-		Layout.columnSpan: 2
-		id: 						runAnalysisBox
-		name: 					"runAnalysisBox"
-		label: 					qsTr("<b>Run Analysis</b>")
-		checked: 				false
-		Component.onCompleted:
-		{
-			background.color = "#ff8600"
-		}
-	}
 
 	Common.HypothesesWindowStandard{
 		parName: qsTr("beta")

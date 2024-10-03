@@ -30,7 +30,7 @@ bfpackRegressionLogistic <- function(jaspResults, dataset, options, ...) {
   dataList <- .bfpackReadDataset(options, type, dataset)
 
   # Check if current data allow for analysis
-  .bfpackDataReady(dataList[["dataset"]], options, type)
+  .bfpackDataReady(dataList, options, type)
 
   # Create a container for the results
   bfpackContainer <- .bfpackCreateContainer(jaspResults,

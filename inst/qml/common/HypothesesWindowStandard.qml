@@ -64,6 +64,7 @@ Group
             defaultValue: 0
             visible: specificMu
             id: muValue
+            negativeValues: true
         }
 
         FormulaField {

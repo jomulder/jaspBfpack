@@ -68,7 +68,7 @@ Group
 					name: "includeHypothesis"
 				}
 			}
-		// addBorder: false
+		addBorder: false
 	}
 
 	Item
@@ -83,10 +83,10 @@ Group
 			defaultValue: "1"
 		}
 		Item {
-        id: spacer
-        width: 30 // Adjust the width as needed for the desired space
-        anchors.right: complement.left
-    }
+			id: spacer
+			width: 30 // Adjust the width as needed for the desired space
+			anchors.right: complement.left
+		}
 		CheckBox {
 			anchors.right: parent.right
 			id: complement

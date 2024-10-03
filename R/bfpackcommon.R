@@ -92,10 +92,6 @@
   vars <- c(numerics, factors)
 
   if (is.null(dataset)) {
-    trydata <- .readDataSetToEnd(columns.as.numeric = numerics, columns.as.factor = factors)
-    missing <- names(which(apply(trydata, 2, function(x) {
-      any(is.na(x))
-    })))
     if (type == "onesampleTTest") { # For the one sample t test we do not remove the NA's listwise
       dataset <- .readDataSetToEnd(columns.as.numeric = numerics, columns.as.factor = factors)
     } else {
@@ -110,10 +106,7 @@
     dataset <- .vdf(dataset, columns.as.numeric = numerics, columns.as.factor = factors)
   }
 
-  readList <- list()
-  readList[["dataset"]] <- dataset
-  readList[["missing"]] <- missing
-  return(readList)
+  return(dataset)
 }
 
 .bfpackUnwrapInteractions <- function(options) {
@@ -236,7 +229,7 @@
 # Check if current data allow for analysis
 .bfpackDataReady <- function(dataset, options, type) {
 
-  if (type == "independentTTest" || type == "regressionLogistic") {
+  if (type == "independentTTest" || type == "regressionLogistic" || type == "correlation") {
 
     if (type == "independentTTest") {
       factors <- options[["groupingVariable"]]
@@ -289,8 +282,7 @@
 
   if (!ready) return()
 
-  dataset <- dataList[["dataset"]]
-  missing <- dataList[["missing"]]
+  dataset <- dataList
   # decode the colnames otherwise bfpack fails when trying to match hypotheses and estimate names
   colnames(dataset) <- decodeColNames(colnames(dataset))
 
@@ -511,6 +503,7 @@
   resultsContainer <- createJaspContainer()
   resultsContainer$dependOn(optionsFromObject = bfpackContainer[["estimatesState"]], options = deps)
 
+  bfpackContainer[["resultsContainer"]] <- resultsContainer
 
   if (!is.null(bfpackContainer[["estimatesState"]])) {
     estimates <- bfpackContainer[["estimatesState"]]$object
@@ -544,10 +537,10 @@
     # BF.type depends in the analysis as well
     # seems that except for the correlation and variance, all other models have the adjusted bftype option
     if (!is.null(options[["bfType"]])) {
-      if (options[["bfType"]] == "adjusted") {
-        bftype <- 2
+      if (options[["bfType"]] == "fractional") {
+        bftype <- "FBF"
       } else {
-        bftype <- 1
+        bftype <- "AFBF"
       }
     }
 
@@ -573,8 +566,6 @@
     resultsState <- createJaspState(results)
     resultsContainer[["resultsState"]] <- resultsState
   }
-
-  bfpackContainer[["resultsContainer"]] <- resultsContainer
 
   return()
 }
@@ -736,17 +727,27 @@
   legendTable$addColumnInfo(name = "hypothesis", type = "string", title = gettext("Hypothesis"))
 
   if (!bfpackContainer$getError()) {
+    # if there is a string in the hypotheses field but the suer forgot to check the include box we want an empty table
+    # with a footnote
+    manualHyp <- sapply(options[["manualHypotheses"]], function(x) x[["hypothesisText"]])
+    manualHypInclude <- sapply(options[["manualHypotheses"]], function(x) x[["includeHypothesis"]])
+    if (paste0(manualHyp, collapse = "") != "" && !any(manualHypInclude)) {
+      legendTable$addFootnote(gettext("Check the 'Include' box to test the hypothesis."))
+      # putting the assignment to the container here means the table is only displayed if it is filled with data
+      bfpackContainer[["legendTable"]] <- legendTable
+    }
+
     hypos <- bfpackContainer[["resultsContainer"]][["resultsState"]]$object$hypotheses
     if (!is.null(hypos)) {
       for (i in seq_len(length(hypos))) {
         row <- list(number = gettextf("H%i", i), hypothesis = hypos[i])
         legendTable$addRows(row)
       }
-      # putting the assignment to the container here means the table is only displayed if it is filled with data
+
       bfpackContainer[["legendTable"]] <- legendTable
     }
-
   }
+
 
   return()
 }
@@ -839,6 +840,8 @@
   specTable$addColumnInfo(name = "BF=", title = gettext("Equal-BF"), type = "number")
   specTable$addColumnInfo(name = "BF>", title = gettext("Order-BF"), type = "number")
   specTable$addColumnInfo(name = "BF", title = gettext("BF"), type = "number")
+  specTable$addColumnInfo(name = "PHP", title = gettext("Posterior prob."), type = "number")
+
 
   bfpackContainer[["resultsContainer"]][["specTable"]] <- specTable
 
@@ -846,7 +849,7 @@
     spec <- bfpackContainer[["resultsContainer"]][["resultsState"]]$object$BFtable_confirmatory
     if (!is.null(spec)) {
       dtFill <- data.frame(hypothesis = paste0(gettext("H"), seq(1:nrow(spec))))
-      dtFill[, c("complex=", "complex>", "fit=", "fit>", "BF=", "BF>", "BF")] <- spec[, 1:7]
+      dtFill[, c("complex=", "complex>", "fit=", "fit>", "BF=", "BF>", "BF", "PHP")] <- spec[, 1:8]
       specTable$setData(dtFill)
     }
 

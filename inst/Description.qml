@@ -52,8 +52,8 @@ Description
 	}
 	Analysis
 	{
-		menu:   	"ANOVA"
-		title:		"BFpack ANOVA"
+		menu:   	"(M)AN(C)OVA"
+		title:		"BFpack (M)AN(C)OVA"
 		func:			"bfpackAnova"
 	}
 

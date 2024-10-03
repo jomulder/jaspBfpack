@@ -26,6 +26,7 @@ Section
 	property bool bfTy: true
 	property bool iterations: false
 	property bool interactions: false
+	property bool anova: false
 	property bool multigroup: false
 
 	title: 	qsTr("Options")
@@ -47,8 +48,8 @@ Section
 			name: "bfType"
 			title: qsTr("Bayes factor type")
 			radioButtonsOnSameRow: false
-			RadioButton { value: "adjusted"; label: qsTr("Adjusted fractional Bayes factor"); checked: true}
-			RadioButton { value: "fractional"; label: qsTr("Fractional Bayes factor")}
+			RadioButton { value: "fractional"; 	label: qsTr("Fractional Bayes factor"); checked: true }
+			RadioButton { value: "adjusted"; 		label: qsTr("Adjusted fractional Bayes factor"); 			}
 
 		}
 	}
@@ -117,19 +118,19 @@ Section
 	{
 		Layout.columnSpan: 2
 		title: qsTr("Interaction terms")
-		preferredWidth: 300 * jaspTheme.uiScale
+		preferredWidth: 400 * jaspTheme.uiScale
 		visible: interactions
 		ComponentsList 
 		{
 			height: 120 * preferencesModel.uiScale
-			headerLabels: [qsTr("Include")]
-			// titles: [qsTr("Include")]
+			headerLabels: anova ? [qsTr("Include"), qsTr("Prior weight no effect")] : [qsTr("Include")]
 			name: "interactionTerms"
 			rSource: "interactionSource"
 			// source: "covariates"
 			rowComponent: RowLayout { 
-				Text {Layout.preferredWidth: 210*jaspTheme.uiScale; text: rowValue; visible: true}
-				CheckBox {Layout.preferredWidth: 50*jaspTheme.uiScale; name: "includeInteractionEffect"; checked:false}
+				Text { Layout.preferredWidth: 210*jaspTheme.uiScale; text: rowValue; visible: true }
+				CheckBox { Layout.preferredWidth: 50*jaspTheme.uiScale; name: "includeInteractionEffect"; checked:false }
+				FormulaField { fieldWidth: 50; name: "priorProbAnovaNoEffect"; defaultValue: "1"; visible: anova }
 			}
 		}
 	}
@@ -145,5 +146,4 @@ Section
 			addEmptyValue: true;
 		} // No model: it takes all variables per default
 	}
-
 }

@@ -33,19 +33,19 @@ bfpackAnova <- function(jaspResults, dataset, options, ...) {
   dataList <- .bfpackReadDataset(options, type, dataset)
 
   # Check if current data allow for analysis
-  .bfpackDataReady(dataList[["dataset"]], options, type)
+  .bfpackDataReady(dataList, options, type)
 
   # Create a container for the results
   bfpackContainer <- .bfpackCreateContainer(jaspResults,
                                             deps = c("dependent", "fixedFactors", "covariates",
-                                                     "seed", "manualHypotheses"))
+                                                     "seed", "manualHypotheses", "bfType"))
 
   .bfpackGetParameterEstimates(dataList, options, bfpackContainer, ready, type, jaspResults)
 
   # compute the results, aka BFs
   .bfpackComputeResults(dataList, options, bfpackContainer, ready, type)
 
-  .bfpackParameterTable(options, bfpackContainer, type, dataList[["dataset"]], position = 1)
+  .bfpackParameterTable(options, bfpackContainer, type, dataList, position = 1)
 
   .bfpackMainEffectsTable(options, bfpackContainer, type, position = 1.5)
   .bfpackInteractionEffectsTable(options, bfpackContainer, type, position = 1.6)

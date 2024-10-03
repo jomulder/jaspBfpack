@@ -42,20 +42,6 @@ Form
 		}
 	}
 
-	CheckBox
-	{
-		Layout.columnSpan: 2
-		id: 						runAnalysisBox
-		name: 					"runAnalysisBox"
-		label: 					qsTr("<b>Run Analysis</b>")
-		checked: 				false
-		Component.onCompleted:
-		{
-			background.color = "#ff8600"
-		}
-	}
-
-
 
 	ColumnLayout 
 	{
@@ -80,6 +66,7 @@ Form
 					name: "testValue"
 					fieldWidth: 50
 					defaultValue: 0
+					negativeValues: true
 				}
 			}
 		}

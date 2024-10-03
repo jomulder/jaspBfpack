@@ -42,7 +42,7 @@ Form
 		{
 			name: 						"fixedFactors"
 			title: 						qsTr("Fixed Factors")
-			allowedColumns: 			["ordinal", "nominal", "nominalText"]
+			allowedColumns: 			["ordinal", "nominal"]
 		}
 
 		AssignedVariablesList
@@ -50,19 +50,6 @@ Form
 			name: 						"covariates"
 			title: 						qsTr("Covariates")
 			allowedColumns: 			["ordinal", "nominal", "scale"]
-		}
-	}
-
-	CheckBox
-	{
-		Layout.columnSpan: 2
-		id: 						runAnalysisBox
-		name: 					"runAnalysisBox"
-		label: 					qsTr("<b>Run Analysis</b>")
-		checked: 				false
-		Component.onCompleted:
-		{
-			background.color = "#ff8600"
 		}
 	}
 
@@ -78,5 +65,6 @@ Form
 	Common.Options{
 		bfTy: true
 		interactions: true
+		anova: true
 	}
 }

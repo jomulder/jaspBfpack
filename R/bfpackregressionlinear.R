@@ -17,8 +17,8 @@
 
 bfpackRegressionLinear <- function(jaspResults, dataset, options, ...) {
 
-  sink("~/Downloads/log.txt")
-  on.exit(sink(NULL))
+  # sink("~/Downloads/log.txt")
+  # on.exit(sink(NULL))
 
   # What type of BFpack analysis is being conducted?
   type <- "regression"
@@ -33,12 +33,12 @@ bfpackRegressionLinear <- function(jaspResults, dataset, options, ...) {
   dataList <- .bfpackReadDataset(options, type, dataset)
 
   # Check if current data allow for analysis
-  .bfpackDataReady(dataList[["dataset"]], options, type)
+  .bfpackDataReady(dataList, options, type)
 
   # Create a container for the results
   bfpackContainer <- .bfpackCreateContainer(jaspResults,
                                             deps = c("dependent", "covariates",
-                                                     "seed", "manualHypotheses"))
+                                                     "seed", "manualHypotheses", "bfType"))
 
   .bfpackGetParameterEstimates(dataList, options, bfpackContainer, ready, type, jaspResults)
 

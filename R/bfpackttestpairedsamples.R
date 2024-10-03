@@ -32,14 +32,14 @@ bfpackTTestPairedSamples <- function(jaspResults, dataset, options, ...) {
   # Create a container for the results
   bfpackContainer <- .bfpackCreateContainer(jaspResults,
                                             deps = c("pairs", "seed",
-                                                     "muValue","manualHypotheses"))
+                                                     "muValue","manualHypotheses", "bfType"))
 
   .bfpackGetParameterEstimates(dataList, options, bfpackContainer, ready, type, jaspResults)
 
   # compute the results, aka BFs
   .bfpackComputeResults(dataList, options, bfpackContainer, ready, type)
 
-  .bfpackParameterTable(options, bfpackContainer, type, dataList[["dataset"]], position = 1)
+  .bfpackParameterTable(options, bfpackContainer, type, dataList, position = 1)
 
   # Create a legend containing the order constrained hypotheses
   .bfpackLegendTable(options, type, bfpackContainer, position = 2)

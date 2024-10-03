@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU Affero General Public
 // License along with this program.  If not, see
 // <http://www.gnu.org/licenses/>.
-//
+
 
 import QtQuick
 import QtQuick.Layouts
@@ -44,20 +44,7 @@ Form
 		{
 			name: 						"covariates"
 			title: 						qsTr("Covariates")
-			suggestedColumns: 			["scale"]
-		}
-	}
-
-	CheckBox
-	{
-		Layout.columnSpan: 2
-		id: 						runAnalysisBox
-		name: 					"runAnalysisBox"
-		label: 					qsTr("<b>Run Analysis</b>")
-		checked: 				false
-		Component.onCompleted:
-		{
-			background.color = "#ff8600"
+			// suggestedColumns: 			["scale", "ordinal"]
 		}
 	}
 
