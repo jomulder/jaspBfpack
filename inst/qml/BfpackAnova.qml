@@ -34,8 +34,9 @@ Form
 		AssignedVariablesList
 		{
 			name: 						"dependent"
-			title: 						qsTr("Dependent Variable")
+			title: 						qsTr("Dependent Variables")
 			allowedColumns: 			["scale"]
+			heigth : 200*jaspTheme.uiScale
 		}
 
 		AssignedVariablesList

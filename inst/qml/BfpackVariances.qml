@@ -46,7 +46,7 @@ Form
 			name: 						"groupingVariable"
 			title: 						qsTr("Grouping Variable")
 			singleVariable: 			true
-			allowedColumns: 			["nominal", "nominalText"]
+			allowedColumns: 			["nominal"]
 		}
 	}
 

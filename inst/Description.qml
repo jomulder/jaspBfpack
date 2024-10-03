@@ -64,7 +64,7 @@ Description
 	}
 	Analysis
 	{
-		menu:   	"Linear Regression"
+		menu:   	"Linear (Multivariate) Regression"
 		title:		"BFpack Regression"
 		func:			"bfpackRegressionLinear"
 	}

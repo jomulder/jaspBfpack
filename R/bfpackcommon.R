@@ -190,12 +190,13 @@
 # this function needs updating when there is a new analysis added
 # Check if current options allow for analysis
 .bfpackOptionsReady <- function(options, type) {
+
   ready <- switch(type,
     "independentTTest" = options[["variables"]] != "" && options[["groupingVariable"]] != "",
     "pairedTTest" = sum(unlist(options[["pairs"]]) != "") > 1,
     "onesampleTTest" = options[["variables"]] != "",
     "anova" = length(unlist(options[["dependent"]])) > 0 && length(unlist(options[["fixedFactors"]])) > 0,
-    "regression" = options[["dependent"]] != "" && length(unlist(options[["covariates"]])) > 0,
+    "regression" = sum(unlist(options[["dependent"]]) != "") > 0 && length(unlist(options[["covariates"]])) > 0,
     "correlation" = length(unlist(options[["variables"]])) > 1,
     "variances" = options[["variables"]] != "" && options[["groupingVariable"]] != "",
     "regressionLogistic" = options[["dependent"]] != "" && length(unlist(options[["covariates"]])) > 0,
@@ -207,7 +208,9 @@
 
 # this function needs updating when there is a new analysis added
 # Check if current data allow for analysis
-.bfpackDataReady <- function(dataset, options, type) {
+.bfpackDataReady <- function(dataset, options, type, ready) {
+
+  if (!ready) return()
 
   findex <- which(sapply(dataset, is.factor))
   if (length(findex > 0)) {
@@ -231,6 +234,8 @@
       exitAnalysisIfErrors = TRUE
     )
   }
+
+  return()
 }
 
 ###### COMPUTE RESULTS ######
@@ -320,7 +325,7 @@
   # regression
   } else if (type %in%  c("regression", "regressionLogistic")) {
 
-    dependent <- decodeColNames(options[["dependent"]])
+    dependent <- decodeColNames(unlist(options[["dependent"]]))
     covariates <- decodeColNames(unlist(options[["covariates"]]))
     ncov <- length(covariates)
     covariateString <- paste0(covariates, collapse = "+")
@@ -330,7 +335,13 @@
       covariateString <- paste0(covariateString, "+", iastring)
     }
 
-    formula <- as.formula(paste0(dependent, "~", covariateString))
+    if (length(dependent) > 1) { # means  multivariate linear regression
+      depString <- paste0("cbind(", paste0(dependent, collapse = ","), ")")
+    } else {
+      depString <- dependent
+    }
+
+    formula <- as.formula(paste0(depString, "~", covariateString))
 
     if (type == "regression") {
       result <- try(lm(formula, data = dataset))
@@ -427,18 +438,15 @@
 
   estimateNames <- as.list(names(estimateNames$estimate))
 
-  # remove intercept name for regression
-  if (type %in% c("regression", "regressionLogistic")) estimateNames[[1]] <- NULL
-
   # new dependencies for the qml source since it is not part of bfpackContainer but jaspResults
   deps2 <- switch(type,
-                 "independentTTest" = c("variables", "grouping"),
+                 "independentTTest" = c("variables", "groupingVariable"),
                  "pairedTTest" = "pairs",
                  "onesampleTTest" = "variables",
                  "anova" = c("dependent", "fixedFactors", "covariates"),
                  "regression" = c("dependent", "covariates"),
-                 "correlation" = "variables",
-                 "variances" = c("variables", "grouping"),
+                 "correlation" = c("variables", "groupingVariable"),
+                 "variances" = c("variables", "groupingVariable"),
                  "regressionLogistic" = c("dependent", "covariates"))
 
   namesForQml <- createJaspQmlSource("estimateNamesForQml", estimateNames)

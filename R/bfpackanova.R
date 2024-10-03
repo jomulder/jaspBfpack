@@ -17,8 +17,8 @@
 
 bfpackAnova <- function(jaspResults, dataset, options, ...) {
 
-  sink("~/Downloads/log.txt")
-  on.exit(sink(NULL))
+  # sink("~/Downloads/log.txt")
+  # on.exit(sink(NULL))
 
   # What type of BFpack analysis is being conducted?
   type <- "anova"
@@ -33,7 +33,7 @@ bfpackAnova <- function(jaspResults, dataset, options, ...) {
   dataset <- .bfpackReadDataset(options, type, dataset)
 
   # Check if current data allow for analysis
-  .bfpackDataReady(dataset, options, type)
+  .bfpackDataReady(dataset, options, type, ready)
 
   # Create a container for the results
   bfpackContainer <- .bfpackCreateContainer(jaspResults,

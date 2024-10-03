@@ -31,7 +31,7 @@ bfpackCorrelation <- function(jaspResults, dataset, options, ...) {
   dataset <- .bfpackReadDataset(options, type, dataset)
 
   # Check if current data allow for analysis
-  .bfpackDataReady(dataset, options, type)
+  .bfpackDataReady(dataset, options, type, ready)
 
   # Create a container for the results
   bfpackContainer <- .bfpackCreateContainer(jaspResults, deps = c("variables", "seed", "iterations",

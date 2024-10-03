@@ -89,3 +89,79 @@ test_that("Specification table results match", {
                                       0.000299707173241719, 1, 0.795137083588604, 1, 0.00116225365836387,
                                       "H3"))
 })
+
+
+
+# multivariate regression
+options <- list(
+    bfType = "fractional",
+    ciLevel = 0.95,
+    complement = TRUE,
+    covariates = "contcor1",
+    dependent = c("contNormal", "contGamma"),
+    estimatesTable = TRUE,
+    interactionTerms = list(),
+    iterations = 5000,
+    logScale = FALSE,
+    plots = FALSE,
+    manualHypotheses = list(
+      list(
+        hypothesisText = "contcor1_on_contNormal > contcor1_on_contGamma",
+        includeHypothesis = TRUE,
+        priorProbManual = "1",
+        value = "#"
+      )
+    ),
+    muValue = 0,
+    priorProbComplement = "1",
+    priorProbStandard = "2",
+    priorProbStandard2 = "1",
+    priorProbStandard3 = "1",
+    seed = 100,
+    specificationTable = FALSE
+  )
+
+set.seed(1)
+results <- jaspTools::runAnalysis("bfpackRegressionLinear", "debug.csv", options, makeTests = T)
+
+
+test_that("Estimates table results match", {
+  table <- results[["results"]][["bfpackContainer"]][["collection"]][["bfpackContainer_coefContainer"]][["collection"]][["bfpackContainer_coefContainer_estimatesTable"]][["data"]]
+  jaspTools::expect_equal_tables(table,
+                                 list("(Intercept)_on_contNormal", -0.407335959001421, -0.197600108422593,
+                                      -0.197600108422593, 0.0121357421562356, "contcor1_on_contNormal",
+                                      -0.0395987290269023, 0.168444232730491, 0.168444232730491, 0.376487194487884,
+                                      "(Intercept)_on_contGamma", 1.74153509468766, 2.04542009414516,
+                                      2.04542009414516, 2.34930509360267, "contcor1_on_contGamma",
+                                      -0.538532327714582, -0.237100144583728, -0.237100144583728,
+                                      0.064332038547127))
+})
+
+test_that("Manual hypotheses legend table results match", {
+  table <- results[["results"]][["bfpackContainer"]][["collection"]][["bfpackContainer_legendTable"]][["data"]]
+  jaspTools::expect_equal_tables(table,
+                                 list("contcor1_on_contNormal&gt;contcor1_on_contGamma", "H1", "complement",
+                                      "H2"))
+})
+
+test_that("Posterior probabilities when testing individual parameters table results match", {
+  table <- results[["results"]][["bfpackContainer"]][["collection"]][["bfpackContainer_parameterTable"]][["data"]]
+  jaspTools::expect_equal_tables(table,
+                                 list("(Intercept)_on_contNormal", 0.714009012694178, 0.0116265829017178,
+                                      0.274364404404104, "contcor1_on_contNormal", 0.791625334215502,
+                                      0.194294505154204, 0.0140801606302942, "(Intercept)_on_contGamma",
+                                      3.43006409771489e-21, 1, 2.0407452947433e-23, "contcor1_on_contGamma",
+                                      0.802403724408777, 0.0145072795906795, 0.183088996000543))
+})
+
+test_that("Evidence matrix (BFs) table results match", {
+  table <- results[["results"]][["bfpackContainer"]][["collection"]][["bfpackContainer_resultsContainer"]][["collection"]][["bfpackContainer_resultsContainer_matrixTable"]][["data"]]
+  jaspTools::expect_equal_tables(table,
+                                 list(1, 45.1496246486603, "H1", 0.0221485783720612, 1, "H2"))
+})
+
+test_that("Posterior model probability table results match", {
+  table <- results[["results"]][["bfpackContainer"]][["collection"]][["bfpackContainer_resultsContainer"]][["collection"]][["bfpackContainer_resultsContainer_postTable"]][["data"]]
+  jaspTools::expect_equal_tables(table,
+                                 list("H1", 0.978331351389896, "H2", 0.0216686486101037))
+})
