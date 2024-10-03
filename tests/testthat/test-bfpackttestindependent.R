@@ -7,6 +7,7 @@ options <-
     estimatesTable = FALSE,
     complement = FALSE,
     groupingVariable = "facExperim",
+    groupingVariable.types = "nominal",
     interactionTerms = list(),
     iterations = 5000,
     muValue = 0,
@@ -24,12 +25,15 @@ options <-
     priorProbStandard = "1",
     priorProbStandard2 = "1",
     priorProbStandard3 = "1",
-    variables = "contNormal"
+    variables = "contNormal",
+    variables.types = "scale"
   )
 
-
+debug <- read.csv("https://raw.githubusercontent.com/jasp-stats/jasp-desktop/development/Resources/Data%20Sets/debug.csv")
+dt <- debug[, c("contNormal", "facExperim")]
+dt$facExperim <- as.factor(dt$facExperim)
 set.seed(1)
-results <- jaspTools::runAnalysis("bfpackTTestIndependentSamples", "debug.csv", options)
+results <- jaspTools::runAnalysis("bfpackTTestIndependentSamples", dt, options, makeTests = F)
 
 test_that("Manual hypotheses legend table results match", {
   table <- results[["results"]][["bfpackContainer"]][["collection"]][["bfpackContainer_legendTable"]][["data"]]
@@ -73,8 +77,8 @@ test_that("Posterior model probability table results match", {
 test_that("Specification table results match", {
   table <- results[["results"]][["bfpackContainer"]][["collection"]][["bfpackContainer_resultsContainer"]][["collection"]][["bfpackContainer_resultsContainer_specTable"]][["data"]]
   jaspTools::expect_equal_tables(table,
-                                 list("<unicode>", 1, 0, 1, 0.188267672651421, 1, 0, "H1", "<unicode>",
-                                      1, 1.23843243033821, 1, 0.511289453654182, 1, 0.633197440695244,
-                                      "H2", "NaN", 1, 1.23193319559709, 1, 0.811732327348579, 1, 1,
-                                      "H3"))
+                                 list("<unicode>", 1, 0, 0, 1, 0.188267672651421, 1, 0, "H1", "<unicode>",
+                                      1, 1.23843243033821, 0.501315439842767, 1, 0.511289453654182,
+                                      1, 0.633197440695244, "H2", "NaN", 1, 1.23193319559709, 0.498684560157233,
+                                      1, 0.811732327348579, 1, 1, "H3"))
 })

@@ -22,7 +22,7 @@ options <- list(
 )
 
 set.seed(1)
-results <- jaspTools::runAnalysis("bfpackRegressionLinear", testthat::test_path("sales.csv"), options)
+results <- jaspTools::runAnalysis("bfpackRegressionLinear", testthat::test_path("sales.csv"), options, makeTests = F)
 
 
 test_that("Coefficients table results match", {
@@ -82,9 +82,10 @@ test_that("Posterior model probability table results match", {
 test_that("Specification table results match", {
   table <- results[["results"]][["bfpackContainer"]][["collection"]][["bfpackContainer_resultsContainer"]][["collection"]][["bfpackContainer_resultsContainer_specTable"]][["data"]]
   jaspTools::expect_equal_tables(table,
-                                 list(8.34117905446789e-27, 8.34117905446789e-27, 1, 0.00121418043670202,
-                                      1, 1.01276964269636e-29, 1, "H1", 4.87563959275002, 1, 4.87563959275002,
-                                      1, 0.204862916411396, 1, 0.998837746341637, "H2", 0.00146170224273426,
-                                      1, 0.00146170224273426, 1, 0.795137083588604, 1, 0.00116225365836264,
+                                 list(8.3411790544916e-27, 8.3411790544916e-27, 1, 3.42054780082398e-27,
+                                      0.00121418043670193, 1, 1.01276964269916e-29, 1, "H1", 4.87563959275001,
+                                      1, 4.87563959275001, 0.999700292826758, 1, 0.204862916411396,
+                                      1, 0.998837746341636, "H2", 0.0014617022427358, 1, 0.0014617022427358,
+                                      0.000299707173241719, 1, 0.795137083588604, 1, 0.00116225365836387,
                                       "H3"))
 })

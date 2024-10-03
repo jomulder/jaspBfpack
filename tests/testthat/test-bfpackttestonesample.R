@@ -23,7 +23,7 @@ options <-
 
 
 set.seed(1)
-results <- jaspTools::runAnalysis("bfpackTTestOneSample", "debug.csv", options)
+results <- jaspTools::runAnalysis("bfpackTTestOneSample", "debug.csv", options, makeTests = F)
 
 
 test_that("Coefficients table results match", {
@@ -61,7 +61,8 @@ test_that("Posterior model probability table results match", {
 test_that("Specification table results match", {
   table <- results[["results"]][["bfpackContainer"]][["collection"]][["bfpackContainer_resultsContainer"]][["collection"]][["bfpackContainer_resultsContainer_specTable"]][["data"]]
   jaspTools::expect_equal_tables(table,
-                                 list(1.46121344999626, 1, 1.46121344999626, 1, 0.684362711293717, 1,
-                                      0.999999998418288, "H1", 5.01117064831409e-09, 1, 5.01117064831409e-09,
-                                      1, 0.315637288706283, 1, 1.58171231667837e-09, "H2"))
+                                 list(1.46121344999626, 1, 1.46121344999626, 0.999999996570542, 1, 0.684362711293717,
+                                      1, 0.999999998418288, "H1", 5.01117064831409e-09, 1, 5.01117064831409e-09,
+                                      3.42945832529895e-09, 1, 0.315637288706283, 1, 1.58171231667837e-09,
+                                      "H2"))
 })

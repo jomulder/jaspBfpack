@@ -29,11 +29,11 @@ options <- list(
     priorProbStandard3 = "1",
     variables = c("adverts", "sales", "airplay", "attract"),
     variables.types = c("scale", "scale", "scale", "ordinal"),
-    group = ""
+    groupingVariable = ""
 )
 
 set.seed(1)
-results <- jaspTools::runAnalysis("bfpackCorrelation", testthat::test_path("sales.csv"), options)
+results <- jaspTools::runAnalysis("bfpackCorrelation", testthat::test_path("sales.csv"), options, makeTests = F)
 
 test_that("Manual hypotheses legend table results match", {
   table <- results[["results"]][["bfpackContainer"]][["collection"]][["bfpackContainer_legendTable"]][["data"]]
@@ -86,9 +86,10 @@ test_that("Posterior model probability table results match", {
 test_that("Specification table results match", {
   table <- results[["results"]][["bfpackContainer"]][["collection"]][["bfpackContainer_resultsContainer"]][["collection"]][["bfpackContainer_resultsContainer_specTable"]][["data"]]
   jaspTools::expect_equal_tables(table,
-                                 list(4.49881577874035e-19, 4.49881577874035e-19, 1, 0.334621459725668,
-                                      1, 1.50540030291896e-19, 1, "H1", 3.57261027085372, 1, 3.57261027085372,
-                                      1, 0.166666666666667, 1, 0.595435045142286, "H2", 0.485477945829257,
-                                      1, 0.485477945829257, 1, 0.833333333333333, 1, 0.404564954857714,
+                                 list(4.49881577874035e-19, 4.49881577874035e-19, 1, 3.38710922534774e-20,
+                                      0.334621459725668, 1, 1.50540030291896e-19, 1, "H1", 3.57261027085372,
+                                      1, 3.57261027085372, 0.268977922238213, 1, 0.166666666666667,
+                                      1, 0.595435045142286, "H2", 0.485477945829257, 1, 0.485477945829257,
+                                      0.731022077761787, 1, 0.833333333333333, 1, 0.404564954857714,
                                       "H3"))
 })

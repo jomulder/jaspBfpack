@@ -66,45 +66,25 @@
 # Read the data set
 .bfpackReadDataset <- function(options, type, dataset) {
 
-  numerics <- switch(type,
-    "onesampleTTest" = options[["variables"]],
-    "pairedTTest" = unlist(options[["pairs"]]),
-    "independentTTest" = unlist(options[["variables"]]),
-    "anova" = c(unlist(options[["dependent"]]), unlist(options[["covariates"]])),
-    "regression" = c(options[["dependent"]], unlist(options[["covariates"]])),
-    "correlation" = c(unlist(options[["variables"]]), unlist(options[["covariates"]])),
-    "variances" = options[["variables"]],
-    "regressionLogistic" = unlist(options[["covariates"]]),
-    "multiSampleTTest" = unlist(options[["variables"]])
-    )
-  numerics <- numerics[numerics != ""]
-  factors <- switch(type,
-    "onesampleTTest" = NULL,
-    "pairedTTest" = NULL,
-    "independentTTest" = options[["groupingVariable"]],
-    "anova" = unlist(options[["fixedFactors"]]),
-    "regression" = NULL,
-    "variances" = options[["groupingVariable"]],
-    "regressionLogistic" = options[["dependent"]],
-    "correlation" = options[["group"]]
-    )
-  factors <- factors[factors != ""]
-  vars <- c(numerics, factors)
+  vars <- c(unlist(options[["variables"]]),
+            unlist(options[["pairs"]]),
+            options[["groupingVariable"]],
+            unlist(options[["dependent"]]),
+            unlist(options[["covariates"]]),
+            unlist(options[["fixedFactors"]])
+  )
 
+  vars <- vars[vars != ""]
   if (is.null(dataset)) {
     if (type == "onesampleTTest") { # For the one sample t test we do not remove the NA's listwise
-      dataset <- .readDataSetToEnd(columns.as.numeric = numerics, columns.as.factor = factors)
+      dataset <- .readDataSetToEnd(columns = vars)
     } else {
-      dataset <- .readDataSetToEnd(columns.as.numeric = numerics, columns.as.factor = factors, exclude.na.listwise = vars)
-    }
-    if ((type == "anova") && length(options[["fixedFactors"]]) > 0) {
-      if (any(grepl(pattern = " ", x = levels(dataset[, options[["fixedFactors"]]])))) {
-        jaspBase:::.quitAnalysis(gettext("BFpack does not accept factor levels that contain spaces. Please remove the spaces from your factor levels to continue."))
-      }
+      dataset <- .readDataSetToEnd(columns = vars, exclude.na.listwise = vars)
     }
   } else {
-    dataset <- .vdf(dataset, columns.as.numeric = numerics, columns.as.factor = factors)
+    dataset <- .vdf(dataset, columns = vars)
   }
+
 
   return(dataset)
 }
@@ -229,43 +209,25 @@
 # Check if current data allow for analysis
 .bfpackDataReady <- function(dataset, options, type) {
 
-  if (type == "independentTTest" || type == "regressionLogistic" || type == "correlation") {
+  findex <- which(sapply(dataset, is.factor))
+  if (length(findex > 0)) {
+    factors <- colnames(dataset)[findex]
+    .hasErrors(dataset,
+               type = "factorLevels",
+               factorLevels.target = factors, factorLevels.amount = '< 2',
+               exitAnalysisIfErrors = TRUE
+    )
 
-    if (type == "independentTTest") {
-      factors <- options[["groupingVariable"]]
-    } else if (type == "regressionLogistic") {
-      factors <- options[["dependent"]]
-    } else if (type == "correlation") {
-      factors <- options[["group"]]
-    }
-
-    factors <- factors[factors != ""]
-    if (length(factors) > 0) {
-      .hasErrors(dataset,
-        type = "factorLevels",
-        factorLevels.target = factors, factorLevels.amount = '< 2',
-        exitAnalysisIfErrors = TRUE
-      )
+    if (any(grepl(pattern = " ", x = levels(dataset[, findex])))) {
+      jaspBase:::.quitAnalysis(gettext("BFpack does not accept factor levels that contain spaces. Please remove the spaces from your factor levels to continue."))
     }
   }
 
-  numerics <- switch(type,
-    "onesampleTTest" = options[["variables"]],
-    "pairedTTest" = unlist(options[["pairs"]]),
-    "independentTTest" = options[["variables"]],
-    "anova" = options[["dependent"]],
-    "regression" = c(options[["dependent"]], unlist(options[["covariates"]])),
-    "correlation" = c(unlist(options[["variables"]]), unlist(options[["covariates"]])),
-    "variances" = unlist(options[["variables"]]),
-    "regressionLogisitic" = unlist(options[["covariates"]]),
-    "multiSampleTTest" = unlist(options[["variables"]]))
-
-  numerics <- numerics[numerics != ""]
-
-  if (length(numerics) > 0) {
+  nonfactors <- colnames(dataset)[-findex]
+  if (length(nonfactors) > 0) {
     .hasErrors(dataset,
       type = c("infinity", "variance", "observations"),
-      all.target = numerics, observations.amount = "< 3",
+      all.target = nonfactors, observations.amount = "< 3",
       exitAnalysisIfErrors = TRUE
     )
   }
@@ -274,7 +236,7 @@
 ###### COMPUTE RESULTS ######
 # this function needs updating when there is a new analysis added
 # perform the parameter estimation and also return the estimates to the JASP GUI
-.bfpackGetParameterEstimates <- function(dataList, options, bfpackContainer, ready, type, jaspResults) {
+.bfpackGetParameterEstimates <- function(dataset, options, bfpackContainer, ready, type, jaspResults) {
 
   if (!is.null(bfpackContainer[["estimatesState"]])) {
     return()
@@ -282,7 +244,7 @@
 
   if (!ready) return()
 
-  dataset <- dataList
+  dataset <- dataset
   # decode the colnames otherwise bfpack fails when trying to match hypotheses and estimate names
   colnames(dataset) <- decodeColNames(colnames(dataset))
 
@@ -327,11 +289,11 @@
       form <- NULL
     }
 
-    if (options[["group"]] == "") {
+    if (options[["groupingVariable"]] == "") {
       result <- try(BFpack::cor_test(dataset, formula = form))
 
     } else {
-      groupName <- decodeColNames(options[["group"]])
+      groupName <- decodeColNames(options[["groupingVariable"]])
       levs <- levels(dataset[[groupName]])
       dataNames <- vector("character", 0L)
       for (i in 1:length(levs)) {
@@ -489,7 +451,7 @@
 
 # compute the posteriors and BFs
 # TODO: manual and standard prior
-.bfpackComputeResults <- function(dataList, options, bfpackContainer, ready, type) {
+.bfpackComputeResults <- function(dataset, options, bfpackContainer, ready, type) {
 
   if (!is.null(bfpackContainer[["resultsContainer"]][["resultsState"]])) return()
   if (!ready) return()
@@ -606,8 +568,8 @@
       title2 <- gettext("Pr(<0)")
       title3 <- gettext("Pr(>0)")
 
-      if (type == "correlation" && options[["group"]] != "") {
-        groupName <- options[["group"]]
+      if (type == "correlation" && options[["groupingVariable"]] != "") {
+        groupName <- options[["groupingVariable"]]
         levs <- levels(dataset[[groupName]])
         footnote <- ""
         for (i in 1:length(levs)) {

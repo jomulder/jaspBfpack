@@ -33,9 +33,12 @@ options <-
     priorProbStandard3 = "1"
   )
 
+debug <- read.csv("https://raw.githubusercontent.com/jasp-stats/jasp-desktop/development/Resources/Data%20Sets/debug.csv")
+dt <- debug[, c("contNormal", "contcor1", "contBinom")]
+dt$contBinom <- as.factor(dt$contBinom)
 
 set.seed(1)
-results <- jaspTools::runAnalysis("bfpackRegressionLogistic", "debug.csv", options)
+results <- jaspTools::runAnalysis("bfpackRegressionLogistic", dt, options)
 
 
 test_that("Coefficients table results match", {

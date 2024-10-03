@@ -28,8 +28,12 @@ options <- list(
   priorProbStandard3 = "1"
 )
 
+debug <- read.csv("https://raw.githubusercontent.com/jasp-stats/jasp-desktop/development/Resources/Data%20Sets/debug.csv")
+dt <- debug[, c("contNormal", "facFive", "facGender")]
+dt$facGender <- as.factor(dt$facGender)
+
 set.seed(1)
-results <- jaspTools::runAnalysis("bfpackAnova", "debug.csv", options)
+results <- jaspTools::runAnalysis("bfpackAnova", dt, options)
 
 
 test_that("Posterior probabilities for interaction effects table results match", {

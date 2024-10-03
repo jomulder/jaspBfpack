@@ -23,9 +23,10 @@ options <-
     variables = "libido"
   )
 
-
+dt <- read.csv(testthat::test_path("viagra.csv"))
+dt$test <- as.factor(dt$test)
 set.seed(1)
-results <- jaspTools::runAnalysis("bfpackVariances", testthat::test_path("viagra.csv"), options)
+results <- jaspTools::runAnalysis("bfpackVariances", dt, options)
 
 
 test_that("Manual hypotheses legend table results match", {

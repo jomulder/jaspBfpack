@@ -17,8 +17,8 @@
 
 bfpackAnova <- function(jaspResults, dataset, options, ...) {
 
-  # sink("~/Downloads/log.txt")
-  # on.exit(sink(NULL))
+  sink("~/Downloads/log.txt")
+  on.exit(sink(NULL))
 
   # What type of BFpack analysis is being conducted?
   type <- "anova"
@@ -30,22 +30,22 @@ bfpackAnova <- function(jaspResults, dataset, options, ...) {
   ready <- .bfpackOptionsReady(options, type)
 
   # Read the data set
-  dataList <- .bfpackReadDataset(options, type, dataset)
+  dataset <- .bfpackReadDataset(options, type, dataset)
 
   # Check if current data allow for analysis
-  .bfpackDataReady(dataList, options, type)
+  .bfpackDataReady(dataset, options, type)
 
   # Create a container for the results
   bfpackContainer <- .bfpackCreateContainer(jaspResults,
                                             deps = c("dependent", "fixedFactors", "covariates",
                                                      "seed", "manualHypotheses", "bfType"))
 
-  .bfpackGetParameterEstimates(dataList, options, bfpackContainer, ready, type, jaspResults)
+  .bfpackGetParameterEstimates(dataset, options, bfpackContainer, ready, type, jaspResults)
 
   # compute the results, aka BFs
-  .bfpackComputeResults(dataList, options, bfpackContainer, ready, type)
+  .bfpackComputeResults(dataset, options, bfpackContainer, ready, type)
 
-  .bfpackParameterTable(options, bfpackContainer, type, dataList, position = 1)
+  .bfpackParameterTable(options, bfpackContainer, type, dataset, position = 1)
 
   .bfpackMainEffectsTable(options, bfpackContainer, type, position = 1.5)
   .bfpackInteractionEffectsTable(options, bfpackContainer, type, position = 1.6)

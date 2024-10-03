@@ -49,7 +49,7 @@ Form
 		{
 			name: 						"covariates"
 			title: 						qsTr("Covariates")
-			allowedColumns: 			["ordinal", "nominal", "scale"]
+			allowedColumns: 			["scale"]
 		}
 	}
 

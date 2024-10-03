@@ -36,7 +36,7 @@ Form
 		AssignedVariablesList
 		{
 			name: 						"variables"
-			title: 						qsTr("Variables")
+			title: 						qsTr("Variable")
 			singleVariable: 			true
 			allowedColumns: 			["scale"]
 		}

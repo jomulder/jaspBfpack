@@ -27,20 +27,20 @@ bfpackRegressionLogistic <- function(jaspResults, dataset, options, ...) {
   ready <- .bfpackOptionsReady(options, type)
 
   # Read the data set
-  dataList <- .bfpackReadDataset(options, type, dataset)
+  dataset <- .bfpackReadDataset(options, type, dataset)
 
   # Check if current data allow for analysis
-  .bfpackDataReady(dataList, options, type)
+  .bfpackDataReady(dataset, options, type)
 
   # Create a container for the results
   bfpackContainer <- .bfpackCreateContainer(jaspResults,
                                             deps = c("dependent", "covariates",
                                                      "seed", "manualHypotheses"))
 
-  .bfpackGetParameterEstimates(dataList, options, bfpackContainer, ready, type, jaspResults)
+  .bfpackGetParameterEstimates(dataset, options, bfpackContainer, ready, type, jaspResults)
 
   # compute the results, aka BFs
-  .bfpackComputeResults(dataList, options, bfpackContainer, ready, type)
+  .bfpackComputeResults(dataset, options, bfpackContainer, ready, type)
 
   .bfpackParameterTable(options, bfpackContainer, type, position = 1)
 
