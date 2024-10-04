@@ -122,7 +122,7 @@ options <- list(
   )
 
 set.seed(1)
-results <- jaspTools::runAnalysis("bfpackRegressionLinear", "debug.csv", options, makeTests = T)
+results <- jaspTools::runAnalysis("bfpackRegressionLinear", "debug.csv", options, makeTests = F)
 
 
 test_that("Estimates table results match", {

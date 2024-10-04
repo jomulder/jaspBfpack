@@ -25,7 +25,11 @@ options <- list(
   specificationTable = FALSE,
   priorProbStandard = "1",
   priorProbStandard2 = "1",
-  priorProbStandard3 = "1"
+  priorProbStandard3 = "1",
+  priorProbInteractionNonZero = "1",
+  priorProbInteractionZero = "1",
+  priorProbMainNonZero = "1",
+  priorProbMainZero = "1"
 )
 
 debug <- read.csv("https://raw.githubusercontent.com/jasp-stats/jasp-desktop/development/Resources/Data%20Sets/debug.csv")
@@ -113,7 +117,11 @@ options <- list(
   specificationTable = FALSE,
   priorProbStandard = "1",
   priorProbStandard2 = "1",
-  priorProbStandard3 = "1"
+  priorProbStandard3 = "1",
+  priorProbInteractionNonZero = "1",
+  priorProbInteractionZero = "1",
+  priorProbMainNonZero = "1",
+  priorProbMainZero = "1"
 )
 
 set.seed(1)
@@ -134,4 +142,67 @@ test_that("Posterior probabilities when testing individual parameters table resu
                                       5.60001167204669e-12, 0.999999999994324, 7.5881868854101e-14,
                                       "facExperimexperimental_on_contGamma", 3.47872566274389e-14,
                                       0.999999999999965, 4.5233346175913e-16))
+})
+
+
+# check the main and interaction effect prior weight input
+
+options <-
+  list(
+    bfType = "fractional",
+    ciLevel = 0.95,
+    complement = TRUE,
+    covariates = "contcor1",
+    dependent = "contNormal",
+    estimatesTable = FALSE,
+    fixedFactors = "contBinom",
+    groupingVariable = "",
+    interactionTerms = list(
+      list(
+        includeInteractionEffect = TRUE,
+        value = "contBinom:contcor1"
+      )
+    ),
+    iterations = 5000,
+    logScale = FALSE,
+    manualHypotheses = list(
+      list(
+        hypothesisText = "",
+        includeHypothesis = FALSE,
+        priorProbManual = "1",
+        value = "#"
+      )
+    ),
+    muValue = 0,
+    plotHeight = 320,
+    plotWidth = 480,
+    plots = FALSE,
+    priorProbComplement = "1",
+    priorProbInteractionNonZero = "100",
+    priorProbInteractionZero = "1",
+    priorProbMainNonZero = "100",
+    priorProbMainZero = "1",
+    priorProbStandard = "2",
+    priorProbStandard2 = "1",
+    priorProbStandard3 = "1",
+    seed = 100,
+    specificationTable = FALSE
+  )
+
+dt <- debug[, c("contNormal", "contcor1", "contBinom")]
+dt$contBinom <- as.factor(dt$contBinom)
+
+set.seed(1)
+results <- jaspTools::runAnalysis("bfpackAnova", dt, options, makeTests = F)
+
+test_that("Posterior probabilities for interaction effects table results match", {
+  table <- results[["results"]][["bfpackContainer"]][["collection"]][["bfpackContainer_iaEffectsTable"]][["data"]]
+  jaspTools::expect_equal_tables(table,
+                                 list("contBinom:contcor1", 0.942375220591295, 0.0576247794087045))
+})
+
+test_that("Posterior probabilities for main effects table results match", {
+  table <- results[["results"]][["bfpackContainer"]][["collection"]][["bfpackContainer_mainEffectsTable"]][["data"]]
+  jaspTools::expect_equal_tables(table,
+                                 list("contBinom", 0.750241326516055, 0.249758673483945))
 })

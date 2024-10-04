@@ -36,7 +36,7 @@ Form
 			name: 						"dependent"
 			title: 						qsTr("Dependent Variables")
 			allowedColumns: 			["scale"]
-			heigth : 200*jaspTheme.uiScale
+			id: dependent
 		}
 
 		AssignedVariablesList
@@ -44,14 +44,16 @@ Form
 			name: 						"fixedFactors"
 			title: 						qsTr("Fixed Factors")
 			allowedColumns: 			["ordinal", "nominal"]
-		}
+			id: fixedFactors
+		} 
 
 		AssignedVariablesList
 		{
 			name: 						"covariates"
 			title: 						qsTr("Covariates")
 			allowedColumns: 			["scale"]
-		}
+			id: covariates
+ 		}
 	}
 
 	Common.HypothesesWindowStandard{
@@ -67,5 +69,6 @@ Form
 		bfTy: true
 		interactions: true
 		anova: true
+		// interactionValues: covariates.columnsNames
 	}
 }

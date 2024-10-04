@@ -32,8 +32,6 @@ bfpackRegressionLinear <- function(jaspResults, dataset, options, ...) {
   # Read the data set
   dataset <- .bfpackReadDataset(options, type, dataset)
 
-  print(str(dataset))
-
   # Check if current data allow for analysis
   .bfpackDataReady(dataset, options, type, ready)
 

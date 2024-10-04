@@ -470,6 +470,14 @@
             "priorProbStandard", "priorProbStandard2", "priorProbStandard3",
             "priorProbComplement", "seed", "bfType", "includeHypothesis")
 
+  specDeps <- switch(type,
+                     "regression" = c("interactionTerms", "includeInteractionEffect"),
+                     "anova" = c("interactionTerms", "includeInteractionEffect", "priorProbMainZero",
+                                 "priorProbMainNonZero", "priorProbInteractionZero", "priorProbInteractionNonZero"),
+                     "regressionLogistic" = c("interactionTerms", "includeInteractionEffect"),
+                     NULL)
+  deps <- c(deps, specDeps)
+
   resultsContainer <- createJaspContainer()
   resultsContainer$dependOn(optionsFromObject = bfpackContainer[["estimatesState"]], options = deps)
 
@@ -481,6 +489,14 @@
     # standard hypotheses priors
     if (type %in% c("variances", "multiSampleTTest")) {
       standPrior <- sapply(parse(text = c(options[["priorProbStandard"]], options[["priorProbStandard2"]])), eval)
+    } else if (type == "anova") {
+      standPrior <- list(sapply(parse(text = c(options[["priorProbStandard"]], options[["priorProbStandard2"]],
+                                          options[["priorProbStandard3"]])), eval),
+                         sapply(parse(text = c(options[["priorProbMainZero"]],
+                                               options[["priorProbMainNonZero"]])), eval),
+                         sapply(parse(text = c(options[["priorProbInteractionZero"]],
+                                               options[["priorProbInteractionNonZero"]])), eval)
+                         )
     } else {
       standPrior <- sapply(parse(text = c(options[["priorProbStandard"]], options[["priorProbStandard2"]],
                                           options[["priorProbStandard3"]])), eval)

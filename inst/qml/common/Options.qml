@@ -28,7 +28,9 @@ Section
 	property bool interactions: false
 	property bool anova: false
 	property bool multigroup: false
+	property var interactionValues: ["fix1", "fix2", "cov1"]
 
+	id: options
 	title: 	qsTr("Options")
 
 	Group
@@ -114,6 +116,21 @@ Section
 		}
 	}
 
+
+// there is still the issue how to get the covariates names and other variables names into this qml element
+	function combinePairs(values) {
+			var pairs = [];
+			for (var i = 0; i < values.length; i++) {
+					for (var j = i + 1; j < values.length; j++) {
+							pairs.push(values[i] + ":" + values[j]);
+					}
+			}
+			return pairs;
+	}
+
+	// Example usage
+	property var interactionPairs: combinePairs(options.interactionValues);
+
 	Group 
 	{
 		Layout.columnSpan: 2
@@ -123,16 +140,33 @@ Section
 		ComponentsList 
 		{
 			height: 120 * preferencesModel.uiScale
-			headerLabels: anova ? [qsTr("Include"), qsTr("Prior weight no effect")] : [qsTr("Include")]
+			headerLabels: [qsTr("Include")]
 			name: "interactionTerms"
 			rSource: "interactionSource"
-			// source: "covariates"
+			// values: options.interactionPairs
+			addItemManually: false
 			rowComponent: RowLayout { 
 				Text { Layout.preferredWidth: 210*jaspTheme.uiScale; text: rowValue; visible: true }
-				CheckBox { Layout.preferredWidth: 50*jaspTheme.uiScale; name: "includeInteractionEffect"; checked:false }
-				FormulaField { fieldWidth: 50; name: "priorProbAnovaNoEffect"; defaultValue: "1"; visible: anova }
+				CheckBox { Layout.preferredWidth: 50*jaspTheme.uiScale; name: "includeInteractionEffect"; checked: true }
 			}
 		}
+	}
+
+	Group 
+	{
+		title: qsTr("Effects")
+		visible: anova
+		columns: 2
+		Text { text: "" }
+		Text { text: qsTr("Prior weight") }
+		Text { text: qsTr("Main zero effect") }
+		FormulaField { name: "priorProbMainZero"; defaultValue: "1"; fieldWidth: 50 }
+		Text { text: qsTr("Main non-zero effect") }
+		FormulaField { name: "priorProbMainNonZero"; defaultValue: "1"; fieldWidth: 50 }
+		Text { text: qsTr("Interaction zero effect") }
+		FormulaField { name: "priorProbInteractionZero"; defaultValue: "1"; fieldWidth: 50 }
+		Text { text: qsTr("Interaction non-zero effect") }
+		FormulaField { name: "priorProbInteractionNonZero"; defaultValue: "1"; fieldWidth: 50 }
 	}
 
 	Group {
@@ -141,7 +175,7 @@ Section
 		DropDown
 		{
 			label: qsTr("Grouping variable");
-			name: "group";
+			name: "groupingVariable";
 			showVariableTypeIcon: true;
 			addEmptyValue: true;
 		} // No model: it takes all variables per default
