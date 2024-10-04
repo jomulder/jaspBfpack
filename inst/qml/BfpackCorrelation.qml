@@ -28,7 +28,7 @@ Form
 
 	VariablesForm
 	{
-		preferredHeight: 200 * preferencesModel.uiScale
+		preferredHeight: 250 * preferencesModel.uiScale
 
 		AvailableVariablesList
 		{
@@ -37,10 +37,27 @@ Form
 		
 		AssignedVariablesList
 		{
+			title: 						qsTr("Variables")
 			name: 								"variables"
+			singleVariable: 			false
+		}
+
+		AssignedVariablesList
+		{
+			name: 						"groupingVariable"
+			title: 						qsTr("Grouping Variable")
+			singleVariable: 	true
+			allowedColumns: 	["nominal"]
+		}
+
+		AssignedVariablesList
+		{
+			name: 								"covariates"
+			title: 								qsTr("Covariates")
 			singleVariable: 			false
 			allowedColumns: 			["scale", "ordinal"]
 		}
+
 	}
 
 	Common.HypothesesWindowStandard{
@@ -54,29 +71,28 @@ Form
 	Common.Options{
 		bfTy: false
 		iterations: true
-		multigroup: true
 	}
 
-	Section
-	{
-		title: qsTr("Covariates")
-		VariablesForm
-		{
-			preferredHeight: 150 * preferencesModel.uiScale
+	// Section
+	// {
+	// 	title: qsTr("Covariates")
+	// 	VariablesForm
+	// 	{
+	// 		preferredHeight: 150 * preferencesModel.uiScale
 
-			AvailableVariablesList
-			{
-				name: 						"covariatesList"
-				source: 					"variablesList"
-			}
+	// 		AvailableVariablesList
+	// 		{
+	// 			name: 						"covariatesList"
+	// 			source: 					"variablesList"
+	// 		}
 			
-			AssignedVariablesList
-			{
-				name: 								"covariates"
-				singleVariable: 			false
-				allowedColumns: 			["scale", "ordinal"]
-			}
-		}
+	// 		AssignedVariablesList
+	// 		{
+	// 			name: 								"covariates"
+	// 			singleVariable: 			false
+	// 			allowedColumns: 			["scale", "ordinal"]
+	// 		}
+	// 	}
 	
-	}
+	// }
 }

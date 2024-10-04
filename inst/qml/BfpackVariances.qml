@@ -41,6 +41,7 @@ Form
 			singleVariable: 			true
 			allowedColumns: 			["scale", "ordinal"]
 		}
+
 		AssignedVariablesList
 		{
 			name: 						"groupingVariable"
@@ -51,7 +52,6 @@ Form
 	}
 
 	Common.HypothesesWindowStandard{
-		parName: qsTr("delta")
 		onlyUnequal: true
 	}
 	Common.ParametersWindow{}

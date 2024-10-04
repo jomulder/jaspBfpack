@@ -47,7 +47,8 @@ Group
 	property var hypoString: onlyUnequal ? 
 	(multiTest ? 
 			[qsTr("H0: ") + parName + " = test value", qsTr("H1: ") + parName + " ≠ test value"] : 
-			[qsTr("H0: ") + parName + " = 0", qsTr("H1: ") + parName + " ≠ 0"]) : 
+			// variances test
+			[qsTr("Equal variances"), qsTr("Unequal variances")]) : 
 	specificMu ? 
 			[qsTr("H0: ") + parName + " = ", qsTr("H1: ") + parName + " < ", qsTr("H2: ") + parName + " > "] : 
 			[qsTr("H0: ") + parName + " = 0 ", qsTr("H1: ") + parName + " < 0 ", qsTr("H2: ") + parName + " > 0 "];

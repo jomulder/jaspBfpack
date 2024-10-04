@@ -27,7 +27,6 @@ Section
 	property bool iterations: false
 	property bool interactions: false
 	property bool anova: false
-	property bool multigroup: false
 	property var interactionValues: ["fix1", "fix2", "cov1"]
 
 	id: options
@@ -169,15 +168,4 @@ Section
 		FormulaField { name: "priorProbInteractionNonZero"; defaultValue: "1"; fieldWidth: 50 }
 	}
 
-	Group {
-		visible: multigroup
-		title: qsTr("Multigroup")
-		DropDown
-		{
-			label: qsTr("Grouping variable");
-			name: "groupingVariable";
-			showVariableTypeIcon: true;
-			addEmptyValue: true;
-		} // No model: it takes all variables per default
-	}
 }

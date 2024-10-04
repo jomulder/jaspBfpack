@@ -518,6 +518,19 @@
       if (options[["complement"]]) manualPrior <- c(manualPrior, options[["priorProbComplement"]])
       # convert the prior character values to numeric:
       manualPrior <- sapply(manualPrior, function(x) eval(parse(text=x)))
+
+      # special treatment for variances, see if levels of the grouping variable start with a numeric charaacter, which would crash BFpack
+      findex <- which(sapply(dataset, is.factor))
+      if (length(findex > 0)) {
+        if (type == "variances") {
+          # there is only one factor for variances
+          levs <- levels(dataset[, findex])
+          if (any(grepl("^[0-9]", levs))) {
+            jaspBase:::.quitAnalysis(gettext("BFpack does not accept factor levels that start with a number. Please remove the numbers from your factor levels to continue."))
+          }
+        }
+      }
+
     }
 
     # BF.type depends in the analysis as well
@@ -597,7 +610,7 @@
         levs <- levels(dataset[[groupName]])
         footnote <- ""
         for (i in 1:length(levs)) {
-          footnote <- gettextf("%1$sGroup %2$s corresponds to level %3$s. ", footnote, paste0("g", i), levs[i])
+          footnote <- gettextf("%1$sGroup %2$s corresponds to level %3$s in variable %4$s. ", footnote, paste0("g", i), levs[i], groupName)
         }
         parameterTable$addFootnote(footnote)
       }
