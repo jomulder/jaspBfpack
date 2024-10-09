@@ -1,39 +1,39 @@
-BFpack Independent Samples T-Test
+BFpack Correlation
 ==========================
 
-The analysis allows to test exploratory hypotheses (e.g., equal vs negative vs postive) and confirmatory hypotheses (with equality and/or order constraints) using Bayes factors and posterior probabilities under commonly used statistical models. For the independent samples t-test that means one can test hypotheses relating to the difference between two groups measured on a continous variable.
+The analysis allows to test exploratory hypotheses (e.g., equal vs negative vs postive) and confirmatory hypotheses (with equality and/or order constraints) using Bayes factors and posterior probabilities under commonly used statistical models. For the correlation that means one can test hypotheses relating to correlation coefficients. The correlations include biserial, polyserial, tetrachoric, polychoric, and product-moment coefficients. Overlapping correlations are also supported. 
 
 ## Input
 ### Main Window
-- Variables: Input one variables that is continuous (if they are not, they will be treated as such)
-- Grouping Variable: Input one variable that is nominal
+- Variables: Input at least two variables that are nominal, ordinal, or continuous
+- Grouping variable: Input variable that is nominal.
+- Covariates: Input continuous or ordinal variables. Partial these out.
 
 #### Standard hypothesis test
-- Hypotheses: Test hypothesis that the parameter is equal to smaller or larger than a specific value; for t-test the parameter is called delta and denotes the difference between the independent groups
-- Test value: Test value to for the hypothesis of equality/inequality
+- Hypotheses: Test hypothesis that the parameter is equal to smaller or larger than a specific value; for correlation the parameters are all called rho and they are tested to be zero or smaller or larger
 - Prior weights: Specify how to weigh each hypothesis; defaults to the nullhypothesis being weighted twice as much as the alternatives 
 
 #### Parameters
 Once the variables are filled in, the parameters that can be used in the specification of the manual hypotheses show up here
 
 #### Manual hypothesis test
-- Hypotheses: Specify a manual hypothesis, see the tooltip for more info; Specify the prior weight and do not forget to check the include box to test the hypothesis. For the t-test this could be something like "1>difference>0"+
+- Hypotheses: Specify a manual hypothesis, see the tooltip for more info; Specify the prior weight and do not forget to check the include box to test the hypothesis. For the correlation this could be something like "var1Name_with_var2Name_in_g1 > var1Name_with_var2Name_in_g2" or "var1Name_with_var2Name > var1Name_with_var3Name"
 - Use the "+" to add more hypotheses
 - Complement: The complement hypothesis; prior weight and include
 
 ### Options
 #### Bayes Factor: 
 - Log scale: reports the log BF
-- Bayes factor type: Default is the fractional BF, alternatively choose the adjusted fractional BF
 
 #### Tables
 - Specification: Print the specification table
-- Estimates with uncertainty interval: Print a table with the point estimates and uncertainty intervals (confidence interval for t-test) for the parameter(s) of interest.
+- Estimates with uncertainty interval: Print a table with the point estimates and uncertainty intervals (credible interval for correlation) for the parameter(s) of interest. Estimates are based on the posterior distribution of the correlation coefficient.
 
 #### Plots
 - Manual hypothesis plots: Produces plots depicting the prior and posterior probabilities of the manual hypotheses
 
 #### Additional options: 
+- No. iterations for parameter estimation: default is 5000 samples from the posterior distribution 
 - Seed
 
 ## Output

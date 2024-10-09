@@ -1,34 +1,32 @@
-BFpack Independent Samples T-Test
+BFpack Variances (Bartlett Test)
 ==========================
 
-The analysis allows to test exploratory hypotheses (e.g., equal vs negative vs postive) and confirmatory hypotheses (with equality and/or order constraints) using Bayes factors and posterior probabilities under commonly used statistical models. For the independent samples t-test that means one can test hypotheses relating to the difference between two groups measured on a continous variable.
+The analysis allows to test exploratory hypotheses (e.g., equal vs negative vs postive) and confirmatory hypotheses (with equality and/or order constraints) using Bayes factors and posterior probabilities under commonly used statistical models. For the variances that means one can test hypotheses relating to the homogeneity of variances.
 
 ## Input
 ### Main Window
-- Variables: Input one variables that is continuous (if they are not, they will be treated as such)
-- Grouping Variable: Input one variable that is nominal
+- Variable: Input a continuous or ordinal variable
+- Grouping variable: Input variable that is nominal.
 
 #### Standard hypothesis test
-- Hypotheses: Test hypothesis that the parameter is equal to smaller or larger than a specific value; for t-test the parameter is called delta and denotes the difference between the independent groups
-- Test value: Test value to for the hypothesis of equality/inequality
+- Hypotheses: Test hypothesis that the variances are equal or not
 - Prior weights: Specify how to weigh each hypothesis; defaults to the nullhypothesis being weighted twice as much as the alternatives 
 
 #### Parameters
 Once the variables are filled in, the parameters that can be used in the specification of the manual hypotheses show up here
 
 #### Manual hypothesis test
-- Hypotheses: Specify a manual hypothesis, see the tooltip for more info; Specify the prior weight and do not forget to check the include box to test the hypothesis. For the t-test this could be something like "1>difference>0"+
+- Hypotheses: Specify a manual hypothesis, see the tooltip for more info; Specify the prior weight and do not forget to check the include box to test the hypothesis. For the variances this could be something like "group1Name > group2Name"
 - Use the "+" to add more hypotheses
 - Complement: The complement hypothesis; prior weight and include
 
 ### Options
 #### Bayes Factor: 
 - Log scale: reports the log BF
-- Bayes factor type: Default is the fractional BF, alternatively choose the adjusted fractional BF
 
 #### Tables
 - Specification: Print the specification table
-- Estimates with uncertainty interval: Print a table with the point estimates and uncertainty intervals (confidence interval for t-test) for the parameter(s) of interest.
+- Estimates with uncertainty interval: Print a table with the point estimates and uncertainty intervals (confidence interval for variances) for the parameter(s) of interest.
 
 #### Plots
 - Manual hypothesis plots: Produces plots depicting the prior and posterior probabilities of the manual hypotheses

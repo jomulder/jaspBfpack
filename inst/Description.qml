@@ -65,7 +65,7 @@ Description
 	Analysis
 	{
 		menu:   	"Linear (Multivariate) Regression"
-		title:		"BFpack Regression"
+		title:		"BFpack Linear (Multivariate) Regression"
 		func:			"bfpackRegressionLinear"
 	}
 	Analysis
@@ -85,7 +85,7 @@ Description
 	GroupTitle
 	{
 		title: 		"Variances"
-		// icon: 		"analysis-bain-regression.svg"
+		icon: 		"variances.svg"
 	}
 	Analysis
 	{

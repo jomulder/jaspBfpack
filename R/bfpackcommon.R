@@ -8,9 +8,7 @@
 # Add the BFpack citations
 .bfpackGetCitations <- function() {
   citations <- c(
-    "Mulder, J., Williams, D. R., Gu, X., Tomarken, A., Böing-Messing, F., Olsson-Collentine, A., Meijerink, M., Menke, J., Fox, J.-P., Hoijtink, H., Rosseel, Y., Wagenmakers, E.J., and van Lissa, C. (2021). BFpack: Flexible Bayes Factor Testing of Scientific Theories in R. Journal of Statistical Software.",
-    "Mulder, J., van Lissa, C., Williams, D.R., Gu, X., Olsson-Collentine, A., Böing-Messing, F., Fox, J.-P., Menke, J., van Aert, R., et al. (2021). BFpack: Flexible Bayes Factor Testing of Scientific Expectations. (Version 1.0.0)",
-    "Mulder, J., van Lissa, C., Williams, D.R., Gu, X., Olsson-Collentine, A., Böing-Messing, F., Fox, J.-P., Menke, J., van Aert, R., et al. (2021). BFpack: Flexible Bayes Factor Testing of Scientific Expectations. (Developmental version)"
+    "Mulder, J., Williams, D. R., Gu, X., Tomarken, A., Böing-Messing, F., Olsson-Collentine, A., Meijerink, M., Menke, J., Fox, J.-P., Hoijtink, H., Rosseel, Y., Wagenmakers, E.J., and van Lissa, C. (2021). BFpack: Flexible Bayes Factor Testing of Scientific Theories in R. Journal of Statistical Software, 100(18), 1-63. https://doi.org/10.18637/jss.v100.i18",
   )
   return(citations)
 }
@@ -886,14 +884,11 @@
   bfpackContainer[["coefContainer"]][["estimatesTable"]] <- estimatesTable
 
   if (!bfpackContainer$getError()) {
-
     estimates <- bfpackContainer[["resultsContainer"]][["resultsState"]]$object$estimates
     #### TODO: estimates is NULL for independent TTest
     if (!is.null(estimates)) {
       dtFill <- data.frame(coefficient = rownames(estimates))
-
       dtFill[, c("mean", "median", "lower", "upper")] <- estimates
-
 
       if (options[["ciLevel"]] != .95) {
 
@@ -901,6 +896,9 @@
         if (type %in% c("regression", "anova", "correlation", "regressionLogistic")) {
 
           if (type == "correlation") {
+            realNames <- rownames(bfpackContainer[["resultsContainer"]][["resultsState"]]$object$correstimates)
+            dtFill$coefficient <- realNames
+            # the credi interval:
             draws <- fitObj$corrdraws[[1]]
             bounds <- apply(draws, c(2, 3), function(x) {
               coda::HPDinterval(coda::as.mcmc(x), prob = options[["ciLevel"]])
