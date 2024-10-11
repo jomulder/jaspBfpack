@@ -27,7 +27,7 @@ Section
 	property bool iterations: false
 	property bool interactions: false
 	property bool anova: false
-	property var interactionValues: ["fix1", "fix2", "cov1"]
+	property var interactionValues: []
 
 	id: options
 	title: 	qsTr("Options")
@@ -128,7 +128,7 @@ Section
 	}
 
 	// Example usage
-	property var interactionPairs: combinePairs(options.interactionValues);
+	property var interactionPairs: combinePairs(interactionValues);
 
 	Group 
 	{
@@ -141,11 +141,10 @@ Section
 			height: 120 * preferencesModel.uiScale
 			headerLabels: [qsTr("Include")]
 			name: "interactionTerms"
-			rSource: "interactionSource"
-			// values: options.interactionPairs
+			values: interactionPairs
 			addItemManually: false
 			rowComponent: RowLayout { 
-				Text { Layout.preferredWidth: 210*jaspTheme.uiScale; text: rowValue; visible: true }
+				Text { Layout.preferredWidth: 210*jaspTheme.uiScale; text: rowValue }
 				CheckBox { Layout.preferredWidth: 50*jaspTheme.uiScale; name: "includeInteractionEffect"; checked: true }
 			}
 		}

@@ -16,7 +16,7 @@ The analysis allows to test exploratory hypotheses (e.g., equal vs negative vs p
 Once the variables are filled in, the parameters that can be used in the specification of the manual hypotheses show up here
 
 #### Manual hypothesis test
-- Hypotheses: Specify a manual hypothesis, see the tooltip for more info; Specify the prior weight and do not forget to check the include box to test the hypothesis. For the t-test this could be something like "1>mu>0"
+- Hypotheses: Specify a manual hypothesis, see the tooltip for more info; Specify the prior weight and do not forget to check the include box to test the hypothesis. For the t-test this could be something like "1>difference>0"
 - Use the "+" to add more hypotheses
 - Complement: The complement hypothesis; prior weight and include
 

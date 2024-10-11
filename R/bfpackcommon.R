@@ -299,12 +299,12 @@
       groupName <- decodeColNames(options[["groupingVariable"]])
       levs <- levels(dataset[[groupName]])
       dataNames <- vector("character", 0L)
+      if (length(covariates) > 0) {
+        select <- c(decodeColNames(options[["variables"]]), covariates)
+      } else {
+        select <- c(decodeColNames(options[["variables"]]))
+      }
       for (i in 1:length(levs)) {
-        if (length(covariates) > 0) {
-          select <- c(decodeColNames(options[["variables"]]), covariates)
-        } else {
-          select <- c(decodeColNames(options[["variables"]]))
-        }
         dtmp <- subset(dataset,
                        subset = eval(parse(text = groupName)) == levs[i],
                        select = select)

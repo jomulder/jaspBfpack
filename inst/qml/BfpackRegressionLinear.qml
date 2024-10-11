@@ -45,6 +45,7 @@ Form
 		{
 			name: 						"covariates"
 			title: 						qsTr("Covariates")
+			id: 							covariates
 			// suggestedColumns: 			["scale", "ordinal"]
 		}
 	}
@@ -58,6 +59,7 @@ Form
 
 	Common.Options{
 		bfTy: true
-		interactions: true 
+		interactions: true
+		interactionValues: covariates.columnsNames
 	}
 }

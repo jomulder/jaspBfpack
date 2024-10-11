@@ -44,6 +44,7 @@ Form
 		{
 			name: 						"covariates"
 			title: 						qsTr("Covariates")
+			id: 							covariates
 		}
 	}
 
@@ -58,5 +59,7 @@ Form
 	Common.Options{
 		bfTy: false
 		interactions: true
+		interactionValues: covariates.columnsNames
+
 	}
 }

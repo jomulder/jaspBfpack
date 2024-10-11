@@ -11,8 +11,8 @@ options <-
       logScale = FALSE,
       muValue = 0,
       manualHypotheses = list(
-        list(hypothesisText = ".1<mu<2", priorProbManual = "1/2", includeHypothesis = TRUE, value = "#"),
-        list(hypothesisText = "mu=2", priorProbManual = "1/2", includeHypothesis = TRUE, value = "#2")
+        list(hypothesisText = ".1<difference<2", priorProbManual = "1/2", includeHypothesis = TRUE, value = "#"),
+        list(hypothesisText = "difference=2", priorProbManual = "1/2", includeHypothesis = TRUE, value = "#2")
       ),
       pairs = list(c("contNormal", "contGamma")),
       plots = TRUE,
@@ -33,20 +33,20 @@ results <- jaspTools::runAnalysis("bfpackTTestPairedSamples", "debug.csv", optio
 test_that("Coefficients table results match", {
   table <- results[["results"]][["bfpackContainer"]][["collection"]][["bfpackContainer_coefContainer"]][["collection"]][["bfpackContainer_coefContainer_estimatesTable"]][["data"]]
   jaspTools::expect_equal_tables(table,
-                                 list("mu", -1.84207727029991, -2.22170938375, -2.22170938375, -2.60134149720009
+                                 list("difference", -1.84207727029991, -2.22170938375, -2.22170938375, -2.60134149720009
                                  ))
 })
 
 test_that("Manual hypotheses legend table results match", {
   table <- results[["results"]][["bfpackContainer"]][["collection"]][["bfpackContainer_legendTable"]][["data"]]
   jaspTools::expect_equal_tables(table,
-                                 list(".1&lt;mu&lt;2", "H1", "mu=2", "H2", "complement", "H3"))
+                                 list(".1&lt;difference&lt;2", "H1", "difference=2", "H2", "complement", "H3"))
 })
 
 test_that("Posterior probabilities when testing individual parameters table results match", {
   table <- results[["results"]][["bfpackContainer"]][["collection"]][["bfpackContainer_parameterTable"]][["data"]]
   jaspTools::expect_equal_tables(table,
-                                 list("mu", 9.8559713484495e-18, 1.19550749899889e-19, 1))
+                                 list("difference", 9.8559713484495e-18, 1.19550749899889e-19, 1))
 })
 
 test_that("Posterior probabilities plot matches", {

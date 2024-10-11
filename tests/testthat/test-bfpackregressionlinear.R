@@ -28,7 +28,7 @@ results <- jaspTools::runAnalysis("bfpackRegressionLinear", testthat::test_path(
 test_that("Coefficients table results match", {
   table <- results[["results"]][["bfpackContainer"]][["collection"]][["bfpackContainer_coefContainer"]][["collection"]][["bfpackContainer_coefContainer_estimatesTable"]][["data"]]
   jaspTools::expect_equal_tables(table,
-                                 list("(Intercept)", 7.60369294828812, -26.6129583616794, -26.6129583616794,
+                                 list("Intercept", 7.60369294828812, -26.6129583616794, -26.6129583616794,
                                       -60.8296096716469, "adverts", 0.098537992105009, 0.0848848251534776,
                                       0.0848848251534776, 0.0712316582019461, "airplay", 3.91522847784673,
                                       3.36742517051031, 3.36742517051031, 2.81962186317388, "attract",
@@ -46,7 +46,7 @@ test_that("Manual hypotheses legend table results match", {
 test_that("Posterior probabilities when testing individual parameters table results match", {
   table <- results[["results"]][["bfpackContainer"]][["collection"]][["bfpackContainer_parameterTable"]][["data"]]
   jaspTools::expect_equal_tables(table,
-                                 list("(Intercept)", 0.977120691736385, 0.0228793082636149, 0, "adverts",
+                                 list("Intercept", 0.977120691736385, 0.0228793082636149, 0, "adverts",
                                       3.88184781917838e-24, 1, 0, "airplay", 1.01707718602688e-23,
                                       1, 0, "attract", 0.000448094169606805, 0.999551905830393, 0
                                  ))
@@ -128,10 +128,10 @@ results <- jaspTools::runAnalysis("bfpackRegressionLinear", "debug.csv", options
 test_that("Estimates table results match", {
   table <- results[["results"]][["bfpackContainer"]][["collection"]][["bfpackContainer_coefContainer"]][["collection"]][["bfpackContainer_coefContainer_estimatesTable"]][["data"]]
   jaspTools::expect_equal_tables(table,
-                                 list("(Intercept)_on_contNormal", -0.407335959001421, -0.197600108422593,
+                                 list("Intercept_on_contNormal", -0.407335959001421, -0.197600108422593,
                                       -0.197600108422593, 0.0121357421562356, "contcor1_on_contNormal",
                                       -0.0395987290269023, 0.168444232730491, 0.168444232730491, 0.376487194487884,
-                                      "(Intercept)_on_contGamma", 1.74153509468766, 2.04542009414516,
+                                      "Intercept_on_contGamma", 1.74153509468766, 2.04542009414516,
                                       2.04542009414516, 2.34930509360267, "contcor1_on_contGamma",
                                       -0.538532327714582, -0.237100144583728, -0.237100144583728,
                                       0.064332038547127))
@@ -147,9 +147,9 @@ test_that("Manual hypotheses legend table results match", {
 test_that("Posterior probabilities when testing individual parameters table results match", {
   table <- results[["results"]][["bfpackContainer"]][["collection"]][["bfpackContainer_parameterTable"]][["data"]]
   jaspTools::expect_equal_tables(table,
-                                 list("(Intercept)_on_contNormal", 0.714009012694178, 0.0116265829017178,
+                                 list("Intercept_on_contNormal", 0.714009012694178, 0.0116265829017178,
                                       0.274364404404104, "contcor1_on_contNormal", 0.791625334215502,
-                                      0.194294505154204, 0.0140801606302942, "(Intercept)_on_contGamma",
+                                      0.194294505154204, 0.0140801606302942, "Intercept_on_contGamma",
                                       3.43006409771489e-21, 1, 2.0407452947433e-23, "contcor1_on_contGamma",
                                       0.802403724408777, 0.0145072795906795, 0.183088996000543))
 })

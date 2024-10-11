@@ -69,6 +69,6 @@ Form
 		bfTy: true
 		interactions: true
 		anova: true
-		// interactionValues: covariates.columnsNames
+		interactionValues: fixedFactors.columnsNames.concat(covariates.columnsNames)	
 	}
 }
