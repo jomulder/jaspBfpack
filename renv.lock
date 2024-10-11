@@ -15,9 +15,10 @@
       "Source": "GitHub",
       "RemoteType": "github",
       "RemoteHost": "api.github.com",
-      "RemoteRepo": "BFpack",
       "RemoteUsername": "jomulder",
-      "RemoteSha": "0f853a5a09d08322d4afe26e6b35751e72d290e2",
+      "RemoteRepo": "BFpack",
+      "RemoteRef": "master",
+      "RemoteSha": "e77c1e7c9a7b90543ef9ee1279d8549aa11d5b53",
       "Requirements": [
         "Bergm",
         "MASS",
@@ -36,7 +37,7 @@
         "stats",
         "utils"
       ],
-      "Hash": "2b40a0347fbb5e79528ec0792ccd6f7f"
+      "Hash": "0b5fc3e6b8434f7e81d8b07095ae795d"
     },
     "BH": {
       "Package": "BH",
@@ -1100,10 +1101,11 @@
       "Version": "0.19.0",
       "Source": "GitHub",
       "RemoteType": "github",
+      "RemoteHost": "api.github.com",
       "RemoteUsername": "jasp-stats",
       "RemoteRepo": "jaspBase",
-      "RemoteSha": "24d4ae8eb2efcaae974b6c900ebf1c64020bb90e",
-      "RemoteHost": "api.github.com",
+      "RemoteRef": "master",
+      "RemoteSha": "79632a237c7bf6bb9b6c8fdf30cc59abccb923d1",
       "Requirements": [
         "R6",
         "Rcpp",
@@ -1132,17 +1134,18 @@
         "systemfonts",
         "withr"
       ],
-      "Hash": "8d64932b262a3a193cb5a865bb61fe0c"
+      "Hash": "5e3804868e93e304cb776be34f1d7a18"
     },
     "jaspGraphs": {
       "Package": "jaspGraphs",
       "Version": "0.19.0",
       "Source": "GitHub",
       "RemoteType": "github",
+      "RemoteHost": "api.github.com",
       "RemoteUsername": "jasp-stats",
       "RemoteRepo": "jaspGraphs",
+      "RemoteRef": "master",
       "RemoteSha": "b2e1799265a0741b49a1ca356f96448091dd8db0",
-      "RemoteHost": "api.github.com",
       "Requirements": [
         "R6",
         "RColorBrewer",
@@ -1155,7 +1158,7 @@
         "scales",
         "viridisLite"
       ],
-      "Hash": "53801a573d11d2ce3971f404cb469769"
+      "Hash": "31b0c580c325e5f061d6f7ea8a65a31d"
     },
     "jaspTools": {
       "Package": "jaspTools",
@@ -1910,9 +1913,12 @@
     "renv": {
       "Package": "renv",
       "Version": "1.0.10",
-      "OS_type": null,
+      "Source": "Repository",
       "Repository": "CRAN",
-      "Source": "Repository"
+      "Requirements": [
+        "utils"
+      ],
+      "Hash": "d0387d5687ec933dd7587efd4cfa2d85"
     },
     "reshape2": {
       "Package": "reshape2",
