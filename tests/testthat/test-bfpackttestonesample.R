@@ -11,14 +11,15 @@ options <-
     muValue = 0,
     logScale = TRUE,
     manualHypotheses = list(list(hypothesisText = "mu<.5", priorProbManual = "1/2", includeHypothesis = TRUE, value = "#")),
-    plots = FALSE,
+    manualPlots = FALSE,
     priorProbComplement = "1/2",
     seed = 100,
     specificationTable = TRUE,
     priorProbStandard = "1",
     priorProbStandard2 = "1",
     priorProbStandard3 = "1",
-    variables = "contNormal"
+    variables = "contNormal",
+    standardHypothesisBfTable = FALSE
   )
 
 

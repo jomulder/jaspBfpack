@@ -15,13 +15,14 @@ options <-
         list(hypothesisText = "difference=2", priorProbManual = "1/2", includeHypothesis = TRUE, value = "#2")
       ),
       pairs = list(c("contNormal", "contGamma")),
-      plots = TRUE,
+      manualPlots = TRUE,
       priorProbComplement = "1/2",
       seed = 100,
       specificationTable = FALSE,
       priorProbStandard = "1",
       priorProbStandard2 = ".5",
-      priorProbStandard3 = "1"
+      priorProbStandard3 = "1",
+      standardHypothesisBfTable = FALSE
     )
 
 

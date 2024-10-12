@@ -17,8 +17,8 @@
 
 bfpackCorrelation <- function(jaspResults, dataset, options, ...) {
 
-  sink(file="~/Downloads/log.txt")
-  on.exit(sink(NULL))
+  # sink(file="~/Downloads/log.txt")
+  # on.exit(sink(NULL))
 
   # What type of BFpack analysis is being conducted?
   type <- "correlation"
@@ -57,6 +57,9 @@ bfpackCorrelation <- function(jaspResults, dataset, options, ...) {
 
   # coefficients table
   .bfpackEstimatesTable(options, bfpackContainer, type, position = 6)
+
+  # standard hypotheses BF
+  .bfpackStandardBfTable(options, bfpackContainer, type, position = 1.5)
 
   # Create the prior and posterior probability plots
   .bfpackPriorPosteriorPlot(options, bfpackContainer, type)

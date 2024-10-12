@@ -24,13 +24,14 @@ options <-
         value = "#"
       )
     ),
-    plots = FALSE,
+    manualPlots = FALSE,
     priorProbComplement = "1/2",
     seed = 100,
     specificationTable = FALSE,
     priorProbStandard = "1",
     priorProbStandard2 = "1",
-    priorProbStandard3 = "1"
+    priorProbStandard3 = "1",
+    standardHypothesisBfTable = FALSE
   )
 
 debug <- read.csv("https://raw.githubusercontent.com/jasp-stats/jasp-desktop/development/Resources/Data%20Sets/debug.csv")

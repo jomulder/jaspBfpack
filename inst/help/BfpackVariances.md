@@ -25,6 +25,7 @@ Once the variables are filled in, the parameters that can be used in the specifi
 - Log scale: reports the log BF
 
 #### Tables
+- Standard hypothesis BFs: Print table that compares each standard hypothesis with its complement
 - Specification: Print the specification table
 - Estimates with uncertainty interval: Print a table with the point estimates and uncertainty intervals (confidence interval for variances) for the parameter(s) of interest.
 
@@ -37,8 +38,11 @@ Once the variables are filled in, the parameters that can be used in the specifi
 ## Output
 
 ### Tables
-#### Posterior probabilites when testing individual parameters
+#### Posterior probabilites when testing standard hypotheses
 - Posterior probs for the standard hypotheses
+
+#### BFs when testing standard hypotheses
+- Bayes factors for the standard hypotheses and their complements
 
 #### Manual hypotheses legend
 - Denotes the manual hypotheses

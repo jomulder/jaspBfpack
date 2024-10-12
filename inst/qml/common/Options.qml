@@ -27,6 +27,7 @@ Section
 	property bool iterations: false
 	property bool interactions: false
 	property bool anova: false
+	property bool samples: false
 	property var interactionValues: []
 
 	id: options
@@ -56,7 +57,13 @@ Section
 	}
 	Group
 	{
-		title: 							qsTr("Tables")
+		title: 	qsTr("Tables")
+
+		CheckBox 
+		{
+			name: "standardHypothesisBfTable"
+			text: qsTr("Standard hypotheses BFs")
+		}	
 
 		CheckBox 
 		{
@@ -83,11 +90,22 @@ Section
 		title: qsTr("Plots")
 		CheckBox
 		{
-			name: 						"plots"
+			name: 						"manualPlots"
 			text: 						qsTr("Manual hypotheses plots")
 		}
+		CheckBox
+		{
+			visible: 					samples
+			name: 						"posteriorPlot"
+			text: 						qsTr("Posterior plot")
+		}
+		CheckBox
+		{
+			visible: 					samples
+			name: 						"traceplot"
+			text: 						qsTr("Traceplot")
+		}
 	}
-
 
 	Group
 	{

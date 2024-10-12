@@ -576,42 +576,36 @@
   # inner container
   if (!is.null(bfpackContainer[["parameterTable"]])) return()
 
-  parameterTable <- createJaspTable(gettext("Posterior probabilities when testing individual parameters"))
+  parameterTable <- createJaspTable(gettext("Posterior probabilities when testing standard hypotheses"))
   parameterTable$dependOn(optionsFromObject = bfpackContainer[["resultsContainer"]], options = "priorProb")
   parameterTable$position <- position
 
   if (type %in% c("variances", "multiSampleTTest")) {
 
     if (type == "variances") {
-      title1 <- gettext("Homogeneity of variances")
-      title2 <- gettext("No homogeneity of variances")
+      title1 <- gettext("Equal variances")
+      title2 <- gettext("Unequal variances")
     } else if (type == "multiSampleTTest") {
       # testValues <- sapply(options[["testValues"]] function(x) x[["testValue"]]))
-      title1 <- gettext("Pr(=test values)")
-      title2 <- gettext("Pr(≠test values)")
+      title1 <- gettext("Pr(H0)")
+      title2 <- gettext("Pr(H1)")
     }
     parameterTable$addColumnInfo(name = "equal", type = "number", title = title1)
     parameterTable$addColumnInfo(name = "unequal", type = "number", title = title2)
 
   } else {
-    if (type %in% c("onesampleTTest", "pairedTTest", "independentTTest")) {
-      title1 <- gettextf("Pr(=%1$s)", options[["muValue"]])
-      title2 <- gettextf("Pr(<%1$s)", options[["muValue"]])
-      title3 <- gettextf("Pr(>%1$s)", options[["muValue"]])
-    } else {
-      title1 <- gettext("Pr(=0)")
-      title2 <- gettext("Pr(<0)")
-      title3 <- gettext("Pr(>0)")
+    title1 <- gettext("Pr(H0)")
+    title2 <- gettext("Pr(H1)")
+    title3 <- gettext("Pr(H2)")
 
-      if (type == "correlation" && options[["groupingVariable"]] != "") {
-        groupName <- options[["groupingVariable"]]
-        levs <- levels(dataset[[groupName]])
-        footnote <- ""
-        for (i in 1:length(levs)) {
-          footnote <- gettextf("%1$sGroup %2$s corresponds to level %3$s in variable %4$s. ", footnote, paste0("g", i), levs[i], groupName)
-        }
-        parameterTable$addFootnote(footnote)
+    if (type == "correlation" && options[["groupingVariable"]] != "") {
+      groupName <- options[["groupingVariable"]]
+      levs <- levels(dataset[[groupName]])
+      footnote <- ""
+      for (i in 1:length(levs)) {
+        footnote <- gettextf("%1$sGroup %2$s corresponds to level %3$s in variable %4$s. ", footnote, paste0("g", i), levs[i], groupName)
       }
+      parameterTable$addFootnote(footnote)
     }
 
     parameterTable$addColumnInfo(name = "coefficient", type = "string", title = "")
@@ -948,12 +942,54 @@
   return()
 }
 
+# standard BF table
+.bfpackStandardBfTable <- function(options, bfpackContainer, type, position) {
+
+  if (!is.null(bfpackContainer[["resultsContainer"]][["stdBfTable"]]) ||
+      !options[["standardHypothesisBfTable"]]) return()
+
+  if (bfpackContainer$getError()) return()
+
+  stdBfTable <- createJaspTable(gettext("BFs when testing standard hypotheses"))
+  stdBfTable$dependOn("standardHypothesisBfTable")
+  stdBfTable$position <- position
+  bfpackContainer[["resultsContainer"]][["stdBfTable"]] <- stdBfTable
+
+  bfs <- bfpackContainer[["resultsContainer"]][["resultsState"]]$object$BFtu_exploratory
+  if (is.null(bfs)) return()
+
+  if (type %in% c("variances", "multiSampleTTest")) {
+    title1 <- gettext("BF01")
+    stdBfTable$addColumnInfo(name = "bf", title = title1, type = "number")
+    stdBfTable$setData(data.frame(bf = bfs[1]))
+
+  } else {
+
+    stdBfTable$addColumnInfo(name = "coefficient", title = "", type = "string")
+    stdBfTable$addColumnInfo(name = "bf0", title = gettext("BF(H0 vs. complement)"), type = "number")
+    stdBfTable$addColumnInfo(name = "bf1", title = gettext("BF(H1 vs. complement)"), type = "number")
+    stdBfTable$addColumnInfo(name = "bf2", title = gettext("BF(H2 vs. complement)"), type = "number")
+
+    if (type == "independentTTest") {
+      dtFill <- data.frame(coefficient = gettext("difference"))
+    } else {
+      dtFill <- data.frame(coefficient = rownames(bfs))
+    }
+    dtFill[, c("bf0", "bf1", "bf2")] <- bfs
+    stdBfTable$setData(dtFill)
+
+  }
+
+  return()
+}
+
+
 
 
 ####### PLOTS ########
 
 .bfpackPriorPosteriorPlot <- function(options, bfpackContainer, type, position = 1) {
-  if (!is.null(bfpackContainer[["plotContainer"]][["priorPlot"]]) || !options[["plots"]]) {
+  if (!is.null(bfpackContainer[["plotContainer"]][["priorPlot"]]) || !options[["manualPlots"]]) {
     return()
   }
 

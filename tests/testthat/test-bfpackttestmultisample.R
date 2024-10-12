@@ -18,7 +18,7 @@ options <-
         )
       ),
       muValue = 0,
-      plots = FALSE,
+      manualPlots = FALSE,
       priorProbComplement = "1/2",
       seed = 100,
       specificationTable = FALSE,
@@ -28,7 +28,8 @@ options <-
         list(testValue = 1, value = "contNormal"),
         list(testValue = 0, value = "contGamma")
       ),
-      variables = c("contNormal", "contGamma")
+      variables = c("contNormal", "contGamma"),
+      standardHypothesisBfTable = FALSE
 )
 
 

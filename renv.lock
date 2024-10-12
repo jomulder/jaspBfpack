@@ -18,7 +18,7 @@
       "RemoteUsername": "jomulder",
       "RemoteRepo": "BFpack",
       "RemoteRef": "master",
-      "RemoteSha": "e77c1e7c9a7b90543ef9ee1279d8549aa11d5b53",
+      "RemoteSha": "5de7a6f8137a3c621210814d8edf96999912dd61",
       "Requirements": [
         "Bergm",
         "MASS",
@@ -37,7 +37,7 @@
         "stats",
         "utils"
       ],
-      "Hash": "0b5fc3e6b8434f7e81d8b07095ae795d"
+      "Hash": "20c6f177b5b4f1f50550346f1d841d29"
     },
     "BH": {
       "Package": "BH",
@@ -365,13 +365,13 @@
     },
     "askpass": {
       "Package": "askpass",
-      "Version": "1.2.0",
+      "Version": "1.2.1",
       "Source": "Repository",
       "Repository": "CRAN",
       "Requirements": [
         "sys"
       ],
-      "Hash": "cad6cf7f1d5f6e906700b9d3e718c796"
+      "Hash": "c39f4155b3ceb1a9a2799d700fbd4b6a"
     },
     "backports": {
       "Package": "backports",
@@ -577,14 +577,14 @@
     },
     "data.table": {
       "Package": "data.table",
-      "Version": "1.16.0",
+      "Version": "1.16.2",
       "Source": "Repository",
       "Repository": "CRAN",
       "Requirements": [
         "R",
         "methods"
       ],
-      "Hash": "fb24e05d4a91d8b1c7ff8e284bde834a"
+      "Hash": "2e00b378fc3be69c865120d9f313039a"
     },
     "desc": {
       "Package": "desc",
@@ -658,13 +658,13 @@
     },
     "evaluate": {
       "Package": "evaluate",
-      "Version": "1.0.0",
+      "Version": "1.0.1",
       "Source": "Repository",
       "Repository": "CRAN",
       "Requirements": [
         "R"
       ],
-      "Hash": "6b567375113ceb7d9f800de4dd42218e"
+      "Hash": "3fd29944b231036ad67c3edb32e02201"
     },
     "extraDistr": {
       "Package": "extraDistr",
@@ -2069,10 +2069,10 @@
     },
     "sys": {
       "Package": "sys",
-      "Version": "3.4.2",
+      "Version": "3.4.3",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "3a1be13d68d47a8cd0bfd74739ca1555"
+      "Hash": "de342ebfebdbf40477d0758d05426646"
     },
     "systemfonts": {
       "Package": "systemfonts",

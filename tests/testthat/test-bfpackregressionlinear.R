@@ -12,13 +12,14 @@ options <- list(
     list(hypothesisText = "adverts = airplay = attract", priorProbManual = "2", includeHypothesis = TRUE, value = "#"),
     list(hypothesisText = "adverts < airplay < attract", priorProbManual = "1", includeHypothesis = TRUE, value = "#2")
   ),
-  plots = TRUE,
+  manualPlots = TRUE,
   priorProbComplement = "1",
   seed = 100,
   specificationTable = TRUE,
   priorProbStandard = "1",
   priorProbStandard2 = "0",
-  priorProbStandard3 = "1"
+  priorProbStandard3 = "1",
+  standardHypothesisBfTable = FALSE
 )
 
 set.seed(1)
@@ -103,7 +104,7 @@ options <- list(
     interactionTerms = list(),
     iterations = 5000,
     logScale = FALSE,
-    plots = FALSE,
+    manualPlots = FALSE,
     manualHypotheses = list(
       list(
         hypothesisText = "contcor1_on_contNormal > contcor1_on_contGamma",
@@ -118,7 +119,8 @@ options <- list(
     priorProbStandard2 = "1",
     priorProbStandard3 = "1",
     seed = 100,
-    specificationTable = FALSE
+    specificationTable = FALSE,
+    standardHypothesisBfTable = FALSE
   )
 
 set.seed(1)

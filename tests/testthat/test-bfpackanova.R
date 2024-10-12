@@ -19,7 +19,7 @@ options <- list(
       value = "#"
     )
   ),
-  plots = TRUE,
+  manualPlots = TRUE,
   priorProbComplement = "1/2",
   seed = 100,
   specificationTable = FALSE,
@@ -29,7 +29,8 @@ options <- list(
   priorProbInteractionNonZero = "1",
   priorProbInteractionZero = "1",
   priorProbMainNonZero = "1",
-  priorProbMainZero = "1"
+  priorProbMainZero = "1",
+  standardHypothesisBfTable = FALSE
 )
 
 debug <- read.csv("https://raw.githubusercontent.com/jasp-stats/jasp-desktop/development/Resources/Data%20Sets/debug.csv")
@@ -111,7 +112,7 @@ options <- list(
   ),
   plotHeight = 320,
   plotWidth = 480,
-  plots = TRUE,
+  manualPlots = TRUE,
   priorProbComplement = "1/2",
   seed = 100,
   specificationTable = FALSE,
@@ -121,7 +122,8 @@ options <- list(
   priorProbInteractionNonZero = "1",
   priorProbInteractionZero = "1",
   priorProbMainNonZero = "1",
-  priorProbMainZero = "1"
+  priorProbMainZero = "1",
+  standardHypothesisBfTable = FALSE
 )
 
 set.seed(1)
@@ -176,7 +178,7 @@ options <-
     muValue = 0,
     plotHeight = 320,
     plotWidth = 480,
-    plots = FALSE,
+    manualPlots = FALSE,
     priorProbComplement = "1",
     priorProbInteractionNonZero = "100",
     priorProbInteractionZero = "1",
@@ -186,7 +188,8 @@ options <-
     priorProbStandard2 = "1",
     priorProbStandard3 = "1",
     seed = 100,
-    specificationTable = FALSE
+    specificationTable = FALSE,
+    standardHypothesisBfTable = FALSE
   )
 
 dt <- debug[, c("contNormal", "contcor1", "contBinom")]

@@ -5,6 +5,7 @@ options <- list(
     ciLevel = 0.95,
     estimatesTable = FALSE,
     complement = TRUE,
+    standardHypothesisBfTable = TRUE,
     logScale = TRUE,
     manualHypotheses = list(
       list(
@@ -20,7 +21,7 @@ options <- list(
         value = "#2"
       )
     ),
-    plots = TRUE,
+    manualPlots = TRUE,
     priorProbComplement = "10",
     seed = 100,
     specificationTable = TRUE,
@@ -92,4 +93,16 @@ test_that("Specification table results match", {
                                       1, 0.595435045142286, "H2", 0.485477945829257, 1, 0.485477945829257,
                                       0.731022077761787, 1, 0.833333333333333, 1, 0.404564954857714,
                                       "H3"))
+})
+
+test_that("BFs when testing standard hypotheses table results match", {
+  table <- results[["results"]][["bfpackContainer"]][["collection"]][["bfpackContainer_resultsContainer"]][["collection"]][["bfpackContainer_resultsContainer_stdBfTable"]][["data"]]
+  jaspTools::expect_equal_tables(table,
+                                 list(-37.9488024334818, -42.3594963806197, 0.693147180559945, "sales_with_adverts",
+                                      0.993781677754371, -1.83748208711095, 0.610190579978968, "airplay_with_adverts",
+                                      1.37076674042817, -1.34050398807247, 0.552899722868173, "attract_with_adverts",
+                                      -42.912371428795, -47.3891532106837, 0.693147180559945, "airplay_with_sales",
+                                      -9.02954210483927, -12.8479715659353, 0.69314586482886, "attract_with_sales",
+                                      -1.2847245088449, -4.57200209974315, 0.687965155633888, "attract_with_airplay"
+                                 ))
 })

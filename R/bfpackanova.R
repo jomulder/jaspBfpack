@@ -62,6 +62,9 @@ bfpackAnova <- function(jaspResults, dataset, options, ...) {
   # coefficients table
   .bfpackEstimatesTable(options, bfpackContainer, type)
 
+  # standard hypotheses BF
+  .bfpackStandardBfTable(options, bfpackContainer, type, position = 1.4)
+
   # Create the prior and posterior probability plots
   .bfpackPriorPosteriorPlot(options, bfpackContainer, type)
 

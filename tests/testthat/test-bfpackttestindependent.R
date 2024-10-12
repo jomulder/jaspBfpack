@@ -18,7 +18,7 @@ options <-
       list(hypothesisText = "difference < 3", priorProbManual = "1/2", includeHypothesis = TRUE, value = "#3")
     ),
 
-    plots = TRUE,
+    manualPlots = TRUE,
     priorProbComplement = "1/2",
     seed = 100,
     specificationTable = TRUE,
@@ -26,7 +26,8 @@ options <-
     priorProbStandard2 = "1",
     priorProbStandard3 = "1",
     variables = "contNormal",
-    variables.types = "scale"
+    variables.types = "scale",
+    standardHypothesisBfTable = FALSE
   )
 
 debug <- read.csv("https://raw.githubusercontent.com/jasp-stats/jasp-desktop/development/Resources/Data%20Sets/debug.csv")

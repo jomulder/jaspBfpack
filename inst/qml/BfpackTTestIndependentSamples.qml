@@ -53,7 +53,7 @@ Form
 
 
 	Common.HypothesesWindowStandard{
-		parName: qsTr("delta")
+		parName: qsTr("difference")
 		specificMu: true
 	}
 

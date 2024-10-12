@@ -14,9 +14,10 @@ options <-
       list(hypothesisText = "female = male > non", priorProbManual = "1/2", includeHypothesis = TRUE, value = "#"),
       list(hypothesisText = "female < male < non", priorProbManual = "1/2", includeHypothesis = TRUE, value = "#2")
     ),
-    plots = FALSE,
+    manualPlots = FALSE,
     priorProbComplement = "1/2",
     seed = 100,
+    standardHypothesisBfTable = TRUE,
     specificationTable = FALSE,
     priorProbStandard = "1",
     priorProbStandard2 = "1",
@@ -26,7 +27,7 @@ options <-
 dt <- read.csv(testthat::test_path("viagra.csv"))
 dt$test <- as.factor(dt$test)
 set.seed(1)
-results <- jaspTools::runAnalysis("bfpackVariances", dt, options)
+results <- jaspTools::runAnalysis("bfpackVariances", dt, options, makeTests = F)
 
 
 test_that("Manual hypotheses legend table results match", {
@@ -64,4 +65,10 @@ test_that("Coefficients table results match", {
                                       "male", 1.45744037811216, 4.25925925925926, 3.47972940855522,
                                       11.7241799647805, "non", 2.30077046690569, 5.36923076923077,
                                       4.73463680355297, 12.1922993366245))
+})
+
+test_that("BFs when testing standard hypotheses table results match", {
+  table <- results[["results"]][["bfpackContainer"]][["collection"]][["bfpackContainer_resultsContainer"]][["collection"]][["bfpackContainer_resultsContainer_stdBfTable"]][["data"]]
+  jaspTools::expect_equal_tables(table,
+                                 list(7.41508527159138))
 })
