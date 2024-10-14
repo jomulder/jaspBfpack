@@ -60,7 +60,7 @@ bfpackAnova <- function(jaspResults, dataset, options, ...) {
   .bfpackSpecificationTable(options, bfpackContainer, type, position = 5)
 
   # coefficients table
-  .bfpackEstimatesTable(options, bfpackContainer, type)
+  .bfpackEstimatesTable(options, bfpackContainer, type, position = 6)
 
   # standard hypotheses BF
   .bfpackStandardBfTable(options, bfpackContainer, type, position = 1.4)

@@ -28,7 +28,7 @@ results <- jaspTools::runAnalysis("bfpackTTestOneSample", "debug.csv", options, 
 
 
 test_that("Coefficients table results match", {
-  table <- results[["results"]][["bfpackContainer"]][["collection"]][["bfpackContainer_coefContainer"]][["collection"]][["bfpackContainer_coefContainer_estimatesTable"]][["data"]]
+  table <- results[["results"]][["bfpackContainer"]][["collection"]][["bfpackContainer_resultsContainer"]][["collection"]][["bfpackContainer_resultsContainer_estimatesTable"]][["data"]]
   jaspTools::expect_equal_tables(table,
                                  list("mu", -0.202082917611105, -0.18874858754, -0.18874858754, -0.175414257468895
                                  ))

@@ -1,4 +1,4 @@
-############ HELPERS ##########
+############ BASICS ##########
 
 # Clean the input for the order constraints
 .bfpackCleanModelInput <- function(input) {
@@ -852,16 +852,13 @@
 
 
 .bfpackEstimatesTable <- function(options, bfpackContainer, type, position = 1) {
-  if (!is.null(bfpackContainer[["coefContainer"]][["estimatesTable"]]) ||
+  if (!is.null(bfpackContainer[["resultsContainer"]][["estimatesTable"]]) ||
       !options[["estimatesTable"]]) return()
-
-  # create a container so the estimatesTable is added at the end of the output
-  coefContainer <- createJaspContainer()
-  coefContainer$dependOn(optionsFromObject = bfpackContainer[["estimatesState"]], options = c("estimatesTable", "ciLevel"))
-  bfpackContainer[["coefContainer"]] <- coefContainer
 
   estimatesTable <- createJaspTable(gettext("Estimates table"))
   estimatesTable$position <- position
+  estimatesTable$dependOn(c("estimatesTable", "ciLevel"))
+  bfpackContainer[["resultsContainer"]][["estimatesTable"]] <- estimatesTable
 
   interval <- gettextf("%s%% CI", format(100 * options[["ciLevel"]], digits = 3, drop0trailing = TRUE))
   intervalLow <- gettextf("%s lower bound", interval)
@@ -874,9 +871,6 @@
   estimatesTable$addColumnInfo(name = "lower", title = intervalLow, type = "number")
   estimatesTable$addColumnInfo(name = "upper", title = intervalUp, type = "number")
 
-
-  bfpackContainer[["coefContainer"]][["estimatesTable"]] <- estimatesTable
-
   if (!bfpackContainer$getError()) {
     estimates <- bfpackContainer[["resultsContainer"]][["resultsState"]]$object$estimates
     #### TODO: estimates is NULL for independent TTest
@@ -885,7 +879,6 @@
       dtFill[, c("mean", "median", "lower", "upper")] <- estimates
 
       if (options[["ciLevel"]] != .95) {
-
         fitObj <- bfpackContainer[["estimatesState"]]$object
         if (type %in% c("regression", "anova", "correlation", "regressionLogistic")) {
 
@@ -893,15 +886,9 @@
             realNames <- rownames(bfpackContainer[["resultsContainer"]][["resultsState"]]$object$correstimates)
             dtFill$coefficient <- realNames
             # the credi interval:
-            draws <- fitObj$corrdraws[[1]]
-            bounds <- apply(draws, c(2, 3), function(x) {
-              coda::HPDinterval(coda::as.mcmc(x), prob = options[["ciLevel"]])
-            })
-            boundsLow <- bounds[1, , ]
-            boundsUp <- bounds[2, , ]
-            # kind of hope this structure never changes so the elements are always in the correct order
-            boundsLow <- boundsLow[lower.tri(boundsLow)]
-            boundsUp <- boundsUp[lower.tri(boundsUp)]
+            out <- .credInterval(fitObj$corrdraws[[1]], options[["ciLevel"]])
+            boundsLow <- out$low
+            boundsUp <- out$up
 
           } else if (type %in% c("regression", "regressionLogistic", "anova")) {
 
@@ -1033,3 +1020,139 @@
   return(out)
 }
 
+
+# create the posterior distribution plots for correlation
+.bfpackPosteriorDistributionPlot <- function(options, bfpackContainer, type) {
+
+  if (!is.null(bfpackContainer[["posteriorPlotContainer"]]) || !options[["posteriorPlot"]]) {
+    return()
+  }
+
+  posteriorPlotContainer <- createJaspContainer(gettext("Posterior distribution"))
+  posteriorPlotContainer$dependOn(optionsFromObject = bfpackContainer[["resultsContainer"]], options = c("posteriorPlot", "ciLevelPlot"))
+  bfpackContainer[["posteriorPlotContainer"]] <- posteriorPlotContainer
+
+  result <- bfpackContainer[["resultsContainer"]][["resultsState"]]$object
+
+  if (!bfpackContainer$getError() && !is.null(result)) {
+    draws <- result$model$corrdraws[[1]]
+    numVars <- dim(draws)[2]
+    corNames <- rownames(result$model$correstimates)
+    z <- 1
+    for (j in 1:(numVars-1)) {
+      for (i in (j+1):numVars) {
+        post <- draws[, i, j]
+        postPlot <- .makeSinglePosteriorDistributionPlot(post, level = options[["ciLevelPlot"]])
+        postPlot$title <- corNames[z]
+        posteriorPlotContainer[[paste0("cor", z)]] <- postPlot
+        z <- z + 1
+      }
+    }
+  }
+
+  return()
+}
+
+.makeSinglePosteriorDistributionPlot <- function(samples, level) {
+
+  int <- coda::HPDinterval(coda::as.mcmc(samples), prob = level)
+  d <- stats::density(samples, n = 2^10)
+  datDens <- data.frame(x = d$x, y = d$y)
+  xBreaks <- jaspGraphs::getPrettyAxisBreaks(datDens$x)
+
+  # max height posterior is at 90% of plot area; remainder is for credible interval
+  ymax <- max(d$y) / .9
+  yBreaks <- jaspGraphs::getPrettyAxisBreaks(c(0, ymax))
+  ymax <- max(yBreaks)
+  scaleCriRound <- round(int, 3)
+  datCri <- data.frame(xmin = scaleCriRound[1L], xmax = scaleCriRound[2L], y = .925 * ymax)
+  height <- (ymax - .925 * ymax) / 2
+
+  datTxt <- data.frame(x = c(datCri$xmin, datCri$xmax),
+                       y = 0.985 * ymax,
+                       label = sapply(c(datCri$xmin, datCri$xmax), format, digits = 3, scientific = -1),
+                       stringsAsFactors = FALSE)
+
+  # if the bounds are less than 0.05 away from 0 or 1, expand the axis by 0.1 so the credible interval text does not
+  # get chopped off.
+  xExpand <- .1 * ((c(0, 1) - datTxt$x) <= 0.05)
+
+  g <- ggplot2::ggplot(data = datDens, mapping = ggplot2::aes(x = x, y = y)) +
+    ggplot2::geom_line(size = .85) +
+    ggplot2::geom_errorbarh(data = datCri, mapping = ggplot2::aes(xmin = xmin, xmax = xmax, y = y),
+                            height = height, inherit.aes = FALSE) +
+    ggplot2::geom_text(data = datTxt, mapping = ggplot2::aes(x = x, y = y, label = label), inherit.aes = FALSE,
+                       size = 5) +
+    ggplot2::scale_y_continuous(name = gettext("Density"), breaks = yBreaks, limits = range(yBreaks)) +
+    ggplot2::scale_x_continuous(name = gettext("x"), breaks = xBreaks, expand = xExpand, limits = range(xBreaks))
+
+  g <- g + jaspGraphs::themeJaspRaw() + jaspGraphs::geom_rangeframe()
+  g <- createJaspPlot(g)
+  return(g)
+
+}
+
+# create the traceplot for correlation
+.bfpackTraceplot <- function(options, bfpackContainer, type) {
+  if (!is.null(bfpackContainer[["traceplotContainer"]]) || !options[["traceplot"]]) {
+    return()
+  }
+
+  traceplotContainer <- createJaspContainer(gettext("Traceplot"))
+  traceplotContainer$dependOn(optionsFromObject = bfpackContainer[["resultsContainer"]], options = "traceplot")
+  bfpackContainer[["traceplotContainer"]] <- traceplotContainer
+
+  result <- bfpackContainer[["resultsContainer"]][["resultsState"]]$object
+
+  if (!bfpackContainer$getError() && !is.null(result)) {
+    draws <- result$model$corrdraws[[1]]
+    numVars <- dim(draws)[2]
+    corNames <- rownames(result$model$correstimates)
+    z <- 1
+    for (j in 1:(numVars-1)) {
+      for (i in (j+1):numVars) {
+        post <- draws[, i, j]
+        postPlot <- .makeSingleTraceplot(post)
+        postPlot$title <- corNames[z]
+        traceplotContainer[[paste0("cor", z)]] <- postPlot
+        z <- z + 1
+      }
+    }
+  }
+
+}
+
+.makeSingleTraceplot <- function(samples) {
+
+  dv <- cbind(samples, seq(1, length(samples)))
+  dat <- data.frame(dv)
+  colnames(dat) <- c("Value", "Iterations")
+  xBreaks <- jaspGraphs::getPrettyAxisBreaks(dat$Iterations)
+
+  g <- ggplot2::ggplot(dat, ggplot2::aes(x = Iterations, y = Value)) +
+    ggplot2::geom_line() +
+    ggplot2::ylab(gettext("x")) +
+    ggplot2::scale_x_continuous(name = gettext("Iterations"),
+                                expand = ggplot2::expansion(mult = c(0.05, 0.1)))
+  g <- g + jaspGraphs::themeJaspRaw() + jaspGraphs::geom_rangeframe()
+  g <- createJaspPlot(g, width = 400)
+  return(g)
+}
+
+
+
+##### Helpers #####
+
+.credInterval <- function(draws, level) {
+  # the credi interval:
+  bounds <- apply(draws, c(2, 3), function(x) {
+    coda::HPDinterval(coda::as.mcmc(x), prob = level)
+  })
+  boundsLow <- bounds[1, , ]
+  boundsUp <- bounds[2, , ]
+  # kind of hope this structure never changes so the elements are always in the correct order
+  boundsLow <- boundsLow[lower.tri(boundsLow)]
+  boundsUp <- boundsUp[lower.tri(boundsUp)]
+
+  return(list(low = boundsLow, up = boundsUp))
+}

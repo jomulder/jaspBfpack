@@ -27,7 +27,7 @@ results <- jaspTools::runAnalysis("bfpackRegressionLinear", testthat::test_path(
 
 
 test_that("Coefficients table results match", {
-  table <- results[["results"]][["bfpackContainer"]][["collection"]][["bfpackContainer_coefContainer"]][["collection"]][["bfpackContainer_coefContainer_estimatesTable"]][["data"]]
+  table <- results[["results"]][["bfpackContainer"]][["collection"]][["bfpackContainer_resultsContainer"]][["collection"]][["bfpackContainer_resultsContainer_estimatesTable"]][["data"]]
   jaspTools::expect_equal_tables(table,
                                  list("Intercept", 7.60369294828812, -26.6129583616794, -26.6129583616794,
                                       -60.8296096716469, "adverts", 0.098537992105009, 0.0848848251534776,
@@ -128,7 +128,7 @@ results <- jaspTools::runAnalysis("bfpackRegressionLinear", "debug.csv", options
 
 
 test_that("Estimates table results match", {
-  table <- results[["results"]][["bfpackContainer"]][["collection"]][["bfpackContainer_coefContainer"]][["collection"]][["bfpackContainer_coefContainer_estimatesTable"]][["data"]]
+  table <- results[["results"]][["bfpackContainer"]][["collection"]][["bfpackContainer_resultsContainer"]][["collection"]][["bfpackContainer_resultsContainer_estimatesTable"]][["data"]]
   jaspTools::expect_equal_tables(table,
                                  list("Intercept_on_contNormal", -0.407335959001421, -0.197600108422593,
                                       -0.197600108422593, 0.0121357421562356, "contcor1_on_contNormal",

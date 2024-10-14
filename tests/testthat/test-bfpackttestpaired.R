@@ -28,14 +28,13 @@ options <-
 
 
 set.seed(1)
-results <- jaspTools::runAnalysis("bfpackTTestPairedSamples", "debug.csv", options)
+results <- jaspTools::runAnalysis("bfpackTTestPairedSamples", "debug.csv", options, makeTests = F)
 
-
-test_that("Coefficients table results match", {
-  table <- results[["results"]][["bfpackContainer"]][["collection"]][["bfpackContainer_coefContainer"]][["collection"]][["bfpackContainer_coefContainer_estimatesTable"]][["data"]]
+test_that("Estimates table results match", {
+  table <- results[["results"]][["bfpackContainer"]][["collection"]][["bfpackContainer_resultsContainer"]][["collection"]][["bfpackContainer_resultsContainer_estimatesTable"]][["data"]]
   jaspTools::expect_equal_tables(table,
-                                 list("difference", -1.84207727029991, -2.22170938375, -2.22170938375, -2.60134149720009
-                                 ))
+                                 list("difference", -2.60134149720009, -2.22170938375, -2.22170938375,
+                                      -1.84207727029991))
 })
 
 test_that("Manual hypotheses legend table results match", {

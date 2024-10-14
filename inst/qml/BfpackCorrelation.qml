@@ -71,7 +71,6 @@ Form
 	Common.Options{
 		bfTy: false
 		iterations: true
-		samples: true
 	}
 
 	// Section

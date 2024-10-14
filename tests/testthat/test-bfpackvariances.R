@@ -59,7 +59,7 @@ test_that("Posterior model probability table results match", {
 })
 
 test_that("Coefficients table results match", {
-  table <- results[["results"]][["bfpackContainer"]][["collection"]][["bfpackContainer_coefContainer"]][["collection"]][["bfpackContainer_coefContainer_estimatesTable"]][["data"]]
+  table <- results[["results"]][["bfpackContainer"]][["collection"]][["bfpackContainer_resultsContainer"]][["collection"]][["bfpackContainer_resultsContainer_estimatesTable"]][["data"]]
   jaspTools::expect_equal_tables(table,
                                  list("female", 0.928946417051052, 2.975, 2.34406595810759, 8.80245652745594,
                                       "male", 1.45744037811216, 4.25925925925926, 3.47972940855522,

@@ -106,3 +106,87 @@ test_that("BFs when testing standard hypotheses table results match", {
                                       -1.2847245088449, -4.57200209974315, 0.687965155633888, "attract_with_airplay"
                                  ))
 })
+
+
+
+# check plots
+options <- list(
+  bfType = "fractional",
+  ciLevel = 0.95,
+  ciLevelPlot = 0.9,
+  complement = TRUE,
+  covariates = list(
+    types = list(),
+    value = list()
+  ),
+  estimatesTable = FALSE,
+  groupingVariable = "",
+  interactionTerms = list(),
+  iterations = 5000,
+  logScale = FALSE,
+  manualHypotheses = list(
+    list(
+      hypothesisText = "",
+      includeHypothesis = FALSE,
+      priorProbManual = "1",
+      value = "#"
+    )
+  ),
+  manualPlots = FALSE,
+  muValue = 0,
+  plotHeight = 320,
+  plotWidth = 480,
+  posteriorPlot = TRUE,
+  priorProbComplement = "1",
+  priorProbInteractionNonZero = "1",
+  priorProbInteractionZero = "1",
+  priorProbMainNonZero = "1",
+  priorProbMainZero = "1",
+  priorProbStandard = "2",
+  priorProbStandard2 = "1",
+  priorProbStandard3 = "1",
+  seed = 100,
+  specificationTable = FALSE,
+  standardHypothesisBfTable = FALSE,
+  traceplot = TRUE,
+  variables =  c("contNormal", "contGamma", "contExpon")
+  )
+
+set.seed(1)
+results <- jaspTools::runAnalysis("bfpackCorrelation", "debug.csv", options, makeTests = F)
+
+test_that("contGamma_with_contNormal plot matches", {
+  plotName <- results[["results"]][["bfpackContainer"]][["collection"]][["bfpackContainer_posteriorPlotContainer"]][["collection"]][["bfpackContainer_posteriorPlotContainer_cor1"]][["data"]]
+  testPlot <- results[["state"]][["figures"]][[plotName]][["obj"]]
+  jaspTools::expect_equal_plots(testPlot, "contgamma_with_contnormal_post")
+})
+
+test_that("contExpon_with_contNormal plot matches", {
+  plotName <- results[["results"]][["bfpackContainer"]][["collection"]][["bfpackContainer_posteriorPlotContainer"]][["collection"]][["bfpackContainer_posteriorPlotContainer_cor2"]][["data"]]
+  testPlot <- results[["state"]][["figures"]][[plotName]][["obj"]]
+  jaspTools::expect_equal_plots(testPlot, "contexpon_with_contnormal_post")
+})
+
+test_that("contExpon_with_contGamma plot matches", {
+  plotName <- results[["results"]][["bfpackContainer"]][["collection"]][["bfpackContainer_posteriorPlotContainer"]][["collection"]][["bfpackContainer_posteriorPlotContainer_cor3"]][["data"]]
+  testPlot <- results[["state"]][["figures"]][[plotName]][["obj"]]
+  jaspTools::expect_equal_plots(testPlot, "contexpon_with_contgamma_post")
+})
+
+test_that("contGamma_with_contNormal plot matches", {
+  plotName <- results[["results"]][["bfpackContainer"]][["collection"]][["bfpackContainer_traceplotContainer"]][["collection"]][["bfpackContainer_traceplotContainer_cor1"]][["data"]]
+  testPlot <- results[["state"]][["figures"]][[plotName]][["obj"]]
+  jaspTools::expect_equal_plots(testPlot, "contgamma_with_contnormal_trace")
+})
+
+test_that("contExpon_with_contNormal plot matches", {
+  plotName <- results[["results"]][["bfpackContainer"]][["collection"]][["bfpackContainer_traceplotContainer"]][["collection"]][["bfpackContainer_traceplotContainer_cor2"]][["data"]]
+  testPlot <- results[["state"]][["figures"]][[plotName]][["obj"]]
+  jaspTools::expect_equal_plots(testPlot, "contexpon_with_contnormal_trace")
+})
+
+test_that("contExpon_with_contGamma plot matches", {
+  plotName <- results[["results"]][["bfpackContainer"]][["collection"]][["bfpackContainer_traceplotContainer"]][["collection"]][["bfpackContainer_traceplotContainer_cor3"]][["data"]]
+  testPlot <- results[["state"]][["figures"]][[plotName]][["obj"]]
+  jaspTools::expect_equal_plots(testPlot, "contexpon_with_contgamma_trace")
+})

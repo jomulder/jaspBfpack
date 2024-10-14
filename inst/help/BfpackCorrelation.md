@@ -32,6 +32,8 @@ Once the variables are filled in, the parameters that can be used in the specifi
 
 #### Plots
 - Manual hypothesis plots: Produces plots depicting the prior and posterior probabilities of the manual hypotheses
+- Posterior plot: Produces the posterior distribution(s) of the sampled correlation(s) with a specified CI level
+- Traceplot: Produces the traceplot(s) of the sampled correlation(s)
 
 #### Additional options: 
 - No. iterations for parameter estimation: default is 5000 samples from the posterior distribution 
@@ -71,6 +73,12 @@ Once the variables are filled in, the parameters that can be used in the specifi
 ### Plots
 #### Prior and posterior probability 
 - Pizza plots for the manual hypotheses
+
+#### Posterior distribution plots
+- Plot the posterior distribution of each correlation with the credible interval
+
+#### Traceplots
+- Plot the trace of the posterior samples of each correlation. Should resemble a "hairy caterpillar"
 
 ### References
 

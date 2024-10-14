@@ -27,7 +27,6 @@ Section
 	property bool iterations: false
 	property bool interactions: false
 	property bool anova: false
-	property bool samples: false
 	property var interactionValues: []
 
 	id: options
@@ -95,13 +94,18 @@ Section
 		}
 		CheckBox
 		{
-			visible: 					samples
+			visible: 					iterations
 			name: 						"posteriorPlot"
 			text: 						qsTr("Posterior plot")
+			childrenOnSameRow: true
+			CIField
+			{
+				name: 					"ciLevelPlot"
+			}
 		}
 		CheckBox
 		{
-			visible: 					samples
+			visible: 					iterations
 			name: 						"traceplot"
 			text: 						qsTr("Traceplot")
 		}
