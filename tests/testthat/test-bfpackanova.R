@@ -30,6 +30,7 @@ options <- list(
   priorProbInteractionZero = "1",
   priorProbMainNonZero = "1",
   priorProbMainZero = "1",
+  ciLevel = .95,
   standardHypothesisBfTable = FALSE
 )
 

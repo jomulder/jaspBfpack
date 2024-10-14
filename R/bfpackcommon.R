@@ -466,7 +466,7 @@
   # start with common deps, and then do the switch
   deps <- c("complement", "logScale", "manualHypotheses", "priorProbManual",
             "priorProbStandard", "priorProbStandard2", "priorProbStandard3",
-            "priorProbComplement", "seed", "bfType", "includeHypothesis")
+            "priorProbComplement", "seed", "bfType", "includeHypothesis", "ciLevel")
 
   specDeps <- switch(type,
                      "regression" = c("interactionTerms", "includeInteractionEffect"),
@@ -517,7 +517,7 @@
       # convert the prior character values to numeric:
       manualPrior <- sapply(manualPrior, function(x) eval(parse(text=x)))
 
-      # special treatment for variances, see if levels of the grouping variable start with a numeric charaacter, which would crash BFpack
+      # special treatment for variances, see if levels of the grouping variable start with a numeric character, which would crash BFpack
       findex <- which(sapply(dataset, is.factor))
       if (length(findex > 0)) {
         if (type == "variances") {
@@ -541,12 +541,15 @@
       }
     }
 
+    # weirdly we need to extract this because BF fails for glm if not
+    ciLevel <- options[["ciLevel"]]
     results <- try(BFpack::BF(estimates, hypothesis = manualHyp,
                              complement = options[["complement"]],
                              prior.hyp.conf = manualPrior,
                              prior.hyp.explo = standPrior,
                              log = options[["logScale"]],
-                             BF.type = bftype))
+                             BF.type = bftype,
+                             cov.prob = ciLevel))
 
     if (isTryError(results)) {
 
@@ -857,7 +860,7 @@
 
   estimatesTable <- createJaspTable(gettext("Estimates table"))
   estimatesTable$position <- position
-  estimatesTable$dependOn(c("estimatesTable", "ciLevel"))
+  estimatesTable$dependOn("estimatesTable")
   bfpackContainer[["resultsContainer"]][["estimatesTable"]] <- estimatesTable
 
   interval <- gettextf("%s%% CI", format(100 * options[["ciLevel"]], digits = 3, drop0trailing = TRUE))
@@ -872,57 +875,18 @@
   estimatesTable$addColumnInfo(name = "upper", title = intervalUp, type = "number")
 
   if (!bfpackContainer$getError()) {
-    estimates <- bfpackContainer[["resultsContainer"]][["resultsState"]]$object$estimates
+    result <- bfpackContainer[["resultsContainer"]][["resultsState"]]$object
+    estimates <- result$estimates
     #### TODO: estimates is NULL for independent TTest
     if (!is.null(estimates)) {
       dtFill <- data.frame(coefficient = rownames(estimates))
       dtFill[, c("mean", "median", "lower", "upper")] <- estimates
 
-      if (options[["ciLevel"]] != .95) {
-        fitObj <- bfpackContainer[["estimatesState"]]$object
-        if (type %in% c("regression", "anova", "correlation", "regressionLogistic")) {
-
-          if (type == "correlation") {
-            realNames <- rownames(bfpackContainer[["resultsContainer"]][["resultsState"]]$object$correstimates)
-            dtFill$coefficient <- realNames
-            # the credi interval:
-            out <- .credInterval(fitObj$corrdraws[[1]], options[["ciLevel"]])
-            boundsLow <- out$low
-            boundsUp <- out$up
-
-          } else if (type %in% c("regression", "regressionLogistic", "anova")) {
-
-            int <- confint(fitObj, level = options[["ciLevel"]])
-            boundsLow <- int[, 1]
-            boundsUp <- int[, 2]
-          }
-
-        } else if (type %in% c("onesampleTTest", "pairedTTest", "independentTTest")) {
-
-          int <- fitObj[["conf.int"]]
-          boundsLow <- int[1]
-          boundsUp <- int[2]
-
-        } else if (type == "variances") {
-          int <- .bfpackBartlettHelper(fitObj, options[["ciLevel"]])
-          boundsLow <- int[, 1]
-          boundsUp <- int[, 2]
-
-        } else if (type == "multiSampleTTest") {
-          int <- .bfpackMultiTTestHelper(fitObj, options[["ciLevel"]])
-          boundsLow <- int[, 1]
-          boundsUp <- int[, 2]
-        }
-
-
-        dtFill[, c("lower", "upper")] <- cbind(boundsLow, boundsUp)
-      }
-
       estimatesTable$setData(dtFill)
-      # footnt <- ifelse(type == "correlation",
-      #                  gettext("The uncertainty interval is a highest posterior density credible interval."),
-      #                  gettext("The uncertainty interval is a confidence interval."))
-      # estimatesTable$addFootnote(footnt)
+      footnt <- ifelse(type == "correlation",
+                       gettext("The uncertainty interval is a credible interval."),
+                       gettext("The uncertainty interval is a confidence interval."))
+      estimatesTable$addFootnote(footnt)
     }
   }
 
@@ -1029,23 +993,27 @@
   }
 
   posteriorPlotContainer <- createJaspContainer(gettext("Posterior distribution"))
-  posteriorPlotContainer$dependOn(optionsFromObject = bfpackContainer[["resultsContainer"]], options = c("posteriorPlot", "ciLevelPlot"))
+  posteriorPlotContainer$dependOn(optionsFromObject = bfpackContainer[["resultsContainer"]], options = "posteriorPlot")
   bfpackContainer[["posteriorPlotContainer"]] <- posteriorPlotContainer
 
   result <- bfpackContainer[["resultsContainer"]][["resultsState"]]$object
 
   if (!bfpackContainer$getError() && !is.null(result)) {
-    draws <- result$model$corrdraws[[1]]
-    numVars <- dim(draws)[2]
-    corNames <- rownames(result$model$correstimates)
+    allDraws <- result$model$corrdraws
+    ll <- length(allDraws)
+    numVars <- dim(allDraws[[1]])[2]
+    corNames <- rownames(result$estimates)
     z <- 1
-    for (j in 1:(numVars-1)) {
-      for (i in (j+1):numVars) {
-        post <- draws[, i, j]
-        postPlot <- .makeSinglePosteriorDistributionPlot(post, level = options[["ciLevelPlot"]])
-        postPlot$title <- corNames[z]
-        posteriorPlotContainer[[paste0("cor", z)]] <- postPlot
-        z <- z + 1
+    for (l in 1:length(allDraws)) { # for multiple groups the list is longer than 1
+      for (j in 1:(numVars-1)) {
+        for (i in (j+1):numVars) {
+          post <- allDraws[[l]][, i, j]
+          cint <- result$estimates[z, 3:4]
+          postPlot <- .makeSinglePosteriorDistributionPlot(post, int = cint)
+          postPlot$title <- corNames[z]
+          posteriorPlotContainer[[paste0("cor", z)]] <- postPlot
+          z <- z + 1
+        }
       }
     }
   }
@@ -1053,9 +1021,8 @@
   return()
 }
 
-.makeSinglePosteriorDistributionPlot <- function(samples, level) {
+.makeSinglePosteriorDistributionPlot <- function(samples, int) {
 
-  int <- coda::HPDinterval(coda::as.mcmc(samples), prob = level)
   d <- stats::density(samples, n = 2^10)
   datDens <- data.frame(x = d$x, y = d$y)
   xBreaks <- jaspGraphs::getPrettyAxisBreaks(datDens$x)

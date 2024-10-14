@@ -54,6 +54,7 @@ Section
 
 		}
 	}
+
 	Group
 	{
 		title: 	qsTr("Tables")
@@ -73,13 +74,7 @@ Section
 		CheckBox
 		{
 			name: 						"estimatesTable"
-			text: 						qsTr("Estimates with uncertainty interval")
-			childrenOnSameRow: true
-
-			CIField
-			{
-				name: 					"ciLevel"
-			}
+			text: 						qsTr("Estimates")
 		}
 	}
 
@@ -97,11 +92,6 @@ Section
 			visible: 					iterations
 			name: 						"posteriorPlot"
 			text: 						qsTr("Posterior plot")
-			childrenOnSameRow: true
-			CIField
-			{
-				name: 					"ciLevelPlot"
-			}
 		}
 		CheckBox
 		{
@@ -114,7 +104,11 @@ Section
 	Group
 	{
 		title: 							qsTr("Additional Options")
-
+		CIField
+		{
+			label: qsTr("Uncertainty interval level")
+			name: 					"ciLevel"
+		}
 		IntegerField
 		{
 			visible: iterations

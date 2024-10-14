@@ -32,7 +32,7 @@ Once the variables are filled in, the parameters that can be used in the specifi
 
 #### Plots
 - Manual hypothesis plots: Produces plots depicting the prior and posterior probabilities of the manual hypotheses
-- Posterior plot: Produces the posterior distribution(s) of the sampled correlation(s) with a specified CI level
+- Posterior plot: Produces the posterior distribution(s) of the sampled correlation(s)
 - Traceplot: Produces the traceplot(s) of the sampled correlation(s)
 
 #### Additional options: 

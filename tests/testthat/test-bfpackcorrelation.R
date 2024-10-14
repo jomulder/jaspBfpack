@@ -30,7 +30,9 @@ options <- list(
     priorProbStandard3 = "1",
     variables = c("adverts", "sales", "airplay", "attract"),
     variables.types = c("scale", "scale", "scale", "ordinal"),
-    groupingVariable = ""
+    groupingVariable = "",
+    posteriorPlot = FALSE,
+    traceplot = FALSE
 )
 
 set.seed(1)
@@ -113,7 +115,6 @@ test_that("BFs when testing standard hypotheses table results match", {
 options <- list(
   bfType = "fractional",
   ciLevel = 0.95,
-  ciLevelPlot = 0.9,
   complement = TRUE,
   covariates = list(
     types = list(),
