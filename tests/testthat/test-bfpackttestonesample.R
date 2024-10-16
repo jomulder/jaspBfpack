@@ -14,7 +14,7 @@ options <-
     manualPlots = FALSE,
     priorProbComplement = "1/2",
     seed = 100,
-    specificationTable = TRUE,
+    manualHypothesisBfTable = TRUE,
     priorProbStandard = "1",
     priorProbStandard2 = "1",
     priorProbStandard3 = "1",
@@ -35,7 +35,7 @@ test_that("Coefficients table results match", {
 })
 
 test_that("Manual hypotheses legend table results match", {
-  table <- results[["results"]][["bfpackContainer"]][["collection"]][["bfpackContainer_legendTable"]][["data"]]
+  table <- results[["results"]][["bfpackContainer"]][["collection"]][["bfpackContainer_resultsContainer"]][["collection"]][["bfpackContainer_resultsContainer_legendTable"]][["data"]]
   jaspTools::expect_equal_tables(table,
                                  list("mu&lt;.5", "H1", "complement", "H2"))
 })

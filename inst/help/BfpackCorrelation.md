@@ -1,7 +1,7 @@
 BFpack Correlation
 ==========================
 
-The analysis allows to test exploratory hypotheses (e.g., equal vs negative vs postive) and confirmatory hypotheses (with equality and/or order constraints) using Bayes factors and posterior probabilities under commonly used statistical models. For the correlation that means one can test hypotheses relating to correlation coefficients. The correlations include biserial, polyserial, tetrachoric, polychoric, and product-moment coefficients. Overlapping correlations are also supported. 
+The analysis allows to test exploratory hypotheses (e.g., equal vs negative vs postive) and confirmatory hypotheses (with equality and/or order constraints) using Bayes factors and posterior probabilities under commonly used statistical models. For the correlation that means one can test hypotheses relating to correlation coefficients. The correlations include biserial, polyserial, tetrachoric, polychoric, and product-moment coefficients. Overlapping correlations are also supported. For details, see Mulder et al. (2021).
 
 ## Input
 ### Main Window
@@ -26,8 +26,8 @@ Once the variables are filled in, the parameters that can be used in the specifi
 - Log scale: reports the log BF
 
 #### Tables
-- Standard hypothesis BFs: Print table that compares each standard hypothesis with its complement
-- Specification: Print the specification table
+- BFs: Standard hypotheses: Print table that compares each standard hypothesis with its complement
+- BFs: Manual hypotheses: Print the specification table
 - Estimates with uncertainty interval: Print a table with the point estimates and uncertainty intervals (credible interval for correlation) for the parameter(s) of interest. Estimates are based on the posterior distribution of the correlation coefficient.
 
 #### Plots
@@ -46,7 +46,12 @@ Once the variables are filled in, the parameters that can be used in the specifi
 - Posterior probs for the standard hypotheses
 
 #### BFs when testing standard hypotheses
-- Bayes factors for the standard hypotheses and their complements
+- BF(0c): Bayes factor of the standard H0 vs the complement
+- BF(-c): Bayes factor of the standard H- vs the complement
+- BF(+c): Bayes factor of the standard H+ vs the complement
+- BF(c0): Bayes factor of complement vs the standard H0
+- BF(c-): Bayes factor of complement vs the standard H-
+- BF(c+): Bayes factor of complement vs the standard H+
 
 #### Manual hypotheses legend
 - Denotes the manual hypotheses
@@ -57,7 +62,7 @@ Once the variables are filled in, the parameters that can be used in the specifi
 #### Posterior model probability
 - provides the posterior probability for each hypothesis
 
-#### Specification table
+#### BFs: Manual hypotheses table
 - Equal-complex: Quantifies the relative complexity of the equality constraints of a hypothesis (the prior density at the equality constraints in the extended Savage Dickey density ratio)
 - Order-complex: Quantifies the relative complexity of the order constraints of a hypothesis (the prior probability of the order constraints in the extended Savage Dickey density ratio)
 - Equal-fit: Quantifies the relative fit of the equality constraints of a hypothesis (the posterior density at the equality constraints in the extended Savage Dickey density ratio)

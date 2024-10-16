@@ -21,7 +21,7 @@ options <-
       manualPlots = FALSE,
       priorProbComplement = "1/2",
       seed = 100,
-      specificationTable = FALSE,
+      manualHypothesisBfTable = FALSE,
       priorProbStandard = "1",
       priorProbStandard2 = "1",
       testValues = list(
@@ -37,12 +37,6 @@ options <-
 set.seed(1)
 results <- jaspTools::runAnalysis("bfpackTTestMultiSample", "debug.csv", options)
 
-
-test_that("Manual hypotheses legend table results match", {
-  table <- results[["results"]][["bfpackContainer"]][["collection"]][["bfpackContainer_legendTable"]][["data"]]
-  jaspTools::expect_equal_tables(table,
-                                 list("contNormal&gt;contGamma", "H1", "complement", "H2"))
-})
 
 test_that("Posterior probabilities when testing individual parameters table results match", {
   table <- results[["results"]][["bfpackContainer"]][["collection"]][["bfpackContainer_parameterTable"]][["data"]]

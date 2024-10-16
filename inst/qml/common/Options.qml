@@ -62,13 +62,13 @@ Section
 		CheckBox 
 		{
 			name: "standardHypothesisBfTable"
-			text: qsTr("Standard hypotheses BFs")
+			text: qsTr("BFs: Standard hypotheses")
 		}	
 
 		CheckBox 
 		{
-			name: "specificationTable"
-			text: qsTr("Specification")
+			name: "manualHypothesisBfTable"
+			text: qsTr("BFs: Manual hypotheses")
 		}
 
 		CheckBox

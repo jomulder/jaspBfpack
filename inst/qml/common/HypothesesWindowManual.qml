@@ -34,7 +34,7 @@ Group
 
 	columns: 1
 	RowLayout {
-		Label { text: qsTr("<b>Manual hypothesis test</b>") }
+		Label { text: qsTr("<b>Manual Hypothesis Test</b>") }
 		HelpButton
 		{
 			toolTip: 					qsTr("Click for more information")

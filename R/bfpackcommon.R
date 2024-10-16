@@ -579,27 +579,27 @@
   # inner container
   if (!is.null(bfpackContainer[["parameterTable"]])) return()
 
-  parameterTable <- createJaspTable(gettext("Posterior probabilities when testing standard hypotheses"))
+  parameterTable <- createJaspTable(gettext("Posterior Probabilities Testing Standard Hypotheses"))
   parameterTable$dependOn(optionsFromObject = bfpackContainer[["resultsContainer"]], options = "priorProb")
   parameterTable$position <- position
 
   if (type %in% c("variances", "multiSampleTTest")) {
 
     if (type == "variances") {
-      title1 <- gettext("Equal variances")
-      title2 <- gettext("Unequal variances")
+      title1 <- gettext("Equal Variances")
+      title2 <- gettext("Unequal Variances")
     } else if (type == "multiSampleTTest") {
       # testValues <- sapply(options[["testValues"]] function(x) x[["testValue"]]))
       title1 <- gettext("Pr(H0)")
-      title2 <- gettext("Pr(H1)")
+      title2 <- gettext("Pr(H±)")
     }
     parameterTable$addColumnInfo(name = "equal", type = "number", title = title1)
     parameterTable$addColumnInfo(name = "unequal", type = "number", title = title2)
 
   } else {
     title1 <- gettext("Pr(H0)")
-    title2 <- gettext("Pr(H1)")
-    title3 <- gettext("Pr(H2)")
+    title2 <- gettext("Pr(H-)")
+    title3 <- gettext("Pr(H+)")
 
     if (type == "correlation" && options[["groupingVariable"]] != "") {
       groupName <- options[["groupingVariable"]]
@@ -655,13 +655,13 @@
   # inner container
   if (!is.null(bfpackContainer[["mainEffectsTable"]])) return()
 
-  mainEffectsTable <- createJaspTable(gettext("Posterior probabilities for main effects"))
+  mainEffectsTable <- createJaspTable(gettext("Posterior Probabilities for Main Effects"))
   mainEffectsTable$dependOn(optionsFromObject = bfpackContainer[["resultsContainer"]])
   mainEffectsTable$position <- position
 
   mainEffectsTable$addColumnInfo(name = "coefficient", type = "string", title = "")
-  mainEffectsTable$addColumnInfo(name = "noEffect", type = "number", title = gettext("Pr(no effect)"))
-  mainEffectsTable$addColumnInfo(name = "fullModel", type = "number", title = gettext("Pr(full model)"))
+  mainEffectsTable$addColumnInfo(name = "noEffect", type = "number", title = gettext("Pr(No effect)"))
+  mainEffectsTable$addColumnInfo(name = "fullModel", type = "number", title = gettext("Pr(Full Model)"))
 
   bfpackContainer[["mainEffectsTable"]] <- mainEffectsTable
 
@@ -685,18 +685,19 @@
   # inner container
   if (!is.null(bfpackContainer[["iaEffectsTable"]])) return()
 
-  iaEffectsTable <- createJaspTable(gettext("Posterior probabilities for interaction effects"))
+  iaEffectsTable <- createJaspTable(gettext("Posterior Probabilities for Interaction Effects"))
   iaEffectsTable$dependOn(optionsFromObject = bfpackContainer[["resultsContainer"]])
   iaEffectsTable$position <- position
 
   iaEffectsTable$addColumnInfo(name = "coefficient", type = "string", title = "")
-  iaEffectsTable$addColumnInfo(name = "noEffect", type = "number", title = gettext("Pr(no effect)"))
-  iaEffectsTable$addColumnInfo(name = "fullModel", type = "number", title = gettext("Pr(full model)"))
+  iaEffectsTable$addColumnInfo(name = "noEffect", type = "number", title = gettext("Pr(No effect)"))
+  iaEffectsTable$addColumnInfo(name = "fullModel", type = "number", title = gettext("Pr(Full model)"))
+
+  bfpackContainer[["iaEffectsTable"]] <- iaEffectsTable
 
   if (!bfpackContainer$getError()) {
     php <- bfpackContainer[["resultsContainer"]][["resultsState"]]$object$PHP_interaction
     if (!is.null(php)) {
-      bfpackContainer[["iaEffectsTable"]] <- iaEffectsTable
 
       dtFill <- data.frame(coefficient = rownames(php))
       dtFill[, c("noEffect", "fullModel")] <- php
@@ -711,9 +712,9 @@
 # Create a legend containing the order constrained hypotheses
 .bfpackLegendTable <- function(options, type, bfpackContainer, position) {
 
-  if (!is.null(bfpackContainer[["legendTable"]])) return()
+  if (!is.null(bfpackContainer[["resultsContainer"]][["legendTable"]])) return()
 
-  legendTable <- createJaspTable(gettext("Manual hypotheses legend"))
+  legendTable <- createJaspTable(gettext("Manual Hypotheses Legend"))
 
   legendTable$dependOn("manualHypotheses")
   legendTable$position <- position
@@ -728,7 +729,7 @@
     if (paste0(manualHyp, collapse = "") != "" && !any(manualHypInclude)) {
       legendTable$addFootnote(gettext("Check the 'Include' box to test the hypothesis."))
       # putting the assignment to the container here means the table is only displayed if it is filled with data
-      bfpackContainer[["legendTable"]] <- legendTable
+      bfpackContainer[["resultsContainer"]][["legendTable"]] <- legendTable
     }
 
     hypos <- bfpackContainer[["resultsContainer"]][["resultsState"]]$object$hypotheses
@@ -738,7 +739,7 @@
         legendTable$addRows(row)
       }
 
-      bfpackContainer[["legendTable"]] <- legendTable
+      bfpackContainer[["resultsContainer"]][["legendTable"]] <- legendTable
     }
   }
 
@@ -752,7 +753,7 @@
 
   if (!is.null(bfpackContainer[["resultsContainer"]][["matrixTable"]])) return()
 
-  tbTitle <- ifelse(options[["logScale"]], gettext("Evidence matrix (log BFs)"), gettext("Evidence matrix (BFs)"))
+  tbTitle <- ifelse(options[["logScale"]], gettext("Evidence Matrix (log BFs)"), gettext("Evidence Matrix (BFs)"))
   matrixTable <- createJaspTable(tbTitle)
   matrixTable$position <- position
   # matrixTable$dependOn()
@@ -792,11 +793,11 @@
 
   if (!is.null(bfpackContainer[["resultsContainer"]][["postTable"]])) return()
 
-  postTable <- createJaspTable(gettext("Posterior model probability"))
+  postTable <- createJaspTable(gettext("Posterior Model Probability"))
   postTable$position <- position
 
   postTable$addColumnInfo(name = "hypothesis", title = "", type = "string")
-  postTable$addColumnInfo(name = "prob", title = gettext("P(H|D)"), type = "number")
+  postTable$addColumnInfo(name = "prob", title = gettext("P(H|Data)"), type = "number")
 
   if (!bfpackContainer$getError()) {
     php <- bfpackContainer[["resultsContainer"]][["resultsState"]]$object$PHP_confirmatory
@@ -820,21 +821,21 @@
 .bfpackSpecificationTable <- function(options, bfpackContainer, type, position) {
 
   if (!is.null(bfpackContainer[["resultsContainer"]][["specTable"]]) ||
-      !options[["specificationTable"]]) return()
+      !options[["manualHypothesisBfTable"]]) return()
 
-  specTable <- createJaspTable(gettext("Specification table"))
-  specTable$dependOn("specificationTable")
+  specTable <- createJaspTable(gettext("BFs: Manual Hypotheses"))
+  specTable$dependOn("manualHypothesisBfTable")
   specTable$position <- position
 
-  specTable$addColumnInfo(name = "hypothesis", title = "", type = "string")
-  specTable$addColumnInfo(name = "complex=", title = gettext("Equal-complex"), type = "number")
-  specTable$addColumnInfo(name = "complex>", title = gettext("Order-complex"), type = "number")
-  specTable$addColumnInfo(name = "fit=", title = gettext("Equal-fit"), type = "number")
-  specTable$addColumnInfo(name = "fit>", title = gettext("Order-fit"), type = "number")
-  specTable$addColumnInfo(name = "BF=", title = gettext("Equal-BF"), type = "number")
-  specTable$addColumnInfo(name = "BF>", title = gettext("Order-BF"), type = "number")
-  specTable$addColumnInfo(name = "BF", title = gettext("BF"), type = "number")
-  specTable$addColumnInfo(name = "PHP", title = gettext("Posterior prob."), type = "number")
+  specTable$addColumnInfo(name = "hypothesis",  title = "",                               type = "string")
+  specTable$addColumnInfo(name = "complex=",    title = gettext("Equal-Complex"),         type = "number")
+  specTable$addColumnInfo(name = "complex>",    title = gettext("Order-Complex"),         type = "number")
+  specTable$addColumnInfo(name = "fit=",        title = gettext("Equal-Fit"),             type = "number")
+  specTable$addColumnInfo(name = "fit>",        title = gettext("Order-Fit"),             type = "number")
+  specTable$addColumnInfo(name = "BF=",         title = gettext("Equal-BF"),              type = "number")
+  specTable$addColumnInfo(name = "BF>",         title = gettext("Order-BF"),              type = "number")
+  specTable$addColumnInfo(name = "BF",          title = gettext("BF"),                    type = "number")
+  specTable$addColumnInfo(name = "PHP",         title = gettext("Posterior Probability"), type = "number")
 
 
   bfpackContainer[["resultsContainer"]][["specTable"]] <- specTable
@@ -858,14 +859,14 @@
   if (!is.null(bfpackContainer[["resultsContainer"]][["estimatesTable"]]) ||
       !options[["estimatesTable"]]) return()
 
-  estimatesTable <- createJaspTable(gettext("Estimates table"))
+  estimatesTable <- createJaspTable(gettext("Estimates Table"))
   estimatesTable$position <- position
   estimatesTable$dependOn("estimatesTable")
   bfpackContainer[["resultsContainer"]][["estimatesTable"]] <- estimatesTable
 
   interval <- gettextf("%s%% CI", format(100 * options[["ciLevel"]], digits = 3, drop0trailing = TRUE))
-  intervalLow <- gettextf("%s lower bound", interval)
-  intervalUp <- gettextf("%s upper bound", interval)
+  intervalLow <- gettextf("%s Lower Bound", interval)
+  intervalUp <- gettextf("%s Upper Bound", interval)
 
 
   estimatesTable$addColumnInfo(name = "coefficient", title = "", type = "string")
@@ -884,8 +885,8 @@
 
       estimatesTable$setData(dtFill)
       footnt <- ifelse(type == "correlation",
-                       gettext("The uncertainty interval is a credible interval."),
-                       gettext("The uncertainty interval is a confidence interval."))
+                       gettext("The uncertainty interval is a central credible interval."),
+                       gettext("The uncertainty interval is a frequentist confidence interval."))
       estimatesTable$addFootnote(footnt)
     }
   }
@@ -896,30 +897,35 @@
 # standard BF table
 .bfpackStandardBfTable <- function(options, bfpackContainer, type, position) {
 
-  if (!is.null(bfpackContainer[["resultsContainer"]][["stdBfTable"]]) ||
+  if (!is.null(bfpackContainer[["stdBfTable"]]) ||
       !options[["standardHypothesisBfTable"]]) return()
 
   if (bfpackContainer$getError()) return()
 
-  stdBfTable <- createJaspTable(gettext("BFs when testing standard hypotheses"))
-  stdBfTable$dependOn("standardHypothesisBfTable")
+  stdBfTable <- createJaspTable(gettext("BFs: Standard Hypotheses"))
+  stdBfTable$dependOn(optionsFromObject = bfpackContainer[["resultsContainer"]], options = "standardHypothesisBfTable")
   stdBfTable$position <- position
-  bfpackContainer[["resultsContainer"]][["stdBfTable"]] <- stdBfTable
+  bfpackContainer[["stdBfTable"]] <- stdBfTable
 
   bfs <- bfpackContainer[["resultsContainer"]][["resultsState"]]$object$BFtu_exploratory
   if (is.null(bfs)) return()
 
   if (type %in% c("variances", "multiSampleTTest")) {
-    title1 <- gettext("BF01")
-    stdBfTable$addColumnInfo(name = "bf", title = title1, type = "number")
-    stdBfTable$setData(data.frame(bf = bfs[1]))
+    title1 <- gettext("BF(0c)")
+    title2 <- gettext("BF(c0)")
+    stdBfTable$addColumnInfo(name = "bf1", title = title1, type = "number")
+    stdBfTable$addColumnInfo(name = "bf2", title = title2, type = "number")
+    stdBfTable$setData(data.frame(bf1 = bfs[1], bf2 = 1/bfs[1]))
 
   } else {
 
     stdBfTable$addColumnInfo(name = "coefficient", title = "", type = "string")
-    stdBfTable$addColumnInfo(name = "bf0", title = gettext("BF(H0 vs. complement)"), type = "number")
-    stdBfTable$addColumnInfo(name = "bf1", title = gettext("BF(H1 vs. complement)"), type = "number")
-    stdBfTable$addColumnInfo(name = "bf2", title = gettext("BF(H2 vs. complement)"), type = "number")
+    stdBfTable$addColumnInfo(name = "bf0", title = gettext("BF(0c)"), type = "number")
+    stdBfTable$addColumnInfo(name = "bf1", title = gettext("BF(-c)"), type = "number")
+    stdBfTable$addColumnInfo(name = "bf2", title = gettext("BF(+c)"), type = "number")
+    stdBfTable$addColumnInfo(name = "bf3", title = gettext("BF(c0)"), type = "number")
+    stdBfTable$addColumnInfo(name = "bf4", title = gettext("BF(c-)"), type = "number")
+    stdBfTable$addColumnInfo(name = "bf5", title = gettext("BF(c+)"), type = "number")
 
     if (type == "independentTTest") {
       dtFill <- data.frame(coefficient = gettext("difference"))
@@ -927,6 +933,7 @@
       dtFill <- data.frame(coefficient = rownames(bfs))
     }
     dtFill[, c("bf0", "bf1", "bf2")] <- bfs
+    dtFill[, c("bf3", "bf4", "bf5")] <- 1/bfs
     stdBfTable$setData(dtFill)
 
   }
@@ -954,10 +961,10 @@
     post <- result$PHP_confirmatory
     prior <- result$prior.hyp.conf
 
-    priorPlot <- .plotHelper(prior, gettext("Prior probabilities"))
+    priorPlot <- .plotHelper(prior, gettext("Prior Probabilities"))
     plotContainer[["priorPlot"]] <- priorPlot
 
-    postPlot <- .plotHelper(post, gettext("Posterior probabilities"))
+    postPlot <- .plotHelper(post, gettext("Posterior Probabilities"))
     plotContainer[["postPlot"]] <- postPlot
 
   }
@@ -992,7 +999,7 @@
     return()
   }
 
-  posteriorPlotContainer <- createJaspContainer(gettext("Posterior distribution"))
+  posteriorPlotContainer <- createJaspContainer(gettext("Posterior Distribution"))
   posteriorPlotContainer$dependOn(optionsFromObject = bfpackContainer[["resultsContainer"]], options = "posteriorPlot")
   bfpackContainer[["posteriorPlotContainer"]] <- posteriorPlotContainer
 
@@ -1040,18 +1047,14 @@
                        label = sapply(c(datCri$xmin, datCri$xmax), format, digits = 3, scientific = -1),
                        stringsAsFactors = FALSE)
 
-  # if the bounds are less than 0.05 away from 0 or 1, expand the axis by 0.1 so the credible interval text does not
-  # get chopped off.
-  xExpand <- .1 * ((c(0, 1) - datTxt$x) <= 0.05)
-
   g <- ggplot2::ggplot(data = datDens, mapping = ggplot2::aes(x = x, y = y)) +
-    ggplot2::geom_line(size = .85) +
+    ggplot2::geom_line(linewidth = .85) +
     ggplot2::geom_errorbarh(data = datCri, mapping = ggplot2::aes(xmin = xmin, xmax = xmax, y = y),
                             height = height, inherit.aes = FALSE) +
     ggplot2::geom_text(data = datTxt, mapping = ggplot2::aes(x = x, y = y, label = label), inherit.aes = FALSE,
-                       size = 5) +
+                       size = 6) +
     ggplot2::scale_y_continuous(name = gettext("Density"), breaks = yBreaks, limits = range(yBreaks)) +
-    ggplot2::scale_x_continuous(name = gettext("x"), breaks = xBreaks, expand = xExpand, limits = range(xBreaks))
+    ggplot2::scale_x_continuous(name = gettext("x"), breaks = xBreaks, limits = range(xBreaks))
 
   g <- g + jaspGraphs::themeJaspRaw() + jaspGraphs::geom_rangeframe()
   g <- createJaspPlot(g)

@@ -15,7 +15,7 @@ options <- list(
   manualPlots = TRUE,
   priorProbComplement = "1",
   seed = 100,
-  specificationTable = TRUE,
+  manualHypothesisBfTable = TRUE,
   priorProbStandard = "1",
   priorProbStandard2 = "0",
   priorProbStandard3 = "1",
@@ -38,7 +38,7 @@ test_that("Coefficients table results match", {
 })
 
 test_that("Manual hypotheses legend table results match", {
-  table <- results[["results"]][["bfpackContainer"]][["collection"]][["bfpackContainer_legendTable"]][["data"]]
+  table <- results[["results"]][["bfpackContainer"]][["collection"]][["bfpackContainer_resultsContainer"]][["collection"]][["bfpackContainer_resultsContainer_legendTable"]][["data"]]
   jaspTools::expect_equal_tables(table,
                                  list("adverts=airplay=attract", "H1", "adverts&lt;airplay&lt;attract",
                                       "H2", "complement", "H3"))
@@ -119,7 +119,7 @@ options <- list(
     priorProbStandard2 = "1",
     priorProbStandard3 = "1",
     seed = 100,
-    specificationTable = FALSE,
+    manualHypothesisBfTable = FALSE,
     standardHypothesisBfTable = FALSE
   )
 
@@ -140,7 +140,7 @@ test_that("Estimates table results match", {
 })
 
 test_that("Manual hypotheses legend table results match", {
-  table <- results[["results"]][["bfpackContainer"]][["collection"]][["bfpackContainer_legendTable"]][["data"]]
+  table <- results[["results"]][["bfpackContainer"]][["collection"]][["bfpackContainer_resultsContainer"]][["collection"]][["bfpackContainer_resultsContainer_legendTable"]][["data"]]
   jaspTools::expect_equal_tables(table,
                                  list("contcor1_on_contNormal&gt;contcor1_on_contGamma", "H1", "complement",
                                       "H2"))

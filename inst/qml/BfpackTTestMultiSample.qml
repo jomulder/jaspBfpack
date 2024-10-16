@@ -46,7 +46,7 @@ Form
 	ColumnLayout 
 	{
 		Common.HypothesesWindowStandard{
-			parName: qsTr("mu")
+			parName: qsTr("μ")
 			multiTest: true
 			onlyUnequal: true
 		}

@@ -61,7 +61,7 @@ Form
 	}
 
 	Common.HypothesesWindowStandard{
-		parName: qsTr("rho")
+		parName: qsTr("ρ")
 	}
 
 	Common.ParametersWindow{}

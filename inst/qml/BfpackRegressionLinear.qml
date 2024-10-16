@@ -51,7 +51,7 @@ Form
 	}
 
 	Common.HypothesesWindowStandard{
-		parName: qsTr("beta")
+		parName: qsTr("β")
 	}
 	Common.ParametersWindow{}
 

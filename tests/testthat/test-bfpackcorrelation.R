@@ -24,7 +24,7 @@ options <- list(
     manualPlots = TRUE,
     priorProbComplement = "10",
     seed = 100,
-    specificationTable = TRUE,
+    manualHypothesisBfTable = TRUE,
     priorProbStandard = "1",
     priorProbStandard2 = "1",
     priorProbStandard3 = "1",
@@ -39,7 +39,7 @@ set.seed(1)
 results <- jaspTools::runAnalysis("bfpackCorrelation", testthat::test_path("sales.csv"), options, makeTests = F)
 
 test_that("Manual hypotheses legend table results match", {
-  table <- results[["results"]][["bfpackContainer"]][["collection"]][["bfpackContainer_legendTable"]][["data"]]
+  table <- results[["results"]][["bfpackContainer"]][["collection"]][["bfpackContainer_resultsContainer"]][["collection"]][["bfpackContainer_resultsContainer_legendTable"]][["data"]]
   jaspTools::expect_equal_tables(table,
                                  list("sales_with_adverts=airplay_with_adverts=attract_with_adverts",
                                       "H1", "sales_with_adverts&gt;airplay_with_adverts&gt;attract_with_adverts",
@@ -97,15 +97,21 @@ test_that("Specification table results match", {
                                       "H3"))
 })
 
-test_that("BFs when testing standard hypotheses table results match", {
-  table <- results[["results"]][["bfpackContainer"]][["collection"]][["bfpackContainer_resultsContainer"]][["collection"]][["bfpackContainer_resultsContainer_stdBfTable"]][["data"]]
+test_that("BFs: Standard Hypotheses table results match", {
+  table <- results[["results"]][["bfpackContainer"]][["collection"]][["bfpackContainer_stdBfTable"]][["data"]]
   jaspTools::expect_equal_tables(table,
-                                 list(-37.9488024334818, -42.3594963806197, 0.693147180559945, "sales_with_adverts",
-                                      0.993781677754371, -1.83748208711095, 0.610190579978968, "airplay_with_adverts",
-                                      1.37076674042817, -1.34050398807247, 0.552899722868173, "attract_with_adverts",
-                                      -42.912371428795, -47.3891532106837, 0.693147180559945, "airplay_with_sales",
-                                      -9.02954210483927, -12.8479715659353, 0.69314586482886, "attract_with_sales",
-                                      -1.2847245088449, -4.57200209974315, 0.687965155633888, "attract_with_airplay"
+                                 list(-37.9488024334818, -42.3594963806197, 0.693147180559945, -0.0263512926857927,
+                                      -0.023607457251487, 1.44269504088896, "sales_with_adverts",
+                                      0.993781677754371, -1.83748208711095, 0.610190579978968, 1.00625723172888,
+                                      -0.544222992438684, 1.63883224817149, "airplay_with_adverts",
+                                      1.37076674042817, -1.34050398807247, 0.552899722868173, 0.729518721535106,
+                                      -0.745988082764242, 1.80864623120534, "attract_with_adverts",
+                                      -42.912371428795, -47.3891532106837, 0.693147180559945, -0.0233033031432279,
+                                      -0.0211018752657212, 1.44269504088896, "airplay_with_sales",
+                                      -9.02954210483927, -12.8479715659353, 0.69314586482886, -0.110747587019287,
+                                      -0.0778332980321478, 1.44269777941603, "attract_with_sales",
+                                      -1.2847245088449, -4.57200209974315, 0.687965155633888, -0.778376992978132,
+                                      -0.218722559216711, 1.45356198902051, "attract_with_airplay"
                                  ))
 })
 
@@ -147,7 +153,7 @@ options <- list(
   priorProbStandard2 = "1",
   priorProbStandard3 = "1",
   seed = 100,
-  specificationTable = FALSE,
+  manualHypothesisBfTable = FALSE,
   standardHypothesisBfTable = FALSE,
   traceplot = TRUE,
   variables =  c("contNormal", "contGamma", "contExpon")

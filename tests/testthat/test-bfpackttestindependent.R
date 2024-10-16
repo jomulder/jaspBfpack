@@ -21,7 +21,7 @@ options <-
     manualPlots = TRUE,
     priorProbComplement = "1/2",
     seed = 100,
-    specificationTable = TRUE,
+    manualHypothesisBfTable = TRUE,
     priorProbStandard = "1",
     priorProbStandard2 = "1",
     priorProbStandard3 = "1",
@@ -37,7 +37,7 @@ set.seed(1)
 results <- jaspTools::runAnalysis("bfpackTTestIndependentSamples", dt, options, makeTests = F)
 
 test_that("Manual hypotheses legend table results match", {
-  table <- results[["results"]][["bfpackContainer"]][["collection"]][["bfpackContainer_legendTable"]][["data"]]
+  table <- results[["results"]][["bfpackContainer"]][["collection"]][["bfpackContainer_resultsContainer"]][["collection"]][["bfpackContainer_resultsContainer_legendTable"]][["data"]]
   jaspTools::expect_equal_tables(table,
                                  list("difference&gt;3", "H1", "difference&lt;0", "H2", "difference&lt;3",
                                       "H3"))

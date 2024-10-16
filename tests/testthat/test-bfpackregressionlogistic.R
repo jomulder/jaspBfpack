@@ -27,7 +27,7 @@ options <-
     manualPlots = FALSE,
     priorProbComplement = "1/2",
     seed = 100,
-    specificationTable = FALSE,
+    manualHypothesisBfTable = FALSE,
     priorProbStandard = "1",
     priorProbStandard2 = "1",
     priorProbStandard3 = "1",
@@ -54,7 +54,7 @@ test_that("Coefficients table results match", {
 })
 
 test_that("Manual hypotheses legend table results match", {
-  table <- results[["results"]][["bfpackContainer"]][["collection"]][["bfpackContainer_legendTable"]][["data"]]
+  table <- results[["results"]][["bfpackContainer"]][["collection"]][["bfpackContainer_resultsContainer"]][["collection"]][["bfpackContainer_resultsContainer_legendTable"]][["data"]]
   jaspTools::expect_equal_tables(table,
                                  list("contNormal___X___contcor1&gt;-.5", "H1", "complement", "H2"
                                  ))
@@ -81,3 +81,4 @@ test_that("Posterior model probability table results match", {
   jaspTools::expect_equal_tables(table,
                                  list("H1", 0.555, "H2", 0.445))
 })
+

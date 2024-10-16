@@ -1,34 +1,33 @@
-
 BFpack Multivariate T-Test
 ==========================
 
-The analysis allows to test exploratory hypotheses (e.g., equal vs negative vs postive) and confirmatory hypotheses (with equality and/or order constraints) using Bayes factors and posterior probabilities under commonly used statistical models. For the paired samples t-test that means one can test hypotheses relating to mean of a group on a single variable.
+The analysis allows to test exploratory hypotheses (e.g., equal vs negative vs positive) and confirmatory hypotheses (with equality and/or order constraints) using Bayes factors and posterior probabilities under commonly used statistical models. For the paired samples t-test that means one can test hypotheses relating to mean of a group on a single variable. For details, see Mulder et al. (2021).
 
 ## Input
 ### Main Window
 - Variable: Input variables that are continuous (if they are not, they will be treated as such)
 
-#### Standard hypothesis test
+#### Standard Hypothesis Test
 - Hypotheses: Test hypothesis that the mean of the variable is equal or unequal to the test value
-- Prior weights: Specify how to weigh each hypothesis; defaults to the nullhypothesis being weighted twice as much as the alternatives 
-- Specify test value: Test value to for the hypothesis of equality/inequality
+- Prior Weights: Specify how to weigh each hypothesis; defaults to the null hypothesis being weighted twice as much as the alternatives 
+- Specify Test Value: Test value for the hypothesis of equality/inequality
 
 #### Parameters
 Once the variables are filled in, the parameters that can be used in the specification of the manual hypotheses show up here
 
-#### Manual hypothesis test
+#### Manual Hypothesis Test
 - Hypotheses: Specify a manual hypothesis, see the tooltip for more info; Specify the prior weight and do not forget to check the include box to test the hypothesis. For the t-test this could be something like "var1Name > var2Name"
-- Use the "+" to add more hypotheses
+- Use The "+" To Add More Hypotheses
 - Complement: The complement hypothesis; prior weight and include
 
 ### Options
-#### Bayes Factor: 
-- Log scale: reports the log BF
-- Bayes factor type: Default is the fractional BF, alternatively choose the adjusted fractional BF
+#### Bayes Factor
+- Log Scale: Reports the log BF
+- Bayes Factor Type: Default is the fractional BF, alternatively choose the adjusted fractional BF
 
 #### Tables
-- Standard hypothesis BFs: Print table that compares each standard hypothesis with its complement
-- Specification: Print the specification table
+- BFs: Standard Hypotheses: Print table that compares each standard hypothesis with its complement
+- BFs: Manual Hypotheses: Print the specification table
 - Estimates with uncertainty interval: Print a table with the point estimates and uncertainty intervals (confidence interval for t-test) for the parameter(s) of interest.
 
 #### Plots
@@ -44,7 +43,12 @@ Once the variables are filled in, the parameters that can be used in the specifi
 - Posterior probs for the standard hypotheses
 
 #### BFs when testing standard hypotheses
-- Bayes factors for the standard hypotheses and their complements
+- BF(0c): Bayes factor of the standard H0 vs the complement
+- BF(-c): Bayes factor of the standard H- vs the complement
+- BF(+c): Bayes factor of the standard H+ vs the complement
+- BF(c0): Bayes factor of complement vs the standard H0
+- BF(c-): Bayes factor of complement vs the standard H-
+- BF(c+): Bayes factor of complement vs the standard H+
 
 #### Manual hypotheses legend
 - Denotes the manual hypotheses
@@ -55,7 +59,7 @@ Once the variables are filled in, the parameters that can be used in the specifi
 #### Posterior model probability
 - provides the posterior probability for each hypothesis
 
-#### Specification table
+#### BFs: Manual hypotheses table
 - Equal-complex: Quantifies the relative complexity of the equality constraints of a hypothesis (the prior density at the equality constraints in the extended Savage Dickey density ratio)
 - Order-complex: Quantifies the relative complexity of the order constraints of a hypothesis (the prior probability of the order constraints in the extended Savage Dickey density ratio)
 - Equal-fit: Quantifies the relative fit of the equality constraints of a hypothesis (the posterior density at the equality constraints in the extended Savage Dickey density ratio)

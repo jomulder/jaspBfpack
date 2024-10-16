@@ -18,7 +18,7 @@ options <-
     priorProbComplement = "1/2",
     seed = 100,
     standardHypothesisBfTable = TRUE,
-    specificationTable = FALSE,
+    manualHypothesisBfTable = FALSE,
     priorProbStandard = "1",
     priorProbStandard2 = "1",
     variables = "libido"
@@ -29,36 +29,13 @@ dt$test <- as.factor(dt$test)
 set.seed(1)
 results <- jaspTools::runAnalysis("bfpackVariances", dt, options, makeTests = F)
 
-
-test_that("Manual hypotheses legend table results match", {
-  table <- results[["results"]][["bfpackContainer"]][["collection"]][["bfpackContainer_legendTable"]][["data"]]
-  jaspTools::expect_equal_tables(table,
-                                 list("female=male&gt;non", "H1", "female&lt;male&lt;non", "H2", "complement",
-                                      "H3"))
-})
-
-test_that("Posterior probabilities when testing individual parameters table results match", {
+test_that("Posterior Probabilities Testing Standard Hypotheses table results match", {
   table <- results[["results"]][["bfpackContainer"]][["collection"]][["bfpackContainer_parameterTable"]][["data"]]
   jaspTools::expect_equal_tables(table,
                                  list(0.881165791227818, 0.118834208772182))
 })
 
-test_that("Evidence matrix (BFs) table results match", {
-  table <- results[["results"]][["bfpackContainer"]][["collection"]][["bfpackContainer_resultsContainer"]][["collection"]][["bfpackContainer_resultsContainer_matrixTable"]][["data"]]
-  jaspTools::expect_equal_tables(table,
-                                 list(1, 0.486946986570694, 1.70163189264454, "H1", 2.05361164064791,
-                                      1, 3.49449106283256, "H2", 0.587671166909009, 0.286164703820825,
-                                      1, "H3"))
-})
-
-test_that("Posterior model probability table results match", {
-  table <- results[["results"]][["bfpackContainer"]][["collection"]][["bfpackContainer_resultsContainer"]][["collection"]][["bfpackContainer_resultsContainer_postTable"]][["data"]]
-  jaspTools::expect_equal_tables(table,
-                                 list("H1", 0.274628490246529, "H2", 0.563980264423834, "H3", 0.161391245329637
-                                 ))
-})
-
-test_that("Coefficients table results match", {
+test_that("Estimates Table results match", {
   table <- results[["results"]][["bfpackContainer"]][["collection"]][["bfpackContainer_resultsContainer"]][["collection"]][["bfpackContainer_resultsContainer_estimatesTable"]][["data"]]
   jaspTools::expect_equal_tables(table,
                                  list("female", 0.928946417051052, 2.975, 2.34406595810759, 8.80245652745594,
@@ -67,8 +44,30 @@ test_that("Coefficients table results match", {
                                       4.73463680355297, 12.1922993366245))
 })
 
-test_that("BFs when testing standard hypotheses table results match", {
-  table <- results[["results"]][["bfpackContainer"]][["collection"]][["bfpackContainer_resultsContainer"]][["collection"]][["bfpackContainer_resultsContainer_stdBfTable"]][["data"]]
+test_that("Manual Hypotheses Legend table results match", {
+  table <- results[["results"]][["bfpackContainer"]][["collection"]][["bfpackContainer_resultsContainer"]][["collection"]][["bfpackContainer_resultsContainer_legendTable"]][["data"]]
   jaspTools::expect_equal_tables(table,
-                                 list(7.41508527159138))
+                                 list("female=male&gt;non", "H1", "female&lt;male&lt;non", "H2", "complement",
+                                      "H3"))
+})
+
+test_that("Evidence Matrix (BFs) table results match", {
+  table <- results[["results"]][["bfpackContainer"]][["collection"]][["bfpackContainer_resultsContainer"]][["collection"]][["bfpackContainer_resultsContainer_matrixTable"]][["data"]]
+  jaspTools::expect_equal_tables(table,
+                                 list(1, 0.486946986570694, 1.70163189264454, "H1", 2.05361164064791,
+                                      1, 3.49449106283256, "H2", 0.587671166909009, 0.286164703820825,
+                                      1, "H3"))
+})
+
+test_that("Posterior Model Probability table results match", {
+  table <- results[["results"]][["bfpackContainer"]][["collection"]][["bfpackContainer_resultsContainer"]][["collection"]][["bfpackContainer_resultsContainer_postTable"]][["data"]]
+  jaspTools::expect_equal_tables(table,
+                                 list("H1", 0.274628490246529, "H2", 0.563980264423834, "H3", 0.161391245329637
+                                 ))
+})
+
+test_that("BFs: Standard Hypotheses table results match", {
+  table <- results[["results"]][["bfpackContainer"]][["collection"]][["bfpackContainer_stdBfTable"]][["data"]]
+  jaspTools::expect_equal_tables(table,
+                                 list(7.41508527159138, 0.134860215813187))
 })

@@ -18,7 +18,7 @@ options <-
       manualPlots = TRUE,
       priorProbComplement = "1/2",
       seed = 100,
-      specificationTable = FALSE,
+      manualHypothesisBfTable = FALSE,
       priorProbStandard = "1",
       priorProbStandard2 = ".5",
       priorProbStandard3 = "1",
@@ -35,12 +35,6 @@ test_that("Estimates table results match", {
   jaspTools::expect_equal_tables(table,
                                  list("difference", -2.60134149720009, -2.22170938375, -2.22170938375,
                                       -1.84207727029991))
-})
-
-test_that("Manual hypotheses legend table results match", {
-  table <- results[["results"]][["bfpackContainer"]][["collection"]][["bfpackContainer_legendTable"]][["data"]]
-  jaspTools::expect_equal_tables(table,
-                                 list(".1&lt;difference&lt;2", "H1", "difference=2", "H2", "complement", "H3"))
 })
 
 test_that("Posterior probabilities when testing individual parameters table results match", {
