@@ -920,12 +920,12 @@
   } else {
 
     stdBfTable$addColumnInfo(name = "coefficient", title = "", type = "string")
-    stdBfTable$addColumnInfo(name = "bf0", title = gettext("BF(0c)"), type = "number")
-    stdBfTable$addColumnInfo(name = "bf1", title = gettext("BF(-c)"), type = "number")
-    stdBfTable$addColumnInfo(name = "bf2", title = gettext("BF(+c)"), type = "number")
-    stdBfTable$addColumnInfo(name = "bf3", title = gettext("BF(c0)"), type = "number")
-    stdBfTable$addColumnInfo(name = "bf4", title = gettext("BF(c-)"), type = "number")
-    stdBfTable$addColumnInfo(name = "bf5", title = gettext("BF(c+)"), type = "number")
+    stdBfTable$addColumnInfo(name = "bf0", title = gettext("BF(0u)"), type = "number")
+    stdBfTable$addColumnInfo(name = "bf1", title = gettext("BF(-u)"), type = "number")
+    stdBfTable$addColumnInfo(name = "bf2", title = gettext("BF(+u)"), type = "number")
+    stdBfTable$addColumnInfo(name = "bf3", title = gettext("BF(u0)"), type = "number")
+    stdBfTable$addColumnInfo(name = "bf4", title = gettext("BF(u-)"), type = "number")
+    stdBfTable$addColumnInfo(name = "bf5", title = gettext("BF(u+)"), type = "number")
 
     if (type == "independentTTest") {
       dtFill <- data.frame(coefficient = gettext("difference"))

@@ -46,12 +46,12 @@ Once the variables are filled in, the parameters that can be used in the specifi
 - Posterior probs for the standard hypotheses
 
 #### BFs: Standard Hypotheses Table
-- BF(0c): Bayes factor of the standard H0 vs the complement
-- BF(-c): Bayes factor of the standard H- vs the complement
-- BF(+c): Bayes factor of the standard H+ vs the complement
-- BF(c0): Bayes factor of complement vs the standard H0
-- BF(c-): Bayes factor of complement vs the standard H-
-- BF(c+): Bayes factor of complement vs the standard H+
+- BF(0u): Bayes factor of the standard H0 vs the unconstrained hypothesis
+- BF(-u): Bayes factor of the standard H- vs the unconstrained hypothesis
+- BF(+u): Bayes factor of the standard H+ vs the unconstrained hypothesis
+- BF(u0): Bayes factor of the unconstrained hypothesis vs the standard H0
+- BF(u-): Bayes factor of the unconstrained hypothesis vs the standard H-
+- BF(u+): Bayes factor of the unconstrained hypothesis vs the standard H+
 
 #### Manual Hypotheses Legend
 - Denotes the manual hypotheses
