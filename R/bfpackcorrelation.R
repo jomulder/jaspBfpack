@@ -17,8 +17,6 @@
 
 bfpackCorrelation <- function(jaspResults, dataset, options, ...) {
 
-  # sink(file="~/Downloads/log.txt")
-  # on.exit(sink(NULL))
 
   # What type of BFpack analysis is being conducted?
   type <- "correlation"
@@ -29,8 +27,8 @@ bfpackCorrelation <- function(jaspResults, dataset, options, ...) {
   # Check if current options allow for analysis
   ready <- .bfpackOptionsReady(options, type)
 
-  # Read the data set
-  dataset <- .bfpackReadDataset(options, type, dataset)
+  # handle the data set
+  dataset <- .bfpackHandleMissings(dataset)
 
   # Check if current data allow for analysis
   .bfpackDataReady(dataset, options, type, ready)

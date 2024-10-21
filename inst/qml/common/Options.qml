@@ -120,15 +120,7 @@ Section
 
 		}
 
-		DoubleField
-		{
-			name: 						"seed"
-			text: 						qsTr("Seed")
-			defaultValue: 				100
-			min: 						-999999
-			max: 						999999
-			fieldWidth: 				60 * preferencesModel.uiScale
-		}
+		SetSeed{}
 	}
 
 

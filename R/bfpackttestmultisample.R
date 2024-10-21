@@ -17,17 +17,14 @@
 
 bfpackTTestMultiSample <- function(jaspResults, dataset, options, ...) {
 
-  # sink("~/Downloads/log.txt")
-  # on.exit(sink(NULL))
-
   # What type of BFpack analysis is being conducted?
   type <- "multiSampleTTest"
 
   # Check if current options allow for analysis
   ready <- .bfpackOptionsReady(options, type)
 
-  # Read the data set
-  dataset <- .bfpackReadDataset(options, type, dataset)
+  # handle the data set
+  dataset <- .bfpackHandleMissings(dataset)
 
   # Check if current data allow for analysis
   .bfpackDataReady(dataset, options, type, ready)

@@ -23,67 +23,11 @@
   return(jaspResults[["bfpackContainer"]])
 }
 
-# also needs adjustment if there is a new analysis that includes interactions
-# give back the interactions to the qml interface
-.bfpackFeedbackInteractions <- function(jaspResults, options, type) {
 
-  if (!is.null(jaspResults[["interactionTerms"]])) return()
+# handle listwise deletion
+.bfpackHandleMissings <- function(dataset) {
 
-  deps <- switch(type,
-                 "regression" = "covariates",
-                 "anova" = c("fixedFactors", "covariates"),
-                 "regressionLogistic" = "covariates")
-
-  if (type %in% c("regression", "regressionLogistic")) {
-    nams <- decodeColNames(unlist(options[["covariates"]]))
-    if (length(nams) < 2) return()
-  } else if (type == "anova") {
-    nams <- decodeColNames(c(unlist(options[["fixedFactors"]]), unlist(options[["covariates"]])))
-    if (length(nams) < 2) return()
-  }
-
-  # allow more than two-way interactions
-  inters <- list()
-  for (i in 2:length(nams)) {
-    interTmp <- combn(nams, m = i)
-    interTmp <- as.data.frame(interTmp)
-    tmp <- lapply(interTmp, function(x) paste0(x, collapse = ":"))
-    # somehow this wont work wihtout this:
-    names(tmp) <- NULL
-    inters <- append(inters, tmp)
-  }
-
-  outSource <- createJaspQmlSource("interactionSource", inters)
-  outSource$dependOn(c(deps, "interactionTerms"))
-  jaspResults[["interactionTerms"]] <- outSource
-
-  return()
-}
-
-# this function needs updating when there is a new analysis added
-# Read the data set
-.bfpackReadDataset <- function(options, type, dataset) {
-
-  vars <- c(unlist(options[["variables"]]),
-            unlist(options[["pairs"]]),
-            options[["groupingVariable"]],
-            unlist(options[["dependent"]]),
-            unlist(options[["covariates"]]),
-            unlist(options[["fixedFactors"]])
-  )
-
-  vars <- vars[vars != ""]
-  if (is.null(dataset)) {
-    if (type == "onesampleTTest") { # For the one sample t test we do not remove the NA's listwise
-      dataset <- .readDataSetToEnd(columns = vars)
-    } else {
-      dataset <- .readDataSetToEnd(columns = vars, exclude.na.listwise = vars)
-    }
-  } else {
-    dataset <- .vdf(dataset, columns = vars)
-  }
-
-
+  dataset <- excludeNaListwise(dataset)
   return(dataset)
 }
 
@@ -280,6 +224,7 @@
                  "multiSampleTTest" = "testValues",
                  NULL)
 
+  .setSeedJASP(options)
   # estimate the correlation
   if (type == "correlation") {
 
@@ -502,12 +447,12 @@
 
     # check if there are manual hypotheses
     manualHypInclude <- sapply(options[["manualHypotheses"]], function(x) x[["includeHypothesis"]])
-    manualHyp <- sapply(options[["manualHypotheses"]], function(x) x[["hypothesisText"]])
+    manualHyp <- sapply(options[["manualHypotheses"]], function(x) trimws(x[["hypothesisText"]]))
     manualPrior <- sapply(options[["manualHypotheses"]], function(x) x[["priorProbManual"]])
 
     # keep the hypotheses that are included
     manualHyp <- manualHyp[manualHypInclude]
-    if (length(manualHyp) == 0) {
+    if (length(manualHyp) == 0 || all(manualHyp == "")) {
       manualHyp <- NULL
       manualPrior <- NULL
     } else {

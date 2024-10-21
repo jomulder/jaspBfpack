@@ -14,6 +14,7 @@ Description
 	website			: "https://bfpack.info"
 	license			: "GPL (>= 3)"
 	hasWrappers		: false
+	preloadData: true
 
 	GroupTitle
 	{
@@ -54,7 +55,7 @@ Description
 	{
 		menu:   	"(M)AN(C)OVA"
 		title:		"BFpack (M)AN(C)OVA"
-		func:			"bfpackAnova"
+		func:			"bfpackMancova"
 	}
 
 	GroupTitle

@@ -39,7 +39,7 @@ dt <- debug[, c("contNormal", "facFive", "facGender")]
 dt$facGender <- as.factor(dt$facGender)
 
 set.seed(1)
-results <- jaspTools::runAnalysis("bfpackAnova", dt, options)
+results <- jaspTools::runAnalysis("bfpackMancova", dt, options)
 
 
 test_that("Posterior probabilities for interaction effects table results match", {
@@ -128,7 +128,7 @@ options <- list(
 )
 
 set.seed(1)
-results <- jaspTools::runAnalysis("bfpackAnova", "debug.csv", options)
+results <- jaspTools::runAnalysis("bfpackMancova", "debug.csv", options)
 
 test_that("Posterior probabilities for main effects table results match", {
   table <- results[["results"]][["bfpackContainer"]][["collection"]][["bfpackContainer_mainEffectsTable"]][["data"]]
@@ -197,7 +197,7 @@ dt <- debug[, c("contNormal", "contcor1", "contBinom")]
 dt$contBinom <- as.factor(dt$contBinom)
 
 set.seed(1)
-results <- jaspTools::runAnalysis("bfpackAnova", dt, options, makeTests = F)
+results <- jaspTools::runAnalysis("bfpackMancova", dt, options, makeTests = F)
 
 test_that("Posterior probabilities for interaction effects table results match", {
   table <- results[["results"]][["bfpackContainer"]][["collection"]][["bfpackContainer_iaEffectsTable"]][["data"]]
