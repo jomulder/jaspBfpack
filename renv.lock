@@ -978,7 +978,7 @@
     },
     "igraph": {
       "Package": "igraph",
-      "Version": "2.0.3",
+      "Version": "2.1.1",
       "Source": "Repository",
       "Repository": "CRAN",
       "Requirements": [
@@ -997,7 +997,7 @@
         "utils",
         "vctrs"
       ],
-      "Hash": "c3b7d801d722e26e4cd888e042bf9af5"
+      "Hash": "c03878b48737a0e2da3b772d7b2e22da"
     },
     "inline": {
       "Package": "inline",
@@ -1022,14 +1022,13 @@
     },
     "jaspBase": {
       "Package": "jaspBase",
-      "Version": "0.19.0",
+      "Version": "0.19.2",
       "Source": "GitHub",
       "RemoteType": "github",
       "RemoteHost": "api.github.com",
-      "RemoteUsername": "jasp-stats",
       "RemoteRepo": "jaspBase",
-      "RemoteRef": "master",
-      "RemoteSha": "79632a237c7bf6bb9b6c8fdf30cc59abccb923d1",
+      "RemoteUsername": "jasp-stats",
+      "RemoteSha": "490c3729f1c34406fc662bb20aa872c99a88eeac",
       "Requirements": [
         "R6",
         "Rcpp",
@@ -1058,18 +1057,17 @@
         "systemfonts",
         "withr"
       ],
-      "Hash": "5e3804868e93e304cb776be34f1d7a18"
+      "Hash": "d09c1e2a31b1b69fb95b72f9d96058d9"
     },
     "jaspGraphs": {
       "Package": "jaspGraphs",
-      "Version": "0.19.0",
+      "Version": "0.19.2",
       "Source": "GitHub",
       "RemoteType": "github",
       "RemoteHost": "api.github.com",
-      "RemoteUsername": "jasp-stats",
       "RemoteRepo": "jaspGraphs",
-      "RemoteRef": "master",
-      "RemoteSha": "b2e1799265a0741b49a1ca356f96448091dd8db0",
+      "RemoteUsername": "jasp-stats",
+      "RemoteSha": "550191feb1f662ba400e9b96617050aad4927048",
       "Requirements": [
         "R6",
         "RColorBrewer",
@@ -1082,7 +1080,7 @@
         "scales",
         "viridisLite"
       ],
-      "Hash": "31b0c580c325e5f061d6f7ea8a65a31d"
+      "Hash": "b559398ef2ee660d159e81a439cf1970"
     },
     "jpeg": {
       "Package": "jpeg",
@@ -1463,11 +1461,12 @@
     },
     "officer": {
       "Package": "officer",
-      "Version": "0.6.6",
+      "Version": "0.6.7",
       "Source": "Repository",
       "Repository": "CRAN",
       "Requirements": [
         "R6",
+        "cli",
         "grDevices",
         "graphics",
         "openssl",
@@ -1478,7 +1477,7 @@
         "xml2",
         "zip"
       ],
-      "Hash": "dc703d9a479e428a15dc6f82e268387e"
+      "Hash": "d6c0a4e796301a5d252de42c92a9a8b9"
     },
     "openssl": {
       "Package": "openssl",
@@ -1915,10 +1914,10 @@
     },
     "rstudioapi": {
       "Package": "rstudioapi",
-      "Version": "0.16.0",
+      "Version": "0.17.0",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "96710351d642b70e8f02ddeb237c46a7"
+      "Hash": "fb9f5fce8f609e9b66f0bea5c783f88a"
     },
     "rvg": {
       "Package": "rvg",
@@ -2251,7 +2250,7 @@
     },
     "xfun": {
       "Package": "xfun",
-      "Version": "0.47",
+      "Version": "0.48",
       "Source": "Repository",
       "Repository": "CRAN",
       "Requirements": [
@@ -2260,7 +2259,7 @@
         "stats",
         "tools"
       ],
-      "Hash": "36ab21660e2d095fef0d83f689e0477c"
+      "Hash": "89e455b87c84e227eb7f60a1b4e5fe1f"
     },
     "xml2": {
       "Package": "xml2",

@@ -155,11 +155,13 @@
   if (!ready) return()
 
   findex <- which(sapply(dataset, is.factor))
+  oindex <- which(sapply(dataset, is.ordered))
+  findex <- findex[findex != oindex]
   if (length(findex > 0)) {
     factors <- colnames(dataset)[findex]
     .hasErrors(dataset,
                type = "factorLevels",
-               factorLevels.target = factors, factorLevels.amount = '< 2',
+               factorLevels.target = factors, factorLevels.amount = '!= 2',
                exitAnalysisIfErrors = TRUE
     )
 
@@ -199,6 +201,7 @@
     return()
   }
 
+  # browser()
   callString <- switch(type,
                        "independentTTest" = "BFpack:::get_estimates.t_test",
                        "pairedTTest" = "BFpack:::get_estimates.t_test",
@@ -207,9 +210,20 @@
                        "regression" = "BFpack:::get_estimates.lm",
                        "correlation" = "BFpack:::get_estimates.cor_test",
                        "variances" = "BFpack:::get_estimates.bartlett_htest",
-                       "regressionLogistic" = "BFpack:::get_estimates.glm",
-                       "multiSampleTTest" = "BFpack:::get_estimates.mvt_test"
+                       "multiSampleTTest" = "BFpack:::get_estimates.mvt_test",
+                       NULL
                        )
+
+  # special case logistic regression
+  if (type == "regressionLogistic") {
+    if (is.ordered(dataset[, decodeColNames(options[["dependent"]])])) {
+      callString <- "BFpack:::get_estimates.polr"
+      polr <- TRUE
+    } else {
+      callString <- "BFpack:::get_estimates.glm"
+      polr <- FALSE
+    }
+  }
 
   # special dependency ciLevel, because for some cor, reg, aov when the ciLevel is changed
   # we can just use the fitted object and change the interval, but for t-test we need to change it
@@ -289,8 +303,11 @@
     if (type == "regression") {
       result <- try(lm(formula, data = dataset))
     } else if (type == "regressionLogistic") {
-      # TODO: more families?
-      result <- try(glm(formula, data = dataset, family = "binomial"))
+      if (polr) {
+        result <- try(MASS::polr(formula, data = dataset))
+      } else {
+        result <- try(glm(formula, data = dataset, family = "binomial"))
+      }
     }
 
   } else if (type == "anova") {
