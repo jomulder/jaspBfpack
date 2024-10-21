@@ -46,7 +46,6 @@ Form
 			name: 						"covariates"
 			title: 						qsTr("Covariates")
 			id: 							covariates
-			// suggestedColumns: 			["scale", "ordinal"]
 		}
 	}
 

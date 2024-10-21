@@ -18,7 +18,7 @@
 bfpackTTestOneSample <- function(jaspResults, dataset, options, ...) {
 
   # What type of BFpack analysis is being conducted?
-  type <- "onesampleTTest"
+  type <- "tTestOneSample"
 
   # Check if current options allow for analysis
   ready <- .bfpackOptionsReady(options, type)

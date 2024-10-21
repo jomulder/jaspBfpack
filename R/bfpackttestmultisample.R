@@ -18,7 +18,7 @@
 bfpackTTestMultiSample <- function(jaspResults, dataset, options, ...) {
 
   # What type of BFpack analysis is being conducted?
-  type <- "multiSampleTTest"
+  type <- "tTestMultiSamples"
 
   # Check if current options allow for analysis
   ready <- .bfpackOptionsReady(options, type)

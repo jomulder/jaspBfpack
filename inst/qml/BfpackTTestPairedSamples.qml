@@ -36,7 +36,7 @@ Form
 		{
 			name: 						"pairs"
 			title: 						qsTr("Pairs")
-			suggestedColumns: 			["scale"]
+			allowedColumns: 			["scale"]
 			singleVariable: true
 		}
 	}

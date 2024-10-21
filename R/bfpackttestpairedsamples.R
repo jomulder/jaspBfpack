@@ -18,7 +18,7 @@
 bfpackTTestPairedSamples <- function(jaspResults, dataset, options, ...) {
 
   # What type of BFpack analysis is being conducted?
-  type <- "pairedTTest"
+  type <- "tTestPairedSamples"
 
   # Check if current options allow for analysis
   ready <- .bfpackOptionsReady(options, type)

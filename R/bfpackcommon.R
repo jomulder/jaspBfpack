@@ -134,15 +134,15 @@
 .bfpackOptionsReady <- function(options, type) {
 
   ready <- switch(type,
-    "independentTTest" = options[["variables"]] != "" && options[["groupingVariable"]] != "",
-    "pairedTTest" = sum(unlist(options[["pairs"]]) != "") > 1,
-    "onesampleTTest" = options[["variables"]] != "",
+    "tTestIndependentSamples" = options[["variables"]] != "" && options[["groupingVariable"]] != "",
+    "tTestPairedSamples" = sum(unlist(options[["pairs"]]) != "") > 1,
+    "tTestOneSample" = options[["variables"]] != "",
     "anova" = length(unlist(options[["dependent"]])) > 0 && length(unlist(options[["fixedFactors"]])) > 0,
     "regression" = sum(unlist(options[["dependent"]]) != "") > 0 && length(unlist(options[["covariates"]])) > 0,
     "correlation" = length(unlist(options[["variables"]])) > 1,
     "variances" = options[["variables"]] != "" && options[["groupingVariable"]] != "",
     "regressionLogistic" = options[["dependent"]] != "" && length(unlist(options[["covariates"]])) > 0,
-    "multiSampleTTest" = length(unlist(options[["variables"]])) > 1
+    "tTestMultiSamples" = length(unlist(options[["variables"]])) > 1
     )
 
   return(ready)
@@ -201,16 +201,15 @@
     return()
   }
 
-  # browser()
   callString <- switch(type,
-                       "independentTTest" = "BFpack:::get_estimates.t_test",
-                       "pairedTTest" = "BFpack:::get_estimates.t_test",
-                       "onesampleTTest" = "BFpack:::get_estimates.t_test",
+                       "tTestIndependentSamples" = "BFpack:::get_estimates.t_test",
+                       "tTestPairedSamples" = "BFpack:::get_estimates.t_test",
+                       "tTestOneSample" = "BFpack:::get_estimates.t_test",
                        "anova" = "bain::get_estimates",
                        "regression" = "BFpack:::get_estimates.lm",
                        "correlation" = "BFpack:::get_estimates.cor_test",
                        "variances" = "BFpack:::get_estimates.bartlett_htest",
-                       "multiSampleTTest" = "BFpack:::get_estimates.mvt_test",
+                       "tTestMultiSamples" = "BFpack:::get_estimates.mvt_test",
                        NULL
                        )
 
@@ -229,14 +228,15 @@
   # we can just use the fitted object and change the interval, but for t-test we need to change it
   # in the t-test call (or at least it is easiest)
   deps <- switch(type,
-                 "independentTTest" = c("ciLevel", "muValue", "variances"),
-                 "pairedTTest" = c("ciLevel", "muValue"),
-                 "onesampleTTest" = c("ciLevel", "muValue"),
+                 "tTestIndependentSamples" = c("ciLevel", "muValue", "variances"),
+                 "tTestPairedSamples" = c("ciLevel", "muValue"),
+                 "tTestOneSample" = c("ciLevel", "muValue"),
                  "anova" = c("interactionTerms", "includeInteractionEffect"),
                  "regression" = c("interactionTerms", "includeInteractionEffect"),
                  "regressionLogistic"= c("interactionTerms", "includeInteractionEffect"),
-                 "multiSampleTTest" = "testValues",
+                 "tTestMultiSamples" = "testValues",
                  NULL)
+
 
   .setSeedJASP(options)
   # estimate the correlation
@@ -304,7 +304,7 @@
       result <- try(lm(formula, data = dataset))
     } else if (type == "regressionLogistic") {
       if (polr) {
-        result <- try(MASS::polr(formula, data = dataset))
+        result <- try(MASS::polr(formula, data = dataset, Hess = TRUE))
       } else {
         result <- try(glm(formula, data = dataset, family = "binomial"))
       }
@@ -346,7 +346,7 @@
 
     result <- try(BFpack::bartlett_test(dataset[, variable], dataset[, grouping]))
 
-  } else if (type == "independentTTest") {
+  } else if (type == "tTestIndependentSamples") {
 
     variable <- decodeColNames(options[["variables"]])
     grouping <- decodeColNames(options[["groupingVariable"]])
@@ -362,21 +362,21 @@
                                conf.level = options[["ciLevel"]],
                                mu = options[["muValue"]]))
 
-  } else if (type == "onesampleTTest") {
+  } else if (type == "tTestOneSample") {
 
     variable <- decodeColNames(options[["variables"]])
     result <- try(bain::t_test(x = dataset[, variable], paired = FALSE, var.equal = FALSE,
                                conf.level = options[["ciLevel"]],
                                mu = options[["muValue"]]))
 
-  } else if (type == "pairedTTest") {
+  } else if (type == "tTestPairedSamples") {
     variables <- decodeColNames(unlist(unlist(options[["pairs"]])))
     result <- try(bain::t_test(x = dataset[, variables[1]], y = dataset[, variables[2]],
                                paired = TRUE, var.equal = FALSE,
                                conf.level = options[["ciLevel"]],
                                mu = options[["muValue"]]))
 
-  } else if (type == "multiSampleTTest") {
+  } else if (type == "tTestMultiSamples") {
 
     testValues <- sapply(options[["testValues"]], function(x) x[["testValue"]])
     variables <- decodeColNames(options[["variables"]])
@@ -403,9 +403,9 @@
 
   # new dependencies for the qml source since it is not part of bfpackContainer but jaspResults
   deps2 <- switch(type,
-                 "independentTTest" = c("variables", "groupingVariable"),
-                 "pairedTTest" = "pairs",
-                 "onesampleTTest" = "variables",
+                 "tTestIndependentSamples" = c("variables", "groupingVariable"),
+                 "tTestPairedSamples" = "pairs",
+                 "tTestOneSample" = "variables",
                  "anova" = c("dependent", "fixedFactors", "covariates"),
                  "regression" = c("dependent", "covariates"),
                  "correlation" = c("variables", "groupingVariable"),
@@ -442,7 +442,7 @@
     estimates <- bfpackContainer[["estimatesState"]]$object
 
     # standard hypotheses priors
-    if (type %in% c("variances", "multiSampleTTest")) {
+    if (type %in% c("variances", "tTestMultiSamples")) {
       standPrior <- sapply(parse(text = c(options[["priorProbStandard"]], options[["priorProbStandard2"]])), eval)
     } else if (type == "anova") {
       standPrior <- list(sapply(parse(text = c(options[["priorProbStandard"]], options[["priorProbStandard2"]],
@@ -498,15 +498,13 @@
       }
     }
 
-    # weirdly we need to extract this because BF fails for glm if not
-    ciLevel <- options[["ciLevel"]]
     results <- try(BFpack::BF(estimates, hypothesis = manualHyp,
                              complement = options[["complement"]],
                              prior.hyp.conf = manualPrior,
                              prior.hyp.explo = standPrior,
                              log = options[["logScale"]],
                              BF.type = bftype,
-                             cov.prob = ciLevel))
+                             cov.prob = options[["ciLevel"]]))
 
     if (isTryError(results)) {
 
@@ -540,12 +538,12 @@
   parameterTable$dependOn(optionsFromObject = bfpackContainer[["resultsContainer"]], options = "priorProb")
   parameterTable$position <- position
 
-  if (type %in% c("variances", "multiSampleTTest")) {
+  if (type %in% c("variances", "tTestMultiSamples")) {
 
     if (type == "variances") {
       title1 <- gettext("Equal Variances")
       title2 <- gettext("Unequal Variances")
-    } else if (type == "multiSampleTTest") {
+    } else if (type == "tTestMultiSamples") {
       # testValues <- sapply(options[["testValues"]] function(x) x[["testValue"]]))
       title1 <- gettext("Pr(H0)")
       title2 <- gettext("Pr(H±)")
@@ -582,7 +580,7 @@
   if (!bfpackContainer$getError()) {
     parPhp <- bfpackContainer[["resultsContainer"]][["resultsState"]]$object$PHP_exploratory
     if (!is.null(parPhp)) {
-      if (type %in% c("variances", "multiSampleTTest")) {
+      if (type %in% c("variances", "tTestMultiSamples")) {
         dtFill <- data.frame(equal = parPhp[1], unequal = parPhp[2])
       } else {
         dtFill <- data.frame(coefficient = rownames(parPhp))
@@ -593,7 +591,7 @@
 
   }
 
-  if (type == "independentTTest") {
+  if (type == "tTestIndependentSamples") {
     levels <- levels(dataset[[options[["groupingVariable"]]]])
     if (length(levels) > 2) {
       parameterTable$addFootnote(gettext("The number of factor levels in the grouping is greater than 2.
@@ -841,9 +839,13 @@
       dtFill[, c("mean", "median", "lower", "upper")] <- estimates
 
       estimatesTable$setData(dtFill)
-      footnt <- ifelse(type == "correlation",
-                       gettext("The uncertainty interval is a central credible interval."),
-                       gettext("The uncertainty interval is a frequentist confidence interval."))
+      footnt <- switch(type,
+                       "correlation" = gettext("The uncertainty interval is a central credible interval."),
+                       "anova" = gettext("The uncertainty interval is a frequentist confidence interval."),
+                       "variances" = gettext("The uncertainty interval is a frequentist confidence interval."),
+                       "regressionLogistic" = gettext("The uncertainty interval is a frequentist confidence interval."),
+                       gettext("The uncertainty interval is a frequentist confidence interval as well as a credible interval with a noninformative Jeffrey's prior."))
+
       estimatesTable$addFootnote(footnt)
     }
   }
@@ -867,7 +869,7 @@
   bfs <- bfpackContainer[["resultsContainer"]][["resultsState"]]$object$BFtu_exploratory
   if (is.null(bfs)) return()
 
-  if (type %in% c("variances", "multiSampleTTest")) {
+  if (type %in% c("variances", "tTestMultiSamples")) {
     title1 <- gettext("BF(0c)")
     title2 <- gettext("BF(c0)")
     stdBfTable$addColumnInfo(name = "bf1", title = title1, type = "number")
@@ -884,7 +886,7 @@
     stdBfTable$addColumnInfo(name = "bf4", title = gettext("BF(u-)"), type = "number")
     stdBfTable$addColumnInfo(name = "bf5", title = gettext("BF(u+)"), type = "number")
 
-    if (type == "independentTTest") {
+    if (type == "tTestIndependentSamples") {
       dtFill <- data.frame(coefficient = gettext("difference"))
     } else {
       dtFill <- data.frame(coefficient = rownames(bfs))
