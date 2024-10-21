@@ -27,6 +27,7 @@ Section
 	property bool iterations: false
 	property bool interactions: false
 	property bool anova: false
+	property bool variances: false
 	property var interactionValues: []
 
 	id: options
@@ -108,6 +109,15 @@ Section
 		{
 			label: qsTr("Uncertainty interval level")
 			name: 					"ciLevel"
+		}
+		RadioButtonGroup
+		{
+			visible: variances
+			title: qsTr("Variances")
+			name: "variances"
+			radioButtonsOnSameRow: true
+			RadioButton { value: "equal"; 	label: qsTr("Equal"); checked: true }
+			RadioButton { value: "unequal"; 	label: qsTr("Unequal") }
 		}
 		IntegerField
 		{

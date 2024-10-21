@@ -229,7 +229,7 @@
   # we can just use the fitted object and change the interval, but for t-test we need to change it
   # in the t-test call (or at least it is easiest)
   deps <- switch(type,
-                 "independentTTest" = c("ciLevel", "muValue"),
+                 "independentTTest" = c("ciLevel", "muValue", "variances"),
                  "pairedTTest" = c("ciLevel", "muValue"),
                  "onesampleTTest" = c("ciLevel", "muValue"),
                  "anova" = c("interactionTerms", "includeInteractionEffect"),
@@ -356,8 +356,11 @@
     g2 <- levels[2]
     group1 <- dataset[dataset[[grouping]] == g1, variable]
     group2 <- dataset[dataset[[grouping]] == g2, variable]
-    result <- try(bain::t_test(x = group1, y = group2, paired = FALSE, var.equal = FALSE,
-                               conf.level = options[["ciLevel"]], mu = options[["muValue"]]))
+    result <- try(bain::t_test(x = group1, y = group2,
+                               paired = FALSE,
+                               var.equal = options[["variances"]] == "equal",
+                               conf.level = options[["ciLevel"]],
+                               mu = options[["muValue"]]))
 
   } else if (type == "onesampleTTest") {
 
@@ -418,25 +421,17 @@
 }
 
 # compute the posteriors and BFs
-# TODO: manual and standard prior
 .bfpackComputeResults <- function(dataset, options, bfpackContainer, ready, type) {
 
   if (!is.null(bfpackContainer[["resultsContainer"]][["resultsState"]])) return()
   if (!ready) return()
 
   # create a container because both the results and the tables depending on them have the same dependencies
-  # start with common deps, and then do the switch
   deps <- c("complement", "logScale", "manualHypotheses", "priorProbManual",
             "priorProbStandard", "priorProbStandard2", "priorProbStandard3",
-            "priorProbComplement", "seed", "bfType", "includeHypothesis", "ciLevel")
-
-  specDeps <- switch(type,
-                     "regression" = c("interactionTerms", "includeInteractionEffect"),
-                     "anova" = c("interactionTerms", "includeInteractionEffect", "priorProbMainZero",
-                                 "priorProbMainNonZero", "priorProbInteractionZero", "priorProbInteractionNonZero"),
-                     "regressionLogistic" = c("interactionTerms", "includeInteractionEffect"),
-                     NULL)
-  deps <- c(deps, specDeps)
+            "priorProbComplement", "seed", "bfType", "includeHypothesis", "ciLevel",
+            "interactionTerms", "includeInteractionEffect", "priorProbMainZero",
+            "priorProbMainNonZero", "priorProbInteractionZero", "priorProbInteractionNonZero")
 
   resultsContainer <- createJaspContainer()
   resultsContainer$dependOn(optionsFromObject = bfpackContainer[["estimatesState"]], options = deps)
