@@ -5,34 +5,34 @@ The analysis allows to test exploratory hypotheses (e.g., equal vs negative vs p
 
 ## Input
 ### Main Window
-- Variables: Input one variable that is continuous (if they are not, they will be treated as such)
-- Grouping Variable: Input one variable that is nominal
+- Variables: Input one variable that is continuous (if they are not, they will be treated as such).
+- Grouping Variable: Input one variable that is nominal with two levels.
 
 #### Standard Hypothesis Test
-- Hypotheses: Test hypothesis that the parameter is equal to smaller or larger than a specific value; for t-test the parameter is called delta and denotes the difference between the independent groups
-- Test Value: Test value for the hypothesis of equality/inequality
-- Prior Weights: Specify how to weigh each hypothesis; defaults to the null hypothesis being weighted twice as much as the alternatives 
+- Hypotheses: Test the hypotheses that the parameter is equal to, smaller than, or larger than a specific value; for the independent sample t-test the parameter is called ‘delta’ and denotes the difference between the independent groups.
+- Test Value: Test value for the difference parameter. The default test value is 0.
+- Prior Weights: Specify how to weigh each hypothesis. The default corresponds to a standard setting when testing a two-sided hypothesis test where the null hypothesis has an equal prior weight as the two-sided alternative hypothesis. Because the two-sided alternative is split to the left side and right side, the default prior weight of the null (H0) is 2, and each prior weight for the left-sided and right-sided hypotheses (H1 and H2, respectively) is 1.
 
 #### Parameters
-Once the variables are filled in, the parameters that can be used in the specification of the manual hypotheses show up here
+This box contains the names (labels) of the parameters on which equality/one-sided constraints can be formulated in the ‘manual hypothesis test’ box. For an independent samples t-test, the only parameter on which constraints can be formulated is the ‘difference’.
 
 #### Manual Hypothesis Test
-- Hypotheses: Specify a manual hypothesis, see the tooltip for more info; Specify the prior weight and do not forget to check the include box to test the hypothesis. For the t-test this could be something like "1>difference>0"
-- Use The "+" To Add More Hypotheses
-- Complement: The complement hypothesis; prior weight and include
+- Hypotheses: Specify a manual hypothesis with equality and/or one-sided constraints on the parameters; see the tooltip for more info. Specify the prior weights and do not forget to include each hypothesis via the check box. For the independent samples t-test this could be something like "1>difference>-1", which would correspond to an interval hypotheses where the group difference deviates maximally 1 from 0 in absolute sense.
+- Use The "+" To Add More Hypotheses.
+- Complement: The complement hypothesis (which covers the range of the parameters that are not covered by the above specified hypotheses); prior weight and include.
 
 ### Options
 #### Bayes Factor
-- Log Scale: Reports the log BF
-- Bayes Factor Type: Default is the fractional BF, alternatively choose the adjusted fractional BF
+- Log Scale: Reports the natural logarithm of the Bayes factors.
+- Bayes Factor Type: The default is the fractional BF, alternatively choose the adjusted fractional BF. The adjusted fractional BF was proposed in the case all hypotheses of interest only contain one-sided (order) constraints.
 
 #### Tables
-- BFs: Standard Hypotheses: Print table that compares each standard hypothesis with its complement
-- BFs: Manual Hypotheses: Print the specification table
-- Estimates With Uncertainty Interval: Print a table with the point estimates and uncertainty intervals (confidence interval for t-test) for the parameter(s) of interest.
+- BFs for standard hypothesis test: Print a table that compares each standard hypothesis with its complement.
+- BFs: Manual Hypotheses: Print the specification table with different parts of the (Savage-Dickey) Bayes factors.
+- Estimates With Uncertainty Interval: Print a table with the point estimates and uncertainty intervals (default credibility intervals for the t-test) for the parameter(s) of interest.
 
 #### Plots
-- Manual Hypothesis Plots: Produces plots depicting the prior and posterior probabilities of the manual hypotheses
+- Manual Hypothesis Plots: Produces plots depicting the prior and posterior probabilities of the manual hypotheses.
 
 #### Additional Options
 - Seed
@@ -41,7 +41,7 @@ Once the variables are filled in, the parameters that can be used in the specifi
 
 ### Tables
 #### Posterior Probabilities When Testing Standard Hypotheses
-- Posterior probs for the standard hypotheses
+- •	Posterior probabilities for the standard hypotheses.
 
 #### BFs: Standard Hypotheses Table
 - BF(0u): Bayes factor of the standard H0 vs the unconstrained hypothesis
@@ -55,10 +55,10 @@ Once the variables are filled in, the parameters that can be used in the specifi
 - Denotes the manual hypotheses
 
 #### Evidence Matrix (BFs)
-- BF matrix with the hypotheses: If the BF for H1vH2 is smaller than 1, evidence is in favor of H2, if it is larger than 1 evidence is in favor of H1
+- BF matrix with the hypotheses: If the BF for H1 vs H2 is smaller than 1, evidence is in favor of H2, if it is larger than 1 evidence is in favor of H1. If “Log scale” is checked, the printed BFs are on a natural logarithm scale.
 
-#### Posterior Model Probability
-- Provides the posterior probability for each hypothesis
+#### Posterior Model Probabilities for the Manual Hypothesis Test
+- •	Prints the posterior probabilities for each hypothesis for the manual hypothesis test.
 
 #### BFs: Manual Hypotheses Table
 - Equal-Complex: Quantifies the relative complexity of the equality constraints of a hypothesis (the prior density at the equality constraints in the extended Savage Dickey density ratio)
@@ -71,13 +71,14 @@ Once the variables are filled in, the parameters that can be used in the specifi
 - Posterior Prob.: Contains the posterior probabilities of the hypotheses
 
 #### Estimates Table
-- Mean, median, and CI bounds. For the t-test they are confidence intervals.
+- Posterior mean, median, and CrI bounds using noninformative (Jeffreys) priors. For the t-test, they are identical to the classical estimates and confidence intervals.
 
 ### Plots
 #### Prior And Posterior Probability 
-- Pizza plots for the manual hypotheses
+- Pizza plots for the manual hypotheses.
 
 ### References
 
-- Mulder, J., & Gelissen, J. P. T. M. (2023). Bayes factor testing of equality and order constraints on measures of association in social research. *Journal of Applied Statistics, 50*(2), 315–351. https://doi.org/10.1080/02664763.2021.1992360
+- Mulder, J. (2014). Prior adjusted default Bayes factors for testing (in) equality constrained hypotheses. Computational Statistics & Data Analysis, 71, 448-463. https://doi.org/10.1016/j.csda.2013.07.017
 - Mulder, J., Williams, D. R., Gu, X., Tomarken, A., Böing-Messing, F., Olsson-Collentine, A., Meijerink, M., Menke, J., Fox, J.-P., Hoijtink, H., Rosseel, Y., Wagenmakers, E.J., and van Lissa, C. (2021). BFpack: Flexible Bayes Factor Testing of Scientific Theories in R. *Journal of Statistical Software, 100*(18), 1-63. https://doi.org/10.18637/jss.v100.i18
+- O'Hagan, A. (1995). Fractional Bayes factors for model comparison. Journal of the Royal Statistical Society: Series B (Methodological), 57(1), 99-118. https://doi.org/10.1111/j.2517-6161.1995.tb02017.x
